@@ -174,7 +174,7 @@ html,body{overflow-anchor:none}
 .cr span{color:var(--mute)}
 #text .ch{margin:0 0 55vh}
 #text h1,#text h2,#text h3,#text h4,#text h5,#text h6{text-align:center}
-#sy{display:grid;gap:.6rem}
+#sy{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(24rem,calc(100vw - 1.2rem));max-height:calc(100vh - 5rem);overflow:auto;z-index:13;border-radius:14px;padding:1rem;display:grid;gap:.6rem;box-shadow:0 12px 40px rgba(0,0,0,.3)}
 #sy input[type=text],#sy input[type=email]{font:inherit;color:var(--fg);background:transparent;border:1px solid var(--line);border-radius:8px;padding:.4rem .55rem;width:100%}
 #sy .st{font-size:.85rem;color:var(--mute)}
 #sy .st.ok{color:var(--acc)}
