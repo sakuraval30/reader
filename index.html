@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Читалка</title>
 <style>
+*,*::before,*::after{box-sizing:border-box}
 :root{--bg:#f7f7f4;--fg:#23262b;--mute:#6b7078;--line:#dcdcd5;--acc:#3b4f8f;--accfg:#fff;--fs:19px;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme]){--bg:#15181d;--fg:#d8dbe0;--mute:#8a909a;--line:#2a2f37;--acc:#9fb4f0;--accfg:#15181d}}
@@ -106,6 +107,7 @@ html,body{overflow-anchor:none}
 :root[data-theme="brown"]{--pn:#382c21}
 :root[data-theme="dark"]{--pn:#28303b}
 #set.glass,#pl.glass,#toast.glass{background:var(--pn);background:color-mix(in srgb,var(--pn) 70%,transparent);-webkit-backdrop-filter:blur(16px) saturate(1.3);backdrop-filter:blur(16px) saturate(1.3);border:1px solid var(--line);border-color:color-mix(in srgb,var(--fg) 14%,transparent)}
+#pl.glass,#sy.glass{background:var(--pn);background:color-mix(in srgb,var(--pn) 96%,transparent)}
 #text .ch{margin:0 0 2.4rem}
 .pdfmode #text .ch{margin:0 0 .6rem}
 .tr{display:block;height:3px;border-radius:2px;background:var(--line);margin:.4rem 0;overflow:hidden}
@@ -115,7 +117,7 @@ html,body{overflow-anchor:none}
 #rt.brk{border-color:var(--acc);color:var(--acc)}
 #plb{display:block;width:100%;text-align:left;margin:0 0 1rem;padding:.7rem .9rem;border-radius:10px}
 #plb small{display:block;color:var(--mute);font-size:.85rem;margin-top:.2rem}
-#pl{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(24rem,calc(100vw - 1.2rem));max-height:calc(100vh - 5rem);overflow:auto;z-index:10;border-radius:14px;padding:1rem;display:grid;gap:.6rem;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+#pl{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(24rem,calc(100vw - 1.2rem));max-height:calc(100vh - 5rem);overflow:auto;overflow-x:hidden;z-index:10;border-radius:14px;padding:1rem;display:grid;gap:.6rem;box-shadow:0 12px 40px rgba(0,0,0,.3)}
 #pl .row{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
 #pl input,#pl select{font:inherit;color:var(--fg);background:transparent;border:1px solid var(--line);border-radius:8px;padding:.25rem .4rem}
 #pl input[type=number]{width:4.2rem}
@@ -142,7 +144,9 @@ html,body{overflow-anchor:none}
 .em{color:var(--mute);font-size:.9rem}
 .row2{display:flex;gap:.9rem;overflow-x:auto;padding:.2rem .2rem 1rem;scroll-snap-type:x proximity}
 .row2 .tl{flex:none;width:8rem;scroll-snap-align:start}
-.cc{flex:none;width:16rem;display:flex;gap:.8rem;align-items:center;text-align:left;padding:.6rem;border-radius:12px;background:var(--pn);border-color:transparent;scroll-snap-align:start}
+.cc{position:relative;flex:none;width:16rem;display:flex;gap:.8rem;align-items:center;text-align:left;padding:.6rem;border-radius:12px;background:var(--pn);border-color:transparent;scroll-snap-align:start;overflow:hidden}
+.cc .pr{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.cc .pr rect{fill:none;stroke:var(--acc);stroke-width:2;stroke-linecap:round;vector-effect:non-scaling-stroke;transition:stroke-dasharray 1s ease}
 .cc .cvs{width:2.8rem;height:4.2rem;flex:none;border-radius:4px;object-fit:cover;background:var(--line)}
 .cc .ph{padding:.2rem;gap:0}
 .cc .ph b{font-size:.5rem;-webkit-line-clamp:5}
@@ -174,7 +178,7 @@ html,body{overflow-anchor:none}
 .cr span{color:var(--mute)}
 #text .ch{margin:0 0 55vh}
 #text h1,#text h2,#text h3,#text h4,#text h5,#text h6{text-align:center}
-#sy{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(24rem,calc(100vw - 1.2rem));max-height:calc(100vh - 5rem);overflow:auto;z-index:13;border-radius:14px;padding:1rem;display:grid;gap:.6rem;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+#sy{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(24rem,calc(100vw - 1.2rem));max-height:calc(100vh - 5rem);overflow:auto;overflow-x:hidden;z-index:13;border-radius:14px;padding:1rem;display:grid;gap:.6rem;box-shadow:0 12px 40px rgba(0,0,0,.3)}
 #sy input[type=text],#sy input[type=email]{font:inherit;color:var(--fg);background:transparent;border:1px solid var(--line);border-radius:8px;padding:.4rem .55rem;width:100%}
 #sy .st{font-size:.85rem;color:var(--mute)}
 #sy .st.ok{color:var(--acc)}
@@ -192,10 +196,10 @@ html,body{overflow-anchor:none}
   <p id="msg" role="status"></p>
   <div id="pgH">
     <div class="ph1"><h1>Главная</h1><div class="acts"><button id="aa2" class="ib" aria-label="Оформление">Аа</button><span class="ringw"><svg class="ring" viewBox="0 0 44 44" aria-hidden="true"><circle class="r0" cx="22" cy="22" r="19"/><circle class="r1" id="ringp" cx="22" cy="22" r="19"/></svg><label class="btn add" for="f" aria-label="Добавить книгу" title="Добавить книгу"></label></span></div></div>
-    <p id="hEmpty">Нажмите «+», чтобы добавить книгу с этого устройства (EPUB, FB2, FB2.ZIP, PDF; файл можно перетащить в окно). Файл останется здесь, а место, где вы остановились, запомнится.</p>
+    <p id="hEmpty">Нажмите «+», чтобы добавить книгу с этого устройства (EPUB, FB2, PDF; файл можно перетащить в окно). Файл останется здесь, а место, где вы остановились, запомнится.</p>
     <h2 class="sh">Продолжить</h2><div id="rowC" class="row2"></div>
     <h2 class="sh">Хочу прочитать</h2><div id="rowW" class="row2"></div>
-    <h2 class="sh">Отложено</h2><div id="rowL" class="row2"></div>
+    <h2 class="sh">Заброшено</h2><div id="rowL" class="row2"></div>
     <h2 class="sh">План чтения</h2><button id="plb" aria-label="План чтения"></button>
   </div>
   <div id="pgL" hidden>
@@ -249,11 +253,12 @@ html,body{overflow-anchor:none}
 
   <div id="sy" class="glass" hidden>
     <h3>Синхронизация</h3>
-    <p class="st">Между устройствами синхронизируются прогресс чтения, статусы («хочу прочитать», «отложено») и коллекции. Сама книга (файл) по-прежнему добавляется на каждом устройстве один раз через «+».</p>
+    <p class="st">Между устройствами синхронизируются прогресс чтения, статусы («хочу прочитать», «заброшено») и коллекции. Сама книга (файл) по-прежнему добавляется на каждом устройстве один раз через «+».</p>
     <div id="syCfg">
       <label class="st">Supabase URL<input type="text" id="sbUrl" placeholder="https://xxxx.supabase.co"></label>
       <label class="st">Supabase anon key<input type="text" id="sbKey" placeholder="eyJ..."></label>
       <button id="sbSave">Сохранить адрес</button>
+      <p class="st" id="sbMsg"></p>
     </div>
     <hr>
     <div id="syAuth"></div>
@@ -540,7 +545,7 @@ async function parseBook(name,buf){
     if(!f)throw new Error('В архиве нет файла FB2');
     return openFb2(await f.async('uint8array'),name);
   }
-  throw new Error('Пока поддерживаются EPUB, FB2, FB2.ZIP и PDF');
+  throw new Error('Пока поддерживаются EPUB, FB2 и PDF');
 }
 
 /* ---------- Настройки ---------- */
@@ -647,9 +652,10 @@ function tile(b,i){
   return '<div class="tl"><button class="cb" data-o="'+i+'" aria-label="'+esc(b.title||'').replace(/"/g,'&quot;')+'">'+coverEl(b,i,'cvr')+'</button><div class="ts"><span>'+st+'</span><button class="mb" data-m="'+i+'" aria-label="Меню книги">…</button></div></div>';
 }
 function card(b,i){
-  return '<button class="cc" data-o="'+i+'">'+coverEl(b,i,'cvs')+'<span class="tx"><b>'+esc(b.title||'')+'</b><small>'+esc(b.author||'')+'</small><small>Книга, '+(b.p||0)+' %</small></span></button>';
+  const p=isDone(b)?100:(b.p||0);
+  return '<button class="cc" data-o="'+i+'"><svg class="pr" aria-hidden="true"><rect x="1" y="1" width="1" height="1" rx="11" pathLength="100" stroke-dasharray="'+p+' 100"/></svg>'+coverEl(b,i,'cvs')+'<span class="tx"><b>'+esc(b.title||'')+'</b><small>'+esc(b.author||'')+'</small><small>'+(isDone(b)?'Закончено':p+' %')+'</small></span></button>';
 }
-const filterName=()=>({all:'Библиотека',want:'Хочу прочитать',later:'Отложено',done:'Закончено'}[lf]||(cols.find(c=>c.id===lf)||{}).name||'Библиотека');
+const filterName=()=>({all:'Библиотека',want:'Хочу прочитать',later:'Заброшено',done:'Закончено'}[lf]||(cols.find(c=>c.id===lf)||{}).name||'Библиотека');
 function ringVal(){
   const d=new Date(),g=RS.goals.find(x=>x.type==='day'&&x.days.includes(d.getDay()))||RS.goals.find(x=>x.type==='month');
   if(!g)return Math.min(1,secs(dk())/3600);
@@ -668,18 +674,22 @@ async function loadCovers(){
     lib.forEach((b,i)=>{if(b.cv!==1)return;const q=st.get('c:'+b.id);q.onsuccess=()=>{const u=q.result;if(u)document.querySelectorAll('img[data-c="'+i+'"]').forEach(im=>{im.src=u})}});
   }catch(e){}
 }
+function sizeRings(){
+  document.querySelectorAll('.cc').forEach(c=>{const r=c.querySelector('.pr rect');if(r){r.setAttribute('width',c.clientWidth-2);r.setAttribute('height',c.clientHeight-2)}});
+}
 function renderLib(){
   const ix=b=>lib.indexOf(b),emp=t=>'<small class="em">'+t+'</small>';
   const cont=lib.filter(b=>(b.p||0)>0&&!isDone(b)&&b.st!=='later').sort(CMP.recent).slice(0,10);
   const want=lib.filter(b=>b.st==='want'),later=lib.filter(b=>b.st==='later');
   $('#rowC').innerHTML=cont.length?cont.map(b=>card(b,ix(b))).join(''):emp('Здесь появятся книги, которые вы читаете');
   $('#rowW').innerHTML=want.length?want.map(b=>tile(b,ix(b))).join(''):emp('В меню книги («…» в библиотеке) выберите «Хочу прочитать»');
-  $('#rowL').innerHTML=later.length?later.map(b=>tile(b,ix(b))).join(''):emp('Здесь будут книги, которые вы отложили');
+  $('#rowL').innerHTML=later.length?later.map(b=>tile(b,ix(b))).join(''):emp('Здесь будут книги, которые вы забросили');
   const arr=lib.filter(b=>inF(b,lf)).sort(CMP[lsort]||CMP.recent);
   $('#glib').innerHTML='<label class="tl" for="f"><span class="cvr plus">+</span><div class="ts"><span>Добавить книгу</span></div></label>'+arr.map(b=>tile(b,ix(b))).join('');
   $('#lt').textContent=filterName();
   $('#hEmpty').hidden=lib.length>0;
   loadCovers();
+  requestAnimationFrame(sizeRings);
 }
 function setPage(p){
   page=p;ls.set('pg',p);
@@ -687,7 +697,7 @@ function setPage(p){
   document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.p===p)));
   for(const s of ['#bm','#srt','#cp'])$(s).hidden=true;
   closeSet();
-  if(p==='home')ringAnim();
+  if(p==='home'){ringAnim();requestAnimationFrame(sizeRings)}
 }
 function place(el,btn){
   el.hidden=false;
@@ -699,7 +709,7 @@ function openBM(i,btn){
   const b=lib[i];if(!b)return;
   bmI=i;
   const it=(k,t)=>'<button data-k="'+k+'">'+t+'</button>';
-  $('#bm').innerHTML=it('want',b.st==='want'?'Убрать из «Хочу прочитать»':'Хочу прочитать')+it('later',b.st==='later'?'Вернуть из отложенных':'Отложить')+it('done',b.st==='done'?'Отметить непрочитанной':'Отметить прочитанной')
+  $('#bm').innerHTML=it('want',b.st==='want'?'Убрать из «Хочу прочитать»':'Хочу прочитать')+it('later',b.st==='later'?'Вернуть из заброшенных':'Забросить')+it('done',b.st==='done'?'Отметить непрочитанной':'Отметить прочитанной')
     +(cols.length?'<hr>'+cols.map(c=>'<button data-col="'+c.id+'" aria-pressed="'+(b.cs||[]).includes(c.id)+'">'+esc(c.name)+'</button>').join(''):'')
     +'<hr><button data-k="del" class="dng">Удалить с устройства</button>';
   $('#srt').hidden=$('#cp').hidden=true;
@@ -708,7 +718,7 @@ function openBM(i,btn){
 function renderCP(){
   const n=f=>lib.filter(b=>inF(b,f)).length;
   const r=(id,name,del)=>'<div class="cr"><button data-f="'+id+'" aria-pressed="'+(lf===id)+'">'+esc(name)+'<span>'+n(id)+'</span></button>'+(del?'<button data-xc="'+id+'" aria-label="Удалить коллекцию">×</button>':'')+'</div>';
-  $('#cp').innerHTML=r('all','Все книги')+r('want','Хочу прочитать')+r('later','Отложено')+r('done','Закончено')+(cols.length?'<hr>':'')+cols.map(c=>r(c.id,c.name,true)).join('')+'<hr><button data-newc="1">Новая коллекция</button>';
+  $('#cp').innerHTML=r('all','Все книги')+r('want','Хочу прочитать')+r('later','Заброшено')+r('done','Закончено')+(cols.length?'<hr>':'')+cols.map(c=>r(c.id,c.name,true)).join('')+'<hr><button data-newc="1">Новая коллекция</button>';
 }
 function renderSort(){
   $('#srt').innerHTML=[['recent','По недавним'],['title','По названию'],['author','По автору']].map(([k,t])=>'<button data-s="'+k+'" aria-pressed="'+(lsort===k)+'">'+t+'</button>').join('');
@@ -990,10 +1000,12 @@ $('#syClose').onclick=()=>{$('#sy').hidden=true};
 document.addEventListener('click',e=>{if(!$('#sy').hidden&&!$('#sy').contains(e.target))$('#sy').hidden=true});
 addEventListener('keydown',e=>{if(e.key==='Escape')$('#sy').hidden=true});
 $('#sbSave').onclick=()=>{
-  const url=$('#sbUrl').value.trim(),key=$('#sbKey').value.trim();
-  if(!url||!key){$('#syAuth').innerHTML='<p class="st err">Заполните оба поля</p>';return}
+  const url=$('#sbUrl').value.trim(),key=$('#sbKey').value.trim(),m=$('#sbMsg');
+  if(!url||!key){m.className='st err';m.textContent='Заполните оба поля';return}
   ls.set('sbcfg',{url,key});sbcfg.url=url;sbcfg.key=key;
   sbInit();sbInitEvents();syRefreshUser();
+  m.className='st ok';m.textContent='Сохранено ✓';
+  setTimeout(()=>{if(m.textContent==='Сохранено ✓')m.textContent=''},4000);
 };
 $('#sy').addEventListener('click',async e=>{
   if(e.target.id==='syLink'){
