@@ -985,7 +985,7 @@ function openSy(){
   if(sbcfg){$('#sbUrl').value=sbcfg.url;$('#sbKey').value=sbcfg.key}
   syRenderAuth();closeSet();$('#sy').hidden=false;
 }
-$('#syb').onclick=openSy;
+$('#syb').onclick=e=>{e.stopPropagation();openSy()};
 $('#syClose').onclick=()=>{$('#sy').hidden=true};
 document.addEventListener('click',e=>{if(!$('#sy').hidden&&!$('#sy').contains(e.target))$('#sy').hidden=true});
 addEventListener('keydown',e=>{if(e.key==='Escape')$('#sy').hidden=true});
