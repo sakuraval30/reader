@@ -88,7 +88,7 @@ html{overscroll-behavior-y:contain}
 #hm svg{width:1.15rem;height:1.15rem}
 a.fn{cursor:pointer}
 #text p{text-align:var(--ta,left)}
-#set{max-height:calc(100vh - 6rem);overflow:auto}
+#set{max-height:calc(100vh - 6rem);overflow:auto;overflow-x:hidden}
 .seg{display:inline-flex;gap:.3rem}
 .seg button{width:2.3rem;height:2rem;padding:0;display:inline-flex;align-items:center;justify-content:center}
 .seg button[aria-pressed="true"]{border-color:var(--acc);color:var(--acc)}
@@ -162,6 +162,7 @@ html,body{overflow-anchor:none}
 .ph::after{content:"";position:absolute;inset:.5rem;border:1px solid rgba(255,255,255,.25);pointer-events:none}
 .ph b{font-size:.95rem;font-weight:600;line-height:1.2;overflow:hidden;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical}
 .ph small{font-size:.75rem;opacity:.75}
+.ph.gh{filter:grayscale(.85);opacity:.62}
 .cvr.plus{display:flex;align-items:center;justify-content:center;font-size:2.2rem;color:var(--mute);background:transparent;border:1px dashed var(--mute);box-shadow:none}
 .ts{display:flex;align-items:center;justify-content:space-between;margin-top:.5rem;color:var(--mute);font-size:.8rem}
 .mb{border:0;padding:0 .2rem;font-size:1.1rem;line-height:1;color:var(--mute);background:transparent}
@@ -592,7 +593,8 @@ function syRow(b){return{book_key:b.id,title:b.title||'',author:b.author||'',ch:
 function syDot(){const on=!!syUser;$('#sydot').classList.toggle('on',on);document.querySelectorAll('#sydot').forEach(d=>d.classList.toggle('on',on))}
 function syRenderAuth(){
   const box=$('#syAuth');
-  if(!SB){box.innerHTML='<p class="st">Сначала сохраните адрес и ключ Supabase.</p>';return}
+  if(typeof supabase==='undefined'){box.innerHTML='<p class="st err">Модуль синхронизации не загрузился в этом браузере. Обновите страницу (потяните вниз или кнопка обновления) и откройте «Синхронизация» заново; если не поможет — откройте читалку в другом браузере.</p>';return}
+  if(!SB){box.innerHTML='<p class="st">Сначала сохраните адрес и ключ Supabase — нажмите «Сохранить адрес» ниже, даже если поля уже заполнены.</p>';return}
   if(syUser){box.innerHTML='<p class="st ok">Вход выполнен: '+esc(syUser.email||'')+'</p><button id="syOut">Выйти</button><button id="syNow">Синхронизировать сейчас</button><p class="st" id="syMsg"></p>'}
   else{box.innerHTML='<label class="st">Почта<input type="email" id="syEmail" autocomplete="email"></label><button id="syLink">Прислать ссылку для входа</button><p class="st" id="syMsg"></p>'}
 }
@@ -604,8 +606,13 @@ async function syncPull(){
     if(error)throw error;
     let changed=false;
     for(const r of (data||[])){
-      const e=ent(r.book_key);
-      if(e&&(r.t||0)>(e.t||0)){e.ch=r.ch;e.f=r.f;e.p=r.p;e.t=r.t;e.st=r.st||'';e.cs=r.cs||[];changed=true}
+      let e=ent(r.book_key);
+      if(!e){
+        e={id:r.book_key,name:'',title:r.title||'',author:r.author||'',ch:r.ch||0,f:r.f||0,p:r.p||0,t:r.t||0,st:r.st||'',cs:r.cs||[],ph:1};
+        lib.push(e);changed=true;
+      }else if((r.t||0)>(e.t||0)){
+        e.ch=r.ch;e.f=r.f;e.p=r.p;e.t=r.t;e.st=r.st||'';e.cs=r.cs||[];changed=true;
+      }
     }
     if(changed){ls.set('lib',lib);renderLib();renderPlb();if(book&&!$('#rd').hidden)updatePos()}
   }catch(e){const m=$('#syMsg');if(m)m.textContent='Не удалось получить данные с сервера'}
@@ -646,14 +653,14 @@ const CMP={
   title:(a,b)=>(a.title||'').localeCompare(b.title||'','ru'),
   author:(a,b)=>(a.author||'').localeCompare(b.author||'','ru')||(a.title||'').localeCompare(b.title||'','ru')
 };
-const coverEl=(b,i,cls)=>b.cv===1?'<img class="'+cls+'" data-c="'+i+'" alt="">':'<span class="'+cls+' ph" style="--h:'+hue(b.title)+'"><b>'+esc(b.title||'')+'</b><small>'+esc(b.author||'')+'</small></span>';
+const coverEl=(b,i,cls)=>b.cv===1?'<img class="'+cls+'" data-c="'+i+'" alt="">':'<span class="'+cls+' ph'+(b.ph?' gh':'')+'" style="--h:'+hue(b.title)+'"><b>'+esc(b.title||'')+'</b><small>'+esc(b.author||'')+'</small></span>';
 function tile(b,i){
-  const p=b.p||0,st=isDone(b)?'Закончено':p>0?p+' %':'<em class="nw">Новая</em>';
+  const p=b.p||0,st=b.ph?'Нет на устройстве'+(p?', '+p+' %':''):(isDone(b)?'Закончено':p>0?p+' %':'<em class="nw">Новая</em>');
   return '<div class="tl"><button class="cb" data-o="'+i+'" aria-label="'+esc(b.title||'').replace(/"/g,'&quot;')+'">'+coverEl(b,i,'cvr')+'</button><div class="ts"><span>'+st+'</span><button class="mb" data-m="'+i+'" aria-label="Меню книги">…</button></div></div>';
 }
 function card(b,i){
   const p=isDone(b)?100:(b.p||0);
-  return '<button class="cc" data-o="'+i+'"><svg class="pr" aria-hidden="true"><rect x="1" y="1" width="1" height="1" rx="11" pathLength="100" stroke-dasharray="'+p+' 100"/></svg>'+coverEl(b,i,'cvs')+'<span class="tx"><b>'+esc(b.title||'')+'</b><small>'+esc(b.author||'')+'</small><small>'+(isDone(b)?'Закончено':p+' %')+'</small></span></button>';
+  return '<button class="cc" data-o="'+i+'"><svg class="pr" aria-hidden="true"><rect x="1" y="1" width="1" height="1" rx="11" pathLength="100" stroke-dasharray="'+p+' 100"/></svg>'+coverEl(b,i,'cvs')+'<span class="tx"><b>'+esc(b.title||'')+'</b><small>'+esc(b.author||'')+'</small><small>'+(b.ph?'Нет на устройстве, '+p+' %':(isDone(b)?'Закончено':p+' %'))+'</small></span></button>';
 }
 const filterName=()=>({all:'Библиотека',want:'Хочу прочитать',later:'Заброшено',done:'Закончено'}[lf]||(cols.find(c=>c.id===lf)||{}).name||'Библиотека');
 function ringVal(){
@@ -725,8 +732,9 @@ function renderSort(){
 }
 async function openBook(b){
   const s=await kv.get('b:'+b.id);
-  if(s&&s.buf)await load(s.name,s.buf);
-  else msg('Файл этой книги не сохранился на устройстве. Добавьте его снова через «+».');
+  if(s&&s.buf){await load(s.name,s.buf);return}
+  msg(b.ph?'Эта книга есть в синхронизации, но файла нет на этом устройстве. Выберите тот же файл — прогресс подтянется.':'Файл этой книги не сохранился на устройстве. Добавьте его снова через «+».');
+  $('#f').click();
 }
 
 /* ---------- Чтение ---------- */
@@ -843,8 +851,9 @@ async function load(name,buf,start,silent){
     if(!e){
       e={id:key,name,title:b.title,author:b.author,ch:start?start.ch:0,f:start?start.f:0,p:0,t:Date.now()};
       lib.push(e);
-      await kv.set('b:'+key,{name,buf});
     }else{e.title=b.title;e.author=b.author}
+    e.name=name;delete e.ph;
+    await kv.set('b:'+key,{name,buf});
     if(e.st==='want'||e.st==='later')e.st='';
     saveLib();
     let h='',g='',open=false,tot=0;
