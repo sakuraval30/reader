@@ -255,7 +255,7 @@ html,body{overflow-anchor:none}
     <h3>Синхронизация</h3>
     <p class="st">Между устройствами синхронизируются прогресс чтения, статусы («хочу прочитать», «заброшено») и коллекции. Сама книга (файл) по-прежнему добавляется на каждом устройстве один раз через «+».</p>
     <div id="syCfg">
-      <label class="st">Supabase URL<input type="text" id="sbUrl" placeholder="https://xxxx.supabase.co"></label>
+      <label class="st">Supabase URL<input type="text" id="sbUrl" placeholder="https://xxxx.supabase.co"></label><p class="st">Только этот вид адреса, без «/rest/v1» на конце — со Settings → General.</p>
       <label class="st">Supabase anon key<input type="text" id="sbKey" placeholder="eyJ..."></label>
       <button id="sbSave">Сохранить адрес</button>
       <p class="st" id="sbMsg"></p>
@@ -833,7 +833,7 @@ function updateEnd(){
   $('#endh').hidden=!e||$('#rd').hidden;
   $('#endh').textContent=e&&e.end!=null?'Прогресс до раздела '+(e.end+1)+' (сбросить)':'Считать прогресс до этого раздела';
 }
-async function load(name,buf,start){
+async function load(name,buf,start,silent){
   msg('Открываю…');
   try{
     const b=await parseBook(name,buf);
@@ -858,9 +858,11 @@ async function load(name,buf,start){
     if(open)h+='</optgroup>';
     $('#chs').innerHTML=h;
     document.title=b.title;
-    closeSet();root.classList.toggle('pdfmode',!!b.pdf);
-    $('#home').hidden=true;$('#rd').hidden=false;
-    await show(e.ch,e.f);
+    if(!silent){
+      closeSet();root.classList.toggle('pdfmode',!!b.pdf);
+      $('#home').hidden=true;$('#rd').hidden=false;
+      await show(e.ch,e.f);
+    }
     if(!e.cv&&b.cover)(async()=>{try{const u=await b.cover();const t=u?await thumb(u):'';if(t)await kv.set('c:'+e.id,t);e.cv=t?1:2}catch(err){e.cv=2}saveLib()})();
     return true;
   }catch(e){
@@ -1000,8 +1002,11 @@ $('#syClose').onclick=()=>{$('#sy').hidden=true};
 document.addEventListener('click',e=>{if(!$('#sy').hidden&&!$('#sy').contains(e.target))$('#sy').hidden=true});
 addEventListener('keydown',e=>{if(e.key==='Escape')$('#sy').hidden=true});
 $('#sbSave').onclick=()=>{
-  const url=$('#sbUrl').value.trim(),key=$('#sbKey').value.trim(),m=$('#sbMsg');
+  let url=$('#sbUrl').value.trim();const key=$('#sbKey').value.trim(),m=$('#sbMsg');
+  url=url.replace(/\/(rest|auth|storage|realtime)\/v\d.*$/i,'').replace(/\/+$/,'');
+  $('#sbUrl').value=url;
   if(!url||!key){m.className='st err';m.textContent='Заполните оба поля';return}
+  if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url)){m.className='st err';m.textContent='Похоже, это не тот адрес. Нужен вид https://xxxx.supabase.co, без /rest/v1 и других хвостов — возьмите его на вкладке Settings → General.';return}
   ls.set('sbcfg',{url,key});sbcfg.url=url;sbcfg.key=key;
   sbInit();sbInitEvents();syRefreshUser();
   m.className='st ok';m.textContent='Сохранено ✓';
@@ -1114,12 +1119,9 @@ syDot();
   const old=await kv.get('last');
   if(old&&old.buf){
     const oid=old.name+':'+old.buf.byteLength,p=ls.get('pos',null);
-    if(!ent(oid))await load(old.name,old.buf,p&&p.key===oid+':2'?p:null);
+    if(!ent(oid)){await load(old.name,old.buf,p&&p.key===oid+':2'?p:null,true);book=null;key='';renderLib()}
     await kvDel('last');
   }
-  if(book)return;
-  const c=ent(ls.get('cur',''));
-  if(c){const s=await kv.get('b:'+c.id);if(s&&s.buf)await load(s.name,s.buf)}
 })();
 })();
 </script>
