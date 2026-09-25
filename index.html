@@ -94,6 +94,19 @@ a.fn{cursor:pointer}
 .seg button[aria-pressed="true"]{border-color:var(--acc);color:var(--acc)}
 .seg svg{width:1.1rem;height:1.1rem}
 #tb{width:2.6rem;height:1.6rem;padding:0;border-radius:6px}
+.avatar{position:relative;overflow:visible!important}
+.avPic{position:absolute;inset:0;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:1rem}
+.avPic img{width:100%;height:100%;object-fit:cover}
+.avDot{position:absolute;right:-2px;bottom:-2px;width:.8rem;height:.8rem;border-radius:50%;background:var(--line);border:2px solid var(--bg)}
+.avDot.on{background:#3fae6a}
+#hSub{color:var(--mute);margin:-.9rem 0 1.6rem}
+.prow{display:flex;align-items:center;gap:.9rem;justify-content:center;margin:.2rem 0 .4rem}
+.avph{width:4.6rem;height:4.6rem;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.7rem;font-weight:700;color:#fff;cursor:pointer;flex:none}
+#avPrev{width:4.6rem;height:4.6rem;border-radius:50%;object-fit:cover;cursor:pointer;flex:none}
+#onbBg{position:fixed;inset:0;z-index:13;background:rgba(0,0,0,.45)}
+#onb{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(23rem,calc(100vw - 1.2rem));z-index:14;border-radius:14px;padding:1.3rem;display:grid;gap:.8rem;box-shadow:0 12px 40px rgba(0,0,0,.3);text-align:center}
+#onb h3{margin:0;font-size:1.3rem}
+#onb p{color:var(--mute);margin:0}
 #pal,.pal{display:flex;flex-wrap:wrap;gap:.5rem}
 .tc{width:3rem;height:2rem;padding:0;border-radius:8px;font-size:.85rem;font-weight:600;border:1px solid var(--line)}
 .tc[aria-pressed="true"]{outline:2px solid var(--acc);outline-offset:2px}
@@ -107,7 +120,7 @@ html,body{overflow-anchor:none}
 :root[data-theme="brown"]{--pn:#382c21}
 :root[data-theme="dark"]{--pn:#28303b}
 #set.glass,#pl.glass,#toast.glass{background:var(--pn);background:color-mix(in srgb,var(--pn) 70%,transparent);-webkit-backdrop-filter:blur(16px) saturate(1.3);backdrop-filter:blur(16px) saturate(1.3);border:1px solid var(--line);border-color:color-mix(in srgb,var(--fg) 14%,transparent)}
-#pl.glass,#sy.glass{background:var(--pn);background:color-mix(in srgb,var(--pn) 96%,transparent)}
+#pl.glass,#sy.glass,#onb.glass{background:var(--pn);background:color-mix(in srgb,var(--pn) 96%,transparent)}
 #text .ch{margin:0 0 2.4rem}
 .pdfmode #text .ch{margin:0 0 .6rem}
 .tr{display:block;height:3px;border-radius:2px;background:var(--line);margin:.4rem 0;overflow:hidden}
@@ -185,8 +198,6 @@ html,body{overflow-anchor:none}
 #sy .st.ok{color:var(--acc)}
 #sy .st.err{color:#e06c6c}
 #sy hr{border:0;border-top:1px solid var(--line);margin:.2rem 0}
-.dot{display:inline-block;width:.5rem;height:.5rem;border-radius:50%;background:var(--line);margin-right:.4rem}
-.dot.on{background:#3fae6a}
 </style>
 </head>
 <body>
@@ -196,7 +207,8 @@ html,body{overflow-anchor:none}
   <nav id="tabs" aria-label="Разделы"><button data-p="home" aria-pressed="true">Главная</button><button data-p="lib" aria-pressed="false">Библиотека</button></nav>
   <p id="msg" role="status"></p>
   <div id="pgH">
-    <div class="ph1"><h1>Главная</h1><div class="acts"><button id="aa2" class="ib" aria-label="Оформление">Аа</button><span class="ringw"><svg class="ring" viewBox="0 0 44 44" aria-hidden="true"><circle class="r0" cx="22" cy="22" r="19"/><circle class="r1" id="ringp" cx="22" cy="22" r="19"/></svg><label class="btn add" for="f" aria-label="Добавить книгу" title="Добавить книгу"></label></span></div></div>
+    <div class="ph1"><h1 id="hTitle">Главная</h1><div class="acts"><button id="aa2" class="ib" aria-label="Оформление">Аа</button><span class="ringw"><svg class="ring" viewBox="0 0 44 44" aria-hidden="true"><circle class="r0" cx="22" cy="22" r="19"/><circle class="r1" id="ringp" cx="22" cy="22" r="19"/></svg><label class="btn add" for="f" aria-label="Добавить книгу" title="Добавить книгу"></label></span><button id="prof1" class="ib avatar" aria-label="Профиль"><span class="avPic"></span><span class="avDot"></span></button></div></div>
+    <p id="hSub" class="em" hidden></p>
     <p id="hEmpty">Нажмите «+», чтобы добавить книгу с этого устройства (EPUB, FB2, PDF; файл можно перетащить в окно). Файл останется здесь, а место, где вы остановились, запомнится.</p>
     <h2 class="sh">Продолжить</h2><div id="rowC" class="row2"></div>
     <h2 class="sh">Хочу прочитать</h2><div id="rowW" class="row2"></div>
@@ -208,6 +220,7 @@ html,body{overflow-anchor:none}
       <button id="aa3" class="ib" aria-label="Оформление">Аа</button>
       <button id="colb" class="ib" aria-label="Коллекции"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h.01M9 6h11M4 12h.01M9 12h11M4 18h.01M9 18h11"/></svg></button>
       <button id="sortb" class="ib" aria-label="Сортировка"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5v14M8 19l-3-3M8 19l3-3M16 19V5M16 5l-3 3M16 5l3 3"/></svg></button>
+      <button id="prof2" class="ib avatar" aria-label="Профиль"><span class="avPic"></span><span class="avDot"></span></button>
     </div></div>
     <div id="glib"></div>
   </div>
@@ -249,18 +262,24 @@ html,body{overflow-anchor:none}
       </div>
     </div>
     <button id="endh"></button>
-    <button id="syb"><span class="dot" id="sydot"></span>Синхронизация</button>
   </div>
 
   <div id="sy" class="glass" hidden>
-    <h3>Синхронизация</h3>
+    <h3>Профиль</h3>
+    <div class="prow">
+      <label for="avf"><img id="avPrev" src="" alt="" hidden><span id="avPh" class="avph"></span></label>
+      <input type="text" id="profName" placeholder="Ваше имя">
+    </div>
+    <input type="file" id="avf" accept="image/*" hidden>
+    <p class="st" id="avMsg"></p>
     <p class="st">Между устройствами синхронизируются прогресс чтения, статусы («хочу прочитать», «заброшено») и коллекции. Сама книга (файл) по-прежнему добавляется на каждом устройстве один раз через «+».</p>
-    <div id="syCfg">
+    <details id="syCfg">
+      <summary class="st">Дополнительно: свой сервер Supabase</summary>
       <label class="st">Supabase URL<input type="text" id="sbUrl" placeholder="https://xxxx.supabase.co"></label><p class="st">Только этот вид адреса, без «/rest/v1» на конце — со Settings → General.</p>
       <label class="st">Supabase anon key<input type="text" id="sbKey" placeholder="eyJ..."></label>
       <button id="sbSave">Сохранить адрес</button>
       <p class="st" id="sbMsg"></p>
-    </div>
+    </details>
     <hr>
     <div id="syAuth"></div>
     <button id="syClose">Закрыть</button>
@@ -282,6 +301,13 @@ html,body{overflow-anchor:none}
     <button id="gadd">Добавить план</button>
     <button id="plx">Закрыть</button>
   </div>
+<div id="onbBg" hidden></div>
+<div id="onb" class="glass" hidden>
+  <h3>Добро пожаловать в Читалку 📖</h3>
+  <p>Это личная читалка Валерии. Книгу нужно один раз добавить со своего устройства — она останется у вас. Чтобы прогресс чтения не терялся и совпадал на телефоне, планшете и компьютере, войдите по своей почте: письмо придёт со ссылкой, пароль не нужен, и никто другой ваши книги и прогресс не увидит.</p>
+  <button id="onbLogin">Войти по почте</button>
+  <button id="onbSkip">Продолжить без входа</button>
+</div>
 <div id="bm" class="glass" hidden></div>
 <div id="srt" class="glass" hidden></div>
 <div id="cp" class="glass" hidden></div>
@@ -582,16 +608,31 @@ function prefs(){
   $('#tb').style.background=c.bg;$('#tb').style.borderColor=c.fg;
 }
 
-/* ---------- Синхронизация (Supabase) ---------- */
-const sbcfg=ls.get('sbcfg',null);
+/* ---------- Профиль и синхронизация (Supabase) ----------
+   Ниже — единственное место в коде, где встречаются «общее приложение»
+   и «личные данные человека». Сам файл читалки (этот HTML) один и тот же
+   у всех, кто открывает ссылку. Personal: profile{name,avatar} и sbcfg
+   лежат в localStorage конкретного браузера — у каждого человека и
+   устройства свои, независимо от остальных. В облаке (Supabase) все
+   используют одну и ту же базу adressa+ключ (см. sbcfg/DEFAULT_SB), но
+   каждый входит под своей почтой, и Row Level Security в таблице
+   book_progress (политика auth.uid() = user_id) не даёт видеть или менять
+   чужие книги — так что общий «корень» и раздельные «профили» уже
+   разделены на уровне базы, а не только кода. */
+const DEFAULT_SB={url:'https://nntfrcamjpmgsonlnwdt.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5udGZyY2FtanBtZ3Nvbmxud2R0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAxNDA5MjcsImV4cCI6MjEwNTcxNjkyN30.vo3NYW7dxM0A56QKzP0sjKons3j0PR-46IWjoJNtxKY'}; // сюда позже впишем один раз общий адрес и anon-ключ — остальным вводить будет не нужно
+let prof=Object.assign({name:'',avatar:''},ls.get('profile',{}));
+const saveProf=()=>ls.set('profile',prof);
+const sbcfg=ls.get('sbcfg',null)||Object.assign({},DEFAULT_SB);
 let SB=null,syUser=null,syPushT=0,syPulling=false,syncing=false;
 function sbInit(){
+  if(!ls.get('sbcfg',null)&&DEFAULT_SB.url&&DEFAULT_SB.key){sbcfg.url=DEFAULT_SB.url;sbcfg.key=DEFAULT_SB.key}
   if(!sbcfg||!sbcfg.url||!sbcfg.key||typeof supabase==='undefined')return;
   try{SB=supabase.createClient(sbcfg.url,sbcfg.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}})}catch(e){SB=null}
 }
 function syRow(b){return{book_key:b.id,title:b.title||'',author:b.author||'',ch:b.ch||0,f:b.f||0,p:b.p||0,t:b.t||0,st:b.st||null,cs:b.cs||[]}}
-function syDot(){const on=!!syUser;$('#sydot').classList.toggle('on',on);document.querySelectorAll('#sydot').forEach(d=>d.classList.toggle('on',on))}
+function syDot(){document.querySelectorAll('.avDot').forEach(d=>d.classList.toggle('on',!!syUser));renderAvatarBtn()}
 function syRenderAuth(){
+  if(syUser)onbDone();
   const box=$('#syAuth');
   if(typeof supabase==='undefined'){box.innerHTML='<p class="st err">Модуль синхронизации не загрузился в этом браузере. Обновите страницу (потяните вниз или кнопка обновления) и откройте «Синхронизация» заново; если не поможет — откройте читалку в другом браузере.</p>';return}
   if(!SB){box.innerHTML='<p class="st">Сначала сохраните адрес и ключ Supabase — нажмите «Сохранить адрес» ниже, даже если поля уже заполнены.</p>';return}
@@ -632,6 +673,25 @@ async function syRefreshUser(){
   syUser=data&&data.session?data.session.user:null;
   syDot();syRenderAuth();
   if(syUser)await syncPull(),await syncPush();
+}
+function initials(){const t=(prof.name||(syUser&&syUser.email)||'').trim();return t?t[0].toUpperCase():'?'}
+function renderAvatarBtn(){
+  const has=!!prof.avatar,html=has?'<img src="'+prof.avatar+'" alt="">':esc(initials());
+  const bg=has?'transparent':'hsl('+hue(prof.name||(syUser&&syUser.email)||'?')+' 45% 42%)';
+  document.querySelectorAll('.avPic').forEach(el=>{el.innerHTML=html;el.style.background=bg});
+}
+function renderProfPic(){
+  const has=!!prof.avatar;
+  $('#avPrev').src=prof.avatar||'';$('#avPrev').hidden=!has;
+  $('#avPh').hidden=has;$('#avPh').textContent=initials();
+  $('#avPh').style.background='hsl('+hue(prof.name||(syUser&&syUser.email)||'?')+' 45% 42%)';
+}
+function greet(){
+  const h=$('#hTitle'),sub=$('#hSub');if(!h)return;
+  const nm=(prof.name||'').trim();
+  if(!nm){h.textContent='Главная';sub.hidden=true;return}
+  const hr=new Date().getHours(),g=hr<5?'Доброй ночи':hr<12?'Доброе утро':hr<18?'Добрый день':'Добрый вечер';
+  h.textContent=g+', '+nm+'!';sub.hidden=false;sub.textContent='Что сегодня читаем?';
 }
 function sbInitEvents(){
   if(!SB)return;
@@ -704,7 +764,7 @@ function setPage(p){
   document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.p===p)));
   for(const s of ['#bm','#srt','#cp'])$(s).hidden=true;
   closeSet();
-  if(p==='home'){ringAnim();requestAnimationFrame(sizeRings)}
+  if(p==='home'){ringAnim();requestAnimationFrame(sizeRings);greet()}
 }
 function place(el,btn){
   el.hidden=false;
@@ -849,7 +909,10 @@ async function load(name,buf,start,silent){
     book=b;key=name+':'+buf.byteLength;
     let e=ent(key);
     if(!e){
-      e={id:key,name,title:b.title,author:b.author,ch:start?start.ch:0,f:start?start.f:0,p:0,t:Date.now()};
+      let r=null;
+      if(SB&&syUser){try{const q=await SB.from('book_progress').select('*').eq('book_key',key).maybeSingle();r=q.data}catch(err){}}
+      e=r?{id:key,name,title:r.title||b.title,author:r.author||b.author,ch:r.ch||0,f:r.f||0,p:r.p||0,t:r.t||Date.now(),st:r.st||'',cs:r.cs||[]}
+         :{id:key,name,title:b.title,author:b.author,ch:start?start.ch:0,f:start?start.f:0,p:0,t:Date.now()};
       lib.push(e);
     }else{e.title=b.title;e.author=b.author}
     e.name=name;delete e.ph;
@@ -1004,9 +1067,23 @@ document.addEventListener('click',e=>{if(!$('#set').hidden&&!$('#set').contains(
 $('#dfx').onchange=e=>{dashFix=e.target.checked;ls.set('dfix',dashFix);if(book&&!$('#rd').hidden)show(cur,frac())};
 function openSy(){
   if(sbcfg){$('#sbUrl').value=sbcfg.url;$('#sbKey').value=sbcfg.key}
+  $('#profName').value=prof.name||'';renderProfPic();
   syRenderAuth();closeSet();$('#sy').hidden=false;
 }
-$('#syb').onclick=e=>{e.stopPropagation();openSy()};
+$('#prof1').onclick=e=>{e.stopPropagation();openSy()};
+$('#prof2').onclick=e=>{e.stopPropagation();openSy()};
+$('#profName').onchange=e=>{prof.name=e.target.value.trim();saveProf();renderProfPic();renderAvatarBtn();greet()};
+$('#avf').addEventListener('change',async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  const m=$('#avMsg');m.className='st';m.textContent='Загружаю…';
+  const url=URL.createObjectURL(f);
+  try{
+    const t=await thumb(url);
+    if(t){prof.avatar=t;saveProf();renderProfPic();renderAvatarBtn();m.className='st ok';m.textContent='Сохранено ✓';setTimeout(()=>{if(m.textContent==='Сохранено ✓')m.textContent=''},3000)}
+    else{m.className='st err';m.textContent='Не получилось загрузить это изображение. Если вы в окне предпросмотра Claude — попробуйте на настоящей странице читалки (после публикации на GitHub Pages).'}
+  }catch(err){m.className='st err';m.textContent='Не получилось загрузить фото.'}
+  finally{URL.revokeObjectURL(url)}
+});
 $('#syClose').onclick=()=>{$('#sy').hidden=true};
 document.addEventListener('click',e=>{if(!$('#sy').hidden&&!$('#sy').contains(e.target))$('#sy').hidden=true});
 addEventListener('keydown',e=>{if(e.key==='Escape')$('#sy').hidden=true});
@@ -1123,7 +1200,11 @@ renderLib();
 setPage(page);
 sbInit();
 if(SB){sbInitEvents();syRefreshUser()}
-syDot();
+syDot();renderAvatarBtn();
+const onbDone=()=>{if(!ls.get('onbDone',false))ls.set('onbDone',true);$('#onb').hidden=true;$('#onbBg').hidden=true};
+if(!ls.get('onbDone',false)){$('#onb').hidden=false;$('#onbBg').hidden=false}
+$('#onbLogin').onclick=e=>{e.stopPropagation();onbDone();openSy()};
+$('#onbSkip').onclick=onbDone;
 (async()=>{
   const old=await kv.get('last');
   if(old&&old.buf){
