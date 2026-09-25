@@ -291,7 +291,8 @@ html,body{overflow-anchor:none}
     <label class="row"><span>Пауза при бездействии, сек</span><input type="number" id="ridle" min="5" max="300"></label>
     <label class="row"><span>Помидоро</span><input type="checkbox" id="rpom"></label>
     <div class="row"><span>Работа и перерыв, мин</span><span><input type="number" id="rwk" min="1" max="180"> <input type="number" id="rbk" min="1" max="60"></span></div>
-    <label class="row"><span>Звук</span><input type="checkbox" id="rsnd"></label>
+    <label class="row"><span>Звук</span><span><input type="checkbox" id="rsnd"> <button id="sndTest" type="button">Проверить</button></span></label>
+    <p class="st" id="pomLive"></p>
     <h4>Планы</h4>
     <div id="goals"></div>
     <h4>Новый план</h4>
@@ -540,6 +541,22 @@ async function openFb2(bytes,name){
 }
 
 let PW=null;
+async function pdfOutline(pdf){
+  let items;try{items=await pdf.getOutline()}catch(e){items=null}
+  if(!items||!items.length)return[];
+  const flat=[];
+  const walk=async(arr,depth)=>{
+    for(const it of arr){
+      let idx=null;
+      try{let dest=it.dest;if(typeof dest==='string')dest=await pdf.getDestination(dest);if(dest&&dest[0])idx=await pdf.getPageIndex(dest[0])}catch(e){}
+      const title=(it.title||'').replace(/\\s+/g,' ').trim();
+      if(idx!=null&&title)flat.push({title,page:idx,depth});
+      if(it.items&&it.items.length)await walk(it.items,depth+1);
+    }
+  };
+  await walk(items,0);
+  return flat.sort((a,b)=>a.page-b.page);
+}
 async function openPdf(buf,name){
   if(typeof pdfjsLib==='undefined')throw new Error('Не загрузился PDF-движок. Обновите страницу.');
   if(!window.pdfjsWorker){
@@ -559,7 +576,18 @@ async function openPdf(buf,name){
   };
   const chapters=[];
   for(let i=1;i<=pdf.numPages;i++)chapters.push({title:'Страница '+i,group:'',len:1,load:async()=>'<img class="pg" alt="" src="'+await render(i,Math.min(document.documentElement.clientWidth-40,960))+'">'});
-  return{pdf:true,title:(info.Title&&String(info.Title).trim())||name.replace(/\.pdf$/i,''),author:info.Author?String(info.Author).trim():'',chapters,cover:()=>render(1,240)};
+  const toc=await pdfOutline(pdf);
+  if(toc.length){
+    const byPage={};
+    toc.forEach(t=>{if(!(t.page in byPage))byPage[t.page]=t});
+    let curGroup='';
+    for(let i=0;i<chapters.length;i++){
+      const t=byPage[i];
+      if(t){chapters[i].title=t.title;if(t.depth===0)curGroup=t.title}
+      chapters[i].group=curGroup;
+    }
+  }
+  return{pdf:true,title:(info.Title&&String(info.Title).trim())||name.replace(/\\.pdf$/i,''),author:info.Author?String(info.Author).trim():'',chapters,cover:()=>render(1,240)};
 }
 async function parseBook(name,buf){
   const low=name.toLowerCase();
@@ -741,9 +769,6 @@ async function loadCovers(){
     lib.forEach((b,i)=>{if(b.cv!==1)return;const q=st.get('c:'+b.id);q.onsuccess=()=>{const u=q.result;if(u)document.querySelectorAll('img[data-c="'+i+'"]').forEach(im=>{im.src=u})}});
   }catch(e){}
 }
-function sizeRings(){
-  document.querySelectorAll('.cc').forEach(c=>{const r=c.querySelector('.pr rect');if(r){r.setAttribute('width',c.clientWidth-2);r.setAttribute('height',c.clientHeight-2)}});
-}
 function renderLib(){
   const ix=b=>lib.indexOf(b),emp=t=>'<small class="em">'+t+'</small>';
   const cont=lib.filter(b=>(b.p||0)>0&&!isDone(b)&&b.st!=='later').sort(CMP.recent).slice(0,10);
@@ -756,7 +781,6 @@ function renderLib(){
   $('#lt').textContent=filterName();
   $('#hEmpty').hidden=lib.length>0;
   loadCovers();
-  requestAnimationFrame(sizeRings);
 }
 function setPage(p){
   page=p;ls.set('pg',p);
@@ -764,7 +788,7 @@ function setPage(p){
   document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.p===p)));
   for(const s of ['#bm','#srt','#cp'])$(s).hidden=true;
   closeSet();
-  if(p==='home'){ringAnim();requestAnimationFrame(sizeRings);greet()}
+  if(p==='home'){ringAnim();greet()}
 }
 function place(el,btn){
   el.hidden=false;
@@ -798,7 +822,7 @@ async function openBook(b){
 }
 
 /* ---------- Чтение ---------- */
-let book=null,cur=0,key='',busy=false,tm;
+let book=null,cur=0,key='',busy=false,tm,navGen=0;
 const txt=$('#text');
 const maxScroll=()=>Math.max(0,document.documentElement.scrollHeight-innerHeight);
 const HO=()=>$('header').offsetHeight+16;
@@ -826,8 +850,8 @@ async function mk(i){
   return sec;
 }
 let filling=false;
-async function fill(){
-  if(filling||!book||busy)return;
+async function fill(my){
+  if(my!==navGen||filling||!book||busy)return;
   filling=true;
   try{
     for(;;){
@@ -836,7 +860,7 @@ async function fill(){
       if(li+1>=book.chapters.length||li+1>cur+3)break;
       if(top0(last)+last.offsetHeight-(scrollY+innerHeight)>innerHeight*1.5)break;
       const sc=await mk(li+1);
-      if(busy||txt.lastElementChild!==last)break;
+      if(my!==navGen||busy||txt.lastElementChild!==last)break;
       txt.appendChild(sc);
     }
     for(;;){
@@ -845,7 +869,7 @@ async function fill(){
       if(fi<=0||fi-1<cur-3)break;
       if(scrollY-top0(first)>innerHeight*1.5)break;
       const sc=await mk(fi-1);
-      if(busy||txt.firstElementChild!==first)break;
+      if(my!==navGen||busy||txt.firstElementChild!==first)break;
       const h0=document.documentElement.scrollHeight,y0=scrollY;
       txt.insertBefore(sc,first);
       scrollTo(0,y0+document.documentElement.scrollHeight-h0);
@@ -874,20 +898,21 @@ function updatePos(){
 async function show(i,f=0){
   const n=book.chapters.length;
   i=Math.max(0,Math.min(n-1,i));
+  const my=++navGen;
   busy=true;cur=i;$('#note').hidden=true;
   $('#chs').value=String(i);
   $('#pv').disabled=i===0;$('#nx').disabled=i===n-1;
   txt.innerHTML='<p>Загрузка…</p>';
   const sec=await mk(i);
-  if(cur!==i)return;
+  if(my!==navGen||cur!==i)return;
   txt.replaceChildren(sec);
   goTo(i,f);
   await new Promise(r=>requestAnimationFrame(r));
   goTo(i,f);
   const y0=scrollY;
   busy=false;updatePos();save(f);
-  if(f>0)setTimeout(()=>{if(cur===i&&Math.abs(scrollY-y0)<8)goTo(i,f)},500);
-  fill();
+  if(f>0)setTimeout(()=>{if(my===navGen&&cur===i&&Math.abs(scrollY-y0)<8)goTo(i,f)},500);
+  fill(my);
 }
 const msg=t=>{$('#msg').textContent=t};
 function weigh(b,e){
@@ -988,6 +1013,7 @@ function renderPlSum(){
   $('#plsum').innerHTML='Сегодня: <b>'+fmt(secs(dk()))+'</b>'+(p?', помидоров: '+p:'')+'<br><small>За 7 дней: '+fmt(w)+', за месяц: '+fmt(monthSecs())+'</small>';
 }
 function openPl(){
+  updateTimer(false);
   $('#rson').checked=RS.on;$('#ridle').value=RS.idle;$('#rpom').checked=RS.pom;$('#rwk').value=RS.work;$('#rbk').value=RS.brk;$('#rsnd').checked=RS.snd;
   $('#gbook').innerHTML='<option value="">Любая книга</option>'+lib.map(b=>'<option value="'+esc(b.id).replace(/"/g,'&quot;')+'">'+esc(b.title)+'</option>').join('');
   renderPlSum();renderGoals();closeSet();$('#pl').hidden=false;
@@ -1010,7 +1036,11 @@ function updateTimer(active){
   if(RS.pom){const left=Math.max(0,(pom.mode==='work'?RS.work:RS.brk)*60-pom.el);c.textContent=String(Math.floor(left/60)).padStart(2,'0')+':'+String(left%60).padStart(2,'0');c.title=(pom.mode==='work'?'Помидоро: работа':'Помидоро: перерыв')+', осталось'}
   else{c.textContent=Math.floor(secs(dk())/60)+' мин';c.title='Прочитано сегодня'}
   c.classList.toggle('idle',!active);c.classList.toggle('brk',!!RS.pom&&pom.mode==='break');
-  if(!$('#pl').hidden&&tickN%5===0){renderPlSum();renderGoals()}
+  if(!$('#pl').hidden){
+    const lv=$('#pomLive');
+    lv.textContent=RS.pom?('Помидоро сейчас: '+(pom.mode==='work'?'работа':'перерыв')+', осталось '+c.textContent):'Включите «Помидоро», чтобы читалка сама отсчитывала рабочие интервалы и напоминала о перерыве — например, 25 минут чтения, потом 5 минут отдыха, со звуком и всплывающей подсказкой.';
+    if(tickN%5===0){renderPlSum();renderGoals()}
+  }
 }
 setInterval(()=>{
   tickN++;
@@ -1036,6 +1066,7 @@ $('#rpom').onchange=e=>{RS.pom=e.target.checked;pom={mode:'work',el:0};saveRS()}
 $('#rwk').onchange=e=>{RS.work=Math.max(1,Math.min(180,+e.target.value||25));pom={mode:'work',el:0};saveRS()};
 $('#rbk').onchange=e=>{RS.brk=Math.max(1,Math.min(60,+e.target.value||5));saveRS()};
 $('#rsnd').onchange=e=>{RS.snd=e.target.checked;saveRS()};
+$('#sndTest').onclick=e=>{e.stopPropagation();beep()};
 $('#gtype').onchange=e=>{$('#gdays').hidden=e.target.value!=='day'};
 $('#gdays').addEventListener('click',e=>{const b=e.target.closest('button');if(b)b.setAttribute('aria-pressed',String(b.getAttribute('aria-pressed')!=='true'))});
 $('#gadd').onclick=()=>{
@@ -1123,7 +1154,7 @@ $('#chs').onchange=e=>show(+e.target.value);
 let raf=0;
 addEventListener('scroll',()=>{
   if(busy||!book||$('#rd').hidden)return;
-  if(!raf)raf=requestAnimationFrame(()=>{raf=0;if(busy||!book)return;sync();fill()});
+  if(!raf)raf=requestAnimationFrame(()=>{raf=0;if(busy||!book)return;sync();fill(navGen)});
   clearTimeout(tm);
   tm=setTimeout(()=>{if(!busy&&book)save()},250);
 },{passive:true});
