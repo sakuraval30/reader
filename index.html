@@ -587,7 +587,7 @@ async function openPdf(buf,name){
       chapters[i].group=curGroup;
     }
   }
-  return{pdf:true,title:(info.Title&&String(info.Title).trim())||name.replace(/\\.pdf$/i,''),author:info.Author?String(info.Author).trim():'',chapters,cover:()=>render(1,240)};
+  return{pdf:true,title:(info.Title&&String(info.Title).trim())||name.replace(/\\.pdf$/i,''),author:info.Author?String(info.Author).trim():'',chapters,cover:async()=>(await render(1,240)).url};
 }
 async function parseBook(name,buf){
   const low=name.toLowerCase();
@@ -649,7 +649,24 @@ function prefs(){
    разделены на уровне базы, а не только кода. */
 const DEFAULT_SB={url:'https://nntfrcamjpmgsonlnwdt.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5udGZyY2FtanBtZ3Nvbmxud2R0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAxNDA5MjcsImV4cCI6MjEwNTcxNjkyN30.vo3NYW7dxM0A56QKzP0sjKons3j0PR-46IWjoJNtxKY'}; // сюда позже впишем один раз общий адрес и anon-ключ — остальным вводить будет не нужно
 let prof=Object.assign({name:'',avatar:''},ls.get('profile',{}));
-const saveProf=()=>ls.set('profile',prof);
+const saveProf=()=>{ls.set('profile',prof);schedulePushProf()};
+let profPushT=0;
+function schedulePushProf(){clearTimeout(profPushT);profPushT=setTimeout(async()=>{
+  if(!SB||!syUser)return;
+  try{await SB.from('user_profile').upsert({user_id:syUser.id,name:prof.name||'',avatar:prof.avatar||''})}catch(e){}
+},2000)}
+async function pullProf(){
+  if(!SB||!syUser)return;
+  try{
+    const q=await SB.from('user_profile').select('*').eq('user_id',syUser.id).maybeSingle();
+    if(q.data){
+      let changed=false;
+      if(q.data.name&&q.data.name!==prof.name){prof.name=q.data.name;changed=true}
+      if(q.data.avatar&&q.data.avatar!==prof.avatar){prof.avatar=q.data.avatar;changed=true}
+      if(changed){ls.set('profile',prof);renderAvatarBtn();renderProfPic();greet()}
+    }else if(prof.name||prof.avatar){schedulePushProf()}
+  }catch(e){}
+}
 const sbcfg=ls.get('sbcfg',null)||Object.assign({},DEFAULT_SB);
 let SB=null,syUser=null,syPushT=0,syPulling=false,syncing=false;
 function sbInit(){
@@ -700,7 +717,7 @@ async function syRefreshUser(){
   const {data}=await SB.auth.getSession();
   syUser=data&&data.session?data.session.user:null;
   syDot();syRenderAuth();
-  if(syUser)await syncPull(),await syncPush();
+  if(syUser){await pullProf();await syncPull();await syncPush()}
 }
 function initials(){const t=(prof.name||(syUser&&syUser.email)||'').trim();return t?t[0].toUpperCase():'?'}
 function renderAvatarBtn(){
@@ -723,7 +740,7 @@ function greet(){
 }
 function sbInitEvents(){
   if(!SB)return;
-  SB.auth.onAuthStateChange((ev,session)=>{syUser=session?session.user:null;syDot();syRenderAuth();if(syUser){syncPull();syncPush()}});
+  SB.auth.onAuthStateChange((ev,session)=>{syUser=session?session.user:null;syDot();syRenderAuth();if(syUser){pullProf();syncPull();syncPush()}});
 }
 
 /* ---------- Библиотека ---------- */
