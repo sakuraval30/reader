@@ -650,10 +650,11 @@ function prefs(){
 const DEFAULT_SB={url:'https://nntfrcamjpmgsonlnwdt.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5udGZyY2FtanBtZ3Nvbmxud2R0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAxNDA5MjcsImV4cCI6MjEwNTcxNjkyN30.vo3NYW7dxM0A56QKzP0sjKons3j0PR-46IWjoJNtxKY'}; // сюда позже впишем один раз общий адрес и anon-ключ — остальным вводить будет не нужно
 let prof=Object.assign({name:'',avatar:''},ls.get('profile',{}));
 const saveProf=()=>{ls.set('profile',prof);schedulePushProf()};
+const deviceId=(()=>{let d=ls.get('deviceId',null);if(!d){d=(crypto.randomUUID?crypto.randomUUID():'d'+Date.now()+Math.random().toString(36).slice(2));ls.set('deviceId',d)}return d})();
 let profPushT=0;
 function schedulePushProf(){clearTimeout(profPushT);profPushT=setTimeout(async()=>{
   if(!SB||!syUser)return;
-  try{await SB.from('user_profile').upsert({user_id:syUser.id,name:prof.name||'',avatar:prof.avatar||''})}catch(e){}
+  try{await SB.from('user_profile').upsert({user_id:syUser.id,name:prof.name||'',avatar:prof.avatar||'',goals:RS.goals||[]})}catch(e){}
 },2000)}
 async function pullProf(){
   if(!SB||!syUser)return;
@@ -664,7 +665,8 @@ async function pullProf(){
       if(q.data.name&&q.data.name!==prof.name){prof.name=q.data.name;changed=true}
       if(q.data.avatar&&q.data.avatar!==prof.avatar){prof.avatar=q.data.avatar;changed=true}
       if(changed){ls.set('profile',prof);renderAvatarBtn();renderProfPic();greet()}
-    }else if(prof.name||prof.avatar){schedulePushProf()}
+      if(q.data.goals&&JSON.stringify(q.data.goals)!==JSON.stringify(RS.goals)){RS.goals=q.data.goals;saveRS();renderGoals();renderPlb()}
+    }else if(prof.name||prof.avatar||(RS.goals&&RS.goals.length)){schedulePushProf()}
   }catch(e){}
 }
 const sbcfg=ls.get('sbcfg',null)||Object.assign({},DEFAULT_SB);
@@ -717,7 +719,7 @@ async function syRefreshUser(){
   const {data}=await SB.auth.getSession();
   syUser=data&&data.session?data.session.user:null;
   syDot();syRenderAuth();
-  if(syUser){await pullProf();await syncPull();await syncPush()}
+  if(syUser){await pullProf();await pullRT();await syncPull();await syncPush()}
 }
 function initials(){const t=(prof.name||(syUser&&syUser.email)||'').trim();return t?t[0].toUpperCase():'?'}
 function renderAvatarBtn(){
@@ -738,9 +740,34 @@ function greet(){
   const hr=new Date().getHours(),g=hr<5?'Доброй ночи':hr<12?'Доброе утро':hr<18?'Добрый день':'Добрый вечер';
   h.textContent=g+', '+nm+'!';sub.hidden=false;sub.textContent='Что сегодня читаем?';
 }
+let rtRemote=ls.get('rtRemote',{});
+let rtPushT=0;
+function scheduleRTPush(){
+  clearTimeout(rtPushT);
+  rtPushT=setTimeout(async()=>{
+    if(!SB||!syUser)return;
+    const k=dk(),d=rt[k];if(!d)return;
+    try{await SB.from('reading_time').upsert({user_id:syUser.id,day:k,device_id:deviceId,seconds:d.t||0,pomodoros:d.p||0,by_book:d.b||{}})}catch(e){}
+  },4000);
+}
+async function pullRT(){
+  if(!SB||!syUser)return;
+  try{
+    const q=await SB.from('reading_time').select('*').neq('device_id',deviceId);
+    if(q.error)throw q.error;
+    const agg={};
+    for(const r of (q.data||[])){
+      const d=agg[r.day]||(agg[r.day]={t:0,b:{},p:0});
+      d.t+=r.seconds||0;d.p+=r.pomodoros||0;
+      const bb=r.by_book||{};for(const kk in bb)d.b[kk]=(d.b[kk]||0)+bb[kk];
+    }
+    rtRemote=agg;ls.set('rtRemote',rtRemote);
+    if(!$('#pl').hidden){renderPlSum();renderGoals()}
+  }catch(e){}
+}
 function sbInitEvents(){
   if(!SB)return;
-  SB.auth.onAuthStateChange((ev,session)=>{syUser=session?session.user:null;syDot();syRenderAuth();if(syUser){pullProf();syncPull();syncPush()}});
+  SB.auth.onAuthStateChange((ev,session)=>{syUser=session?session.user:null;syDot();syRenderAuth();if(syUser){pullProf();pullRT();syncPull();syncPush()}});
 }
 
 /* ---------- Библиотека ---------- */
@@ -997,8 +1024,8 @@ let rt=ls.get('rt',{}),lastAct=0,dirty=false,tickN=0,pom={mode:'work',el:0},toas
 const saveRS=()=>ls.set('rs',RS);
 const flush=()=>{if(dirty){ls.set('rt',rt);dirty=false}};
 const dk=(d=new Date())=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-const secs=(k,b)=>{const d=rt[k];return d?(b?(d.b[b]||0):d.t):0};
-const monthSecs=b=>{const p=dk().slice(0,8);let s=0;for(const k in rt)if(k.startsWith(p))s+=secs(k,b);return s};
+const secs=(k,b)=>{const d=rt[k],r=rtRemote[k];return (d?(b?(d.b[b]||0):d.t):0)+(r?(b?(r.b[b]||0):r.t):0)};
+const monthSecs=b=>{const p=dk().slice(0,8);const days=new Set([...Object.keys(rt),...Object.keys(rtRemote)].filter(k=>k.startsWith(p)));let s=0;for(const k of days)s+=secs(k,b);return s};
 const fmt=s=>{const m=Math.floor(s/60);return m>=60?Math.floor(m/60)+' ч '+(m%60)+' мин':m+' мин'};
 const WD=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
 function goalInfo(g){
@@ -1063,7 +1090,7 @@ setInterval(()=>{
   tickN++;
   const reading=RS.on&&book&&!$('#rd').hidden&&!document.hidden;
   const active=!!reading&&Date.now()-lastAct<RS.idle*1000;
-  if(active){const k=dk(),d=rt[k]||(rt[k]={t:0,b:{},p:0});d.t++;d.b[key]=(d.b[key]||0)+1;dirty=true}
+  if(active){const k=dk(),d=rt[k]||(rt[k]={t:0,b:{},p:0});d.t++;d.b[key]=(d.b[key]||0)+1;dirty=true;scheduleRTPush()}
   if(RS.pom)pomStep(active);
   if(tickN%10===0)flush();
   updateTimer(active);
@@ -1091,12 +1118,12 @@ $('#gadd').onclick=()=>{
   const days=[...document.querySelectorAll('#gdays button')].filter(b=>b.getAttribute('aria-pressed')==='true').map(b=>+b.dataset.w);
   if(min<1||(type==='day'&&!days.length))return;
   RS.goals.push({id:Date.now(),type,min,days:type==='day'?days:[],book:$('#gbook').value||''});
-  saveRS();renderGoals();renderPlb();
+  saveRS();renderGoals();renderPlb();schedulePushProf();
 };
 $('#goals').addEventListener('click',e=>{
   const b=e.target.closest('[data-del]');if(!b)return;
   RS.goals=RS.goals.filter(g=>String(g.id)!==b.dataset.del);
-  saveRS();renderGoals();renderPlb();
+  saveRS();renderGoals();renderPlb();schedulePushProf();
 });
 
 /* ---------- События ---------- */
