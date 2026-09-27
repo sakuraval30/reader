@@ -19,9 +19,17 @@ button:disabled{opacity:.4;cursor:default}
 button:focus-visible,select:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 option{background:var(--bg);color:var(--fg)}
 header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;align-items:center;gap:.4rem;padding:.55rem .8rem;background:var(--bg);background:color-mix(in srgb,var(--bg) 92%,transparent);border-bottom:1px solid var(--line);backdrop-filter:blur(8px)}
-#chs{flex:1;min-width:0;text-overflow:ellipsis}
+#chs{flex:1;min-width:0;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;text-align:left;background:transparent;border:0}
+#toc{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(28rem,calc(100vw - 1.2rem));max-height:calc(100vh - 5rem);overflow:auto;overflow-x:hidden;z-index:11;border-radius:14px;padding:0;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+#toc h3{margin:0;padding:1rem 1rem .6rem;position:sticky;top:0;background:inherit}
+#tocList{padding:0 .5rem .8rem}
+.tocg{padding:.7rem .6rem .2rem;color:var(--mute);font-size:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:.02em}
+.tocitem{display:block;width:100%;text-align:left;border:0;padding:.55rem .6rem;border-radius:8px;background:transparent}
+.tocitem[aria-current="true"]{background:color-mix(in srgb,var(--acc) 16%,transparent);color:var(--acc);font-weight:600}
+#mset{display:flex;align-items:center;gap:.6rem}
+#mset input[type=range]{flex:1}
 #bar{position:absolute;left:0;bottom:-1px;height:2px;width:var(--p,0%);background:var(--acc)}
-main{max-width:36rem;margin:0 auto;padding:1.6rem 1.1rem 2rem}
+main{max-width:36rem;margin:0 auto;padding:1.6rem calc(1.1rem + var(--mg,0)*.9rem) 2rem}
 #text{font-size:var(--fs);line-height:1.72;hyphens:auto;-webkit-hyphens:auto;overflow-wrap:break-word}
 #text p{margin:0 0 .85em}
 #text h1,#text h2,#text h3{line-height:1.25;font-weight:600;margin:1.6em 0 .7em;text-wrap:balance}
@@ -113,7 +121,13 @@ a.fn{cursor:pointer}
 #auto{display:grid;gap:.5rem}
 #auto input[type=time]{font:inherit;color:var(--fg);background:transparent;border:1px solid var(--line);border-radius:8px;padding:.2rem .4rem}
 #endh{width:100%}
-html,body{overflow-anchor:none}
+html,body{overflow-anchor:none;overflow-x:hidden}
+#home,#pgL{overflow-x:hidden}
+@media (max-width:480px){
+  .cc{width:11.5rem}
+  #glib{grid-template-columns:repeat(auto-fill,minmax(6.4rem,1fr));gap:1rem .7rem}
+  #home{padding-left:1rem;padding-right:1rem}
+}
 :root{--pn:#ebe9e2}
 :root[data-theme="sepia"]{--pn:#e4d5b6}
 :root[data-theme="gray"]{--pn:#383838}
@@ -229,7 +243,7 @@ html,body{overflow-anchor:none}
 <div id="rd" hidden>
   <header>
     <button id="hm" class="back" aria-label="В библиотеку" title="В библиотеку"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
-    <select id="chs" aria-label="Раздел"></select>
+    <button id="chs" aria-label="Оглавление" title="Оглавление"></button>
     <button id="rt" aria-label="Время чтения" title="Прочитано сегодня">0 мин</button>
     <button id="aa" aria-label="Оформление" aria-expanded="false">Аа</button>
     <i id="bar"></i>
@@ -245,6 +259,7 @@ html,body{overflow-anchor:none}
 
   <div id="set" class="glass" hidden>
     <div class="row"><span>Размер текста</span><span><button id="sm" aria-label="Уменьшить шрифт">А−</button> <button id="sp" aria-label="Увеличить шрифт">А+</button></span></div>
+    <div class="row" id="mset"><span>Поля</span><input type="range" id="mg" min="0" max="4" step="1"></div>
     <div class="row"><span>Выравнивание</span><span class="seg" id="ta">
       <button data-a="left" aria-label="По левому краю" title="По левому краю"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 10h10M4 14h16M4 18h10"/></svg></button>
       <button data-a="center" aria-label="По центру" title="По центру"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 10h10M4 14h16M7 18h10"/></svg></button>
@@ -289,10 +304,6 @@ html,body{overflow-anchor:none}
     <div id="plsum"></div>
     <label class="row"><span>Считать время чтения</span><input type="checkbox" id="rson"></label>
     <label class="row"><span>Пауза при бездействии, сек</span><input type="number" id="ridle" min="5" max="300"></label>
-    <label class="row"><span>Помидоро</span><input type="checkbox" id="rpom"></label>
-    <div class="row"><span>Работа и перерыв, мин</span><span><input type="number" id="rwk" min="1" max="180"> <input type="number" id="rbk" min="1" max="60"></span></div>
-    <label class="row"><span>Звук</span><span><input type="checkbox" id="rsnd"> <button id="sndTest" type="button">Проверить</button></span></label>
-    <p class="st" id="pomLive"></p>
     <h4>Планы</h4>
     <div id="goals"></div>
     <h4>Новый план</h4>
@@ -309,6 +320,7 @@ html,body{overflow-anchor:none}
   <button id="onbLogin">Войти по почте</button>
   <button id="onbSkip">Продолжить без входа</button>
 </div>
+<div id="toc" class="glass" hidden><h3>Оглавление</h3><div id="tocList"></div></div>
 <div id="bm" class="glass" hidden></div>
 <div id="srt" class="glass" hidden></div>
 <div id="cp" class="glass" hidden></div>
@@ -401,7 +413,9 @@ const N2='три|четыре|пять|шесть|семь|восемь|девя
 const UN2='дней|раз|минут|часов|лет|человек|шагов|штук|недель|месяцев|метров|миль|футов|дюймов|дня|раза|часа|шага|метра|мили|года|человека|фунтов';
 const R=(a,b)=>[new RegExp(B+'('+a+')'+D+'('+b+')'+E,'giu'),'$1$2-$3'];
 const RULES=[
-  R('\\p{L}+','ка|таки|нибудь'),
+  R('\\p{L}+','ка|таки|нибудь|то'),
+  R('иссиня|черно|чёрно|бело|красно|сине|зелено|жёлто|желто|ярко|светло|тёмно|темно|молочно|пепельно|огненно|золотисто|серебристо|иссера','\\p{L}+'),
+  R('горе|квази|псевдо|лже|обер|унтер|вице|контр','\\p{L}+'),
   R('кто|что|где|куда|как|когда|почему|зачем|откуда|какой|какая|какое|какие|какого|какому|каким|какую|каких|чей|чья|чьё|чьи|кого|чего|кому|чему|кем|чем|ком|чём|сколько','то|либо'),
   R('кое|кой','\\p{L}+'),
   R('в|во','первых|вторых|третьих|четвёртых|четвертых|пятых|шестых|седьмых|восьмых|девятых|десятых'),
@@ -415,6 +429,7 @@ const RULES=[
 ];
 const fixDash=h=>{
   h=h.replace(/[\u2010\u2011\u2043]/g,'-').replace(/([A-Za-zА-Яа-яЁё])[\u2012\u2013\u2212]([A-Za-zА-Яа-яЁё])/g,'$1-$2');
+  h=h.replace(/точь\s*[\u2012-\u2015\u2212-]\s*в\s*[\u2012-\u2015\u2212-]\s*точь/giu,'точь-в-точь');
   if(dashFix)for(const [re,r] of RULES)h=h.replace(re,r);
   return h;
 };
@@ -604,7 +619,7 @@ async function parseBook(name,buf){
 }
 
 /* ---------- Настройки ---------- */
-let fs=ls.get('fs',19),th=ls.get('th','auto'),ta=ls.get('ta','left');
+let fs=ls.get('fs',19),th=ls.get('th','auto'),ta=ls.get('ta','left'),mg=ls.get('mg',0);
 const THEMES=[
   {id:'light',name:'Светлая',bg:'#f7f7f4',fg:'#23262b'},
   {id:'sepia',name:'Сепия',bg:'#f1e6d0',fg:'#3a2f22'},
@@ -621,6 +636,8 @@ const root=document.documentElement;
 function prefs(){
   root.style.setProperty('--fs',fs+'px');
   root.style.setProperty('--ta',ta);
+  root.style.setProperty('--mg',mg);
+  $('#mg').value=mg;
   const et=effTheme(),c=TH[et];
   root.setAttribute('data-theme',et);
   $('#dfx').checked=dashFix;
@@ -813,7 +830,15 @@ async function loadCovers(){
     lib.forEach((b,i)=>{if(b.cv!==1)return;const q=st.get('c:'+b.id);q.onsuccess=()=>{const u=q.result;if(u)document.querySelectorAll('img[data-c="'+i+'"]').forEach(im=>{im.src=u})}});
   }catch(e){}
 }
+function autoArchive(){
+  const month=30*24*3600*1000,now=Date.now();let changed=false;
+  lib.forEach(b=>{
+    if(!b.st&&(b.p||0)>0&&(b.p||0)<99&&(now-(b.t||0))>month){b.st='later';changed=true}
+  });
+  if(changed)saveLib();
+}
 function renderLib(){
+  autoArchive();
   const ix=b=>lib.indexOf(b),emp=t=>'<small class="em">'+t+'</small>';
   const cont=lib.filter(b=>(b.p||0)>0&&!isDone(b)&&b.st!=='later').sort(CMP.recent).slice(0,10);
   const want=lib.filter(b=>b.st==='want'),later=lib.filter(b=>b.st==='later');
@@ -880,9 +905,10 @@ function curFromScroll(){
   for(const el of txt.children){if(!el.dataset.i)continue;if(top0(el)<=y)best=+el.dataset.i;else break}
   return best;
 }
+function tocLabel(){const c=book.chapters[cur];return c?(cur+1)+'. '+c.title:''}
 function sync(){
   const i=curFromScroll();
-  if(i!==cur){cur=i;$('#chs').value=String(i);$('#pv').disabled=i===0;$('#nx').disabled=i===book.chapters.length-1;$('#note').hidden=true}
+  if(i!==cur){cur=i;$('#chs').textContent=tocLabel();$('#pv').disabled=i===0;$('#nx').disabled=i===book.chapters.length-1;$('#note').hidden=true}
   updatePos();
 }
 async function mk(i){
@@ -944,7 +970,7 @@ async function show(i,f=0){
   i=Math.max(0,Math.min(n-1,i));
   const my=++navGen;
   busy=true;cur=i;$('#note').hidden=true;
-  $('#chs').value=String(i);
+  $('#chs').textContent=tocLabel();
   $('#pv').disabled=i===0;$('#nx').disabled=i===n-1;
   txt.innerHTML='<p>Загрузка…</p>';
   const sec=await mk(i);
@@ -1019,8 +1045,8 @@ async function openFile(f){
 }
 
 /* ---------- Время чтения, помидоро, планы ---------- */
-const RS=Object.assign({on:true,idle:25,pom:false,work:25,brk:5,snd:true,goals:[]},ls.get('rs',{}));
-let rt=ls.get('rt',{}),lastAct=0,dirty=false,tickN=0,pom={mode:'work',el:0},toastT=0;
+const RS=Object.assign({on:true,idle:25,goals:[]},ls.get('rs',{}));
+let rt=ls.get('rt',{}),lastAct=0,dirty=false,tickN=0,toastT=0;
 const saveRS=()=>ls.set('rs',RS);
 const flush=()=>{if(dirty){ls.set('rt',rt);dirty=false}};
 const dk=(d=new Date())=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -1069,29 +1095,17 @@ function notify(t){
   if(RS.snd)beep();
   try{navigator.vibrate&&navigator.vibrate([150,80,150])}catch(e){}
 }
-function pomStep(active){
-  if(pom.mode==='work'){
-    if(!active)return;
-    if(++pom.el>=RS.work*60){const k=dk(),d=rt[k]||(rt[k]={t:0,b:{},p:0});d.p=(d.p||0)+1;dirty=true;pom={mode:'break',el:0};notify('Помидор готов: '+RS.work+' мин. Перерыв '+RS.brk+' мин.')}
-  }else if(++pom.el>=RS.brk*60){pom={mode:'work',el:0};notify('Перерыв окончен. Можно снова читать.')}
-}
 function updateTimer(active){
   const c=$('#rt');
-  if(RS.pom){const left=Math.max(0,(pom.mode==='work'?RS.work:RS.brk)*60-pom.el);c.textContent=String(Math.floor(left/60)).padStart(2,'0')+':'+String(left%60).padStart(2,'0');c.title=(pom.mode==='work'?'Помидоро: работа':'Помидоро: перерыв')+', осталось'}
-  else{c.textContent=Math.floor(secs(dk())/60)+' мин';c.title='Прочитано сегодня'}
-  c.classList.toggle('idle',!active);c.classList.toggle('brk',!!RS.pom&&pom.mode==='break');
-  if(!$('#pl').hidden){
-    const lv=$('#pomLive');
-    lv.textContent=RS.pom?('Помидоро сейчас: '+(pom.mode==='work'?'работа':'перерыв')+', осталось '+c.textContent):'Включите «Помидоро», чтобы читалка сама отсчитывала рабочие интервалы и напоминала о перерыве — например, 25 минут чтения, потом 5 минут отдыха, со звуком и всплывающей подсказкой.';
-    if(tickN%5===0){renderPlSum();renderGoals()}
-  }
+  c.textContent=Math.floor(secs(dk())/60)+' мин';c.title='Прочитано сегодня';
+  c.classList.toggle('idle',!active);
+  if(!$('#pl').hidden&&tickN%5===0){renderPlSum();renderGoals()}
 }
 setInterval(()=>{
   tickN++;
   const reading=RS.on&&book&&!$('#rd').hidden&&!document.hidden;
   const active=!!reading&&Date.now()-lastAct<RS.idle*1000;
   if(active){const k=dk(),d=rt[k]||(rt[k]={t:0,b:{},p:0});d.t++;d.b[key]=(d.b[key]||0)+1;dirty=true;scheduleRTPush()}
-  if(RS.pom)pomStep(active);
   if(tickN%10===0)flush();
   updateTimer(active);
 },1000);
@@ -1106,11 +1120,6 @@ addEventListener('keydown',e=>{if(e.key==='Escape')$('#pl').hidden=true});
 $('#toast').onclick=()=>{$('#toast').hidden=true};
 $('#rson').onchange=e=>{RS.on=e.target.checked;saveRS()};
 $('#ridle').onchange=e=>{RS.idle=Math.max(5,Math.min(300,+e.target.value||25));saveRS()};
-$('#rpom').onchange=e=>{RS.pom=e.target.checked;pom={mode:'work',el:0};saveRS()};
-$('#rwk').onchange=e=>{RS.work=Math.max(1,Math.min(180,+e.target.value||25));pom={mode:'work',el:0};saveRS()};
-$('#rbk').onchange=e=>{RS.brk=Math.max(1,Math.min(60,+e.target.value||5));saveRS()};
-$('#rsnd').onchange=e=>{RS.snd=e.target.checked;saveRS()};
-$('#sndTest').onclick=e=>{e.stopPropagation();beep()};
 $('#gtype').onchange=e=>{$('#gdays').hidden=e.target.value!=='day'};
 $('#gdays').addEventListener('click',e=>{const b=e.target.closest('button');if(b)b.setAttribute('aria-pressed',String(b.getAttribute('aria-pressed')!=='true'))});
 $('#gadd').onclick=()=>{
@@ -1133,6 +1142,7 @@ addEventListener('drop',e=>{e.preventDefault();const f=e.dataTransfer&&e.dataTra
 const keep=fn=>{const f=frac(),i=cur;fn();requestAnimationFrame(()=>{goTo(i,f);updatePos();save()})};
 $('#sm').onclick=()=>keep(()=>{fs=Math.max(14,fs-1);ls.set('fs',fs);prefs()});
 $('#sp').onclick=()=>keep(()=>{fs=Math.min(30,fs+1);ls.set('fs',fs);prefs()});
+$('#mg').oninput=e=>keep(()=>{mg=+e.target.value;ls.set('mg',mg);prefs()});
 const closeSet=()=>{$('#set').hidden=true;$('#aa').setAttribute('aria-expanded','false')};
 const toggleSet=(e,inLib)=>{e.stopPropagation();updateEnd();const st=$('#set'),o=st.hidden;st.classList.toggle('lib',inLib);st.style.top=inLib?(e.currentTarget.getBoundingClientRect().bottom+6)+'px':'';st.hidden=!o;$('#aa').setAttribute('aria-expanded',String(o&&!inLib))};
 $('#aa').onclick=e=>toggleSet(e,false);
@@ -1194,7 +1204,16 @@ $('#endh').onclick=()=>{const e=ent(key);if(!e||!book)return;e.end=e.end!=null?n
 addEventListener('keydown',e=>{if(e.key==='Escape')closeSet()});
 $('#pv').onclick=()=>show(cur-1);
 $('#nx').onclick=()=>show(cur+1);
-$('#chs').onchange=e=>show(+e.target.value);
+function openToc(){
+  document.querySelectorAll('.tocitem').forEach(b=>b.setAttribute('aria-current',String(+b.dataset.i===cur)));
+  const cur1=$('.tocitem[aria-current="true"]');
+  $('#toc').hidden=false;
+  if(cur1)cur1.scrollIntoView({block:'center'});
+}
+$('#chs').onclick=e=>{e.stopPropagation();openToc()};
+$('#tocList').addEventListener('click',e=>{const b=e.target.closest('.tocitem');if(b){$('#toc').hidden=true;show(+b.dataset.i)}});
+document.addEventListener('click',e=>{if(!$('#toc').hidden&&!$('#toc').contains(e.target)&&e.target!==$('#chs'))$('#toc').hidden=true});
+addEventListener('keydown',e=>{if(e.key==='Escape')$('#toc').hidden=true});
 let raf=0;
 addEventListener('scroll',()=>{
   if(busy||!book||$('#rd').hidden)return;
