@@ -121,8 +121,9 @@ a.fn{cursor:pointer}
 #auto{display:grid;gap:.5rem}
 #auto input[type=time]{font:inherit;color:var(--fg);background:transparent;border:1px solid var(--line);border-radius:8px;padding:.2rem .4rem}
 #endh{width:100%}
-html,body{overflow-anchor:none;overflow-x:hidden}
-#home,#pgL{overflow-x:hidden}
+html,body{overflow-anchor:none}
+body{overflow-x:clip}
+#home,#pgL{overflow-x:clip}
 @media (max-width:480px){
   .cc{width:11.5rem}
   #glib{grid-template-columns:repeat(auto-fill,minmax(6.4rem,1fr));gap:1rem .7rem}
