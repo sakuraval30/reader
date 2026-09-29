@@ -26,6 +26,7 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;a
 .tocg{padding:.7rem .6rem .2rem;color:var(--mute);font-size:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:.02em}
 .tocitem{display:block;width:100%;text-align:left;border:0;padding:.55rem .6rem;border-radius:8px;background:transparent}
 .tocitem[aria-current="true"]{background:color-mix(in srgb,var(--acc) 16%,transparent);color:var(--acc);font-weight:600}
+.tocgrp{padding:.5rem .6rem .2rem;color:var(--mute);font-size:.82rem;font-weight:600}
 #mset{display:flex;align-items:center;gap:.6rem}
 #mset input[type=range]{flex:1}
 #bar{position:absolute;left:0;bottom:-1px;height:2px;width:var(--p,0%);background:var(--acc)}
@@ -1019,16 +1020,15 @@ async function load(name,buf,start,silent){
     await kv.set('b:'+key,{name,buf});
     if(e.st==='want'||e.st==='later')e.st='';
     saveLib();
-    let h='',g='',open=false,tot=0;
+    let h='',g='';
     b.chapters.forEach(c=>{c.a0=!!c.aux||AUX.test(c.title||'')||AUX.test(c.group||'')});
     weigh(b,e);
     b.chapters.forEach((c,i)=>{
       const cg=c.group||'';
-      if(cg!==g){if(open){h+='</optgroup>';open=false}g=cg;if(g){h+='<optgroup label="'+esc(g).replace(/"/g,'&quot;')+'">';open=true}}
-      h+='<option value="'+i+'">'+esc((i+1)+'. '+c.title)+'</option>';
+      if(cg!==g){g=cg;if(g)h+='<div class="tocgrp">'+esc(g)+'</div>'}
+      h+='<button class="tocitem" data-i="'+i+'">'+esc((i+1)+'. '+c.title)+'</button>';
     });
-    if(open)h+='</optgroup>';
-    $('#chs').innerHTML=h;
+    $('#tocList').innerHTML=h;
     document.title=b.title;
     if(!silent){
       closeSet();root.classList.toggle('pdfmode',!!b.pdf);
