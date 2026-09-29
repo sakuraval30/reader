@@ -33,6 +33,8 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;a
 .bkitem .bkgo small{display:block;color:var(--mute);font-weight:400;font-size:.78rem;margin-top:.1rem}
 .bkitem .bkdel{border:0;background:transparent;color:var(--mute);font-size:1.15rem;line-height:1;padding:.5rem .6rem;flex:none}
 .bkadd{display:block;width:100%;text-align:center;padding:.75rem;border:0;border-top:1px solid var(--line);color:var(--acc);background:transparent;font-weight:600}
+#bkm.on{color:#ef4444}
+#bkm.on svg path{fill:currentColor}
 #mset{display:flex;align-items:center;gap:.6rem}
 #mset input[type=range]{flex:1}
 #bar{position:absolute;left:0;bottom:-1px;height:2px;width:var(--p,0%);background:var(--acc)}
@@ -333,8 +335,8 @@ body{overflow-x:clip}
   <button id="onbLogin">Войти по почте</button>
   <button id="onbSkip">Продолжить без входа</button>
 </div>
-<div id="toc" class="glass" hidden><h3>Оглавление</h3><div id="tocList"></div></div>
-<div id="bkl" class="glass" hidden><h3>Закладки</h3><div id="bklList"></div><button id="bkAdd" class="bkadd">Заложить это место</button></div>
+<div id="toc" class="glass" hidden><h3>Оглавление</h3><div id="tocList"></div><button id="bkOpen" class="bkadd">Закладки</button></div>
+<div id="bkl" class="glass" hidden><h3>Закладки</h3><div id="bklList"></div></div>
 <div id="bm" class="glass" hidden></div>
 <div id="srt" class="glass" hidden></div>
 <div id="cp" class="glass" hidden></div>
@@ -707,7 +709,7 @@ function sbInit(){
   if(!sbcfg||!sbcfg.url||!sbcfg.key||typeof supabase==='undefined')return;
   try{SB=supabase.createClient(sbcfg.url,sbcfg.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}})}catch(e){SB=null}
 }
-function syRow(b){return{book_key:b.id,title:b.title||'',author:b.author||'',ch:b.ch||0,f:b.f||0,p:b.p||0,t:b.t||0,st:b.st||null,cs:b.cs||[]}}
+function syRow(b){return{book_key:b.id,title:b.title||'',author:b.author||'',ch:b.ch||0,f:b.f||0,p:b.p||0,t:b.t||0,st:b.st||null,cs:b.cs||[],bm:b.bm||[]}}
 function syDot(){document.querySelectorAll('.avDot').forEach(d=>d.classList.toggle('on',!!syUser));renderAvatarBtn()}
 function syRenderAuth(){
   if(syUser)onbDone();
@@ -727,10 +729,10 @@ async function syncPull(){
     for(const r of (data||[])){
       let e=ent(r.book_key);
       if(!e){
-        e={id:r.book_key,name:'',title:r.title||'',author:r.author||'',ch:r.ch||0,f:r.f||0,p:r.p||0,t:r.t||0,st:r.st||'',cs:r.cs||[],ph:1};
+        e={id:r.book_key,name:'',title:r.title||'',author:r.author||'',ch:r.ch||0,f:r.f||0,p:r.p||0,t:r.t||0,st:r.st||'',cs:r.cs||[],bm:r.bm||[],ph:1};
         lib.push(e);changed=true;
       }else if((r.t||0)>(e.t||0)){
-        e.ch=r.ch;e.f=r.f;e.p=r.p;e.t=r.t;e.st=r.st||'';e.cs=r.cs||[];changed=true;
+        e.ch=r.ch;e.f=r.f;e.p=r.p;e.t=r.t;e.st=r.st||'';e.cs=r.cs||[];e.bm=r.bm||[];changed=true;
       }
     }
     if(changed){ls.set('lib',lib);renderLib();renderPlb();if(book&&!$('#rd').hidden)updatePos()}
@@ -978,6 +980,7 @@ function updatePos(){
   const n=pagesLeft();
   $('#stat').innerHTML='<b>'+p+'%</b>, '+(book.pdf?'страница '+(cur+1)+' из '+book.chapters.length:(n?'до конца главы '+n+' стр.':'конец главы'));
   root.style.setProperty('--p',p+'%');
+  refreshBkIcon();
 }
 async function show(i,f=0){
   const n=book.chapters.length;
@@ -1226,6 +1229,12 @@ function openToc(){
 }
 $('#chs').onclick=e=>{e.stopPropagation();openToc()};
 $('#tocList').addEventListener('click',e=>{const b=e.target.closest('.tocitem');if(b){$('#toc').hidden=true;show(+b.dataset.i)}});
+function bmAt(){
+  const e=ent(key);if(!e||!e.bm||!book)return -1;
+  const f=frac();
+  return e.bm.findIndex(m=>m.ch===cur&&Math.abs(m.f-f)<.03);
+}
+function refreshBkIcon(){$('#bkm').classList.toggle('on',bmAt()>=0)}
 function renderBk(){
   const e=ent(key),list=(e&&e.bm)||[];
   $('#bklList').innerHTML=list.length?list.map((m,i)=>{
@@ -1237,20 +1246,21 @@ function openBk(){
   $('#toc').hidden=true;closeSet();
   renderBk();$('#bkl').hidden=false;
 }
-$('#bkm').onclick=e=>{e.stopPropagation();openBk()};
-$('#bkAdd').onclick=()=>{
-  const e=ent(key);if(!e)return;
-  const list=e.bm=e.bm||[],f=frac();
-  list.push({ch:cur,f,p:percent(f),t:Date.now()});
-  list.sort((a,b)=>a.ch-b.ch||a.f-b.f);
-  saveLib();renderBk();
+$('#bkOpen').onclick=e=>{e.stopPropagation();openBk()};
+$('#bkm').onclick=e=>{
+  e.stopPropagation();
+  const en=ent(key);if(!en||!book)return;
+  const list=en.bm=en.bm||[],i=bmAt();
+  if(i>=0)list.splice(i,1);
+  else{const f=frac();list.push({ch:cur,f,p:percent(f),t:Date.now()});list.sort((a,b)=>a.ch-b.ch||a.f-b.f)}
+  saveLib();refreshBkIcon();if(!$('#bkl').hidden)renderBk();
 };
 $('#bklList').addEventListener('click',e=>{
   const go=e.target.closest('.bkgo'),del=e.target.closest('.bkdel'),en=ent(key);
   if(go&&en){const m=en.bm[+go.dataset.i];$('#bkl').hidden=true;show(m.ch,m.f);return}
-  if(del&&en){en.bm.splice(+del.dataset.i,1);saveLib();renderBk()}
+  if(del&&en){en.bm.splice(+del.dataset.i,1);saveLib();renderBk();refreshBkIcon()}
 });
-document.addEventListener('click',e=>{if(!$('#bkl').hidden&&!$('#bkl').contains(e.target)&&e.target!==$('#bkm'))$('#bkl').hidden=true});
+document.addEventListener('click',e=>{if(!$('#bkl').hidden&&!$('#bkl').contains(e.target)&&e.target!==$('#bkOpen'))$('#bkl').hidden=true});
 document.addEventListener('click',e=>{if(!$('#toc').hidden&&!$('#toc').contains(e.target)&&e.target!==$('#chs'))$('#toc').hidden=true});
 addEventListener('keydown',e=>{if(e.key==='Escape')$('#toc').hidden=true});
 let raf=0;
