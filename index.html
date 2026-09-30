@@ -513,7 +513,7 @@ function fb2n(n,bins){
   const kids=()=>[...n.childNodes].map(c=>fb2n(c,bins)).join('');
   switch(n.localName){
     case 'p':return '<p>'+kids()+'</p>';
-    case 'title':return '<h2>'+(n.children.length?[...n.children].map(c=>esc(c.textContent.trim())).join('<br>'):esc(n.textContent.trim()))+'</h2>';
+    case 'title':return '<h2>'+(n.children.length?[...n.children].map(c=>[...c.childNodes].map(cc=>fb2n(cc,bins)).join('').trim()).join('<br>'):esc(n.textContent.trim()))+'</h2>';
     case 'subtitle':return '<h3>'+kids()+'</h3>';
     case 'emphasis':return '<em>'+kids()+'</em>';
     case 'strong':return '<strong>'+kids()+'</strong>';
