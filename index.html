@@ -154,7 +154,12 @@ body{overflow-x:clip}
 #rt.brk{border-color:var(--acc);color:var(--acc)}
 #plb{display:block;width:100%;text-align:left;margin:0 0 1rem;padding:.7rem .9rem;border-radius:10px}
 #plb small{display:block;color:var(--mute);font-size:.85rem;margin-top:.2rem}
-#pl{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(24rem,calc(100vw - 1.2rem));max-height:calc(100vh - 5rem);overflow:auto;overflow-x:hidden;z-index:10;border-radius:14px;padding:1rem;display:grid;gap:.6rem;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+#pl{position:fixed;inset:0;width:100%;height:100%;max-height:100%;overflow:auto;overflow-x:hidden;z-index:10;border-radius:0;padding:calc(1.2rem + env(safe-area-inset-top,0px)) 1.1rem calc(2rem + env(safe-area-inset-bottom,0px));display:grid;gap:.6rem;align-content:start;background:var(--bg)}
+#pl>*{width:100%;max-width:34rem;margin-left:auto;margin-right:auto}
+#pl>.row{flex-direction:column;align-items:stretch;gap:.35rem}
+#pl>.row>span:first-child{color:var(--mute)}
+#pl>.row select,#pl>.row input[type="number"]{width:100%}
+#pl .seg{flex-wrap:wrap}
 #pl .row{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
 #pl input,#pl select{font:inherit;color:var(--fg);background:transparent;border:1px solid var(--line);border-radius:8px;padding:.25rem .4rem}
 #pl input[type=number]{width:4.2rem}
