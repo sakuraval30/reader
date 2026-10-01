@@ -1266,10 +1266,10 @@ document.addEventListener('click',e=>{if(!$('#toc').hidden&&!$('#toc').contains(
 addEventListener('keydown',e=>{if(e.key==='Escape')$('#toc').hidden=true});
 let raf=0;
 addEventListener('scroll',()=>{
-  if(busy||!book||$('#rd').hidden)return;
-  if(!raf)raf=requestAnimationFrame(()=>{raf=0;if(busy||!book)return;sync();fill(navGen)});
+  if(busy||filling||!book||$('#rd').hidden)return;
+  if(!raf)raf=requestAnimationFrame(()=>{raf=0;if(busy||filling||!book)return;sync();fill(navGen)});
   clearTimeout(tm);
-  tm=setTimeout(()=>{if(!busy&&book)save()},250);
+  tm=setTimeout(()=>{if(!busy&&!filling&&book)save()},250);
 },{passive:true});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&!busy&&!$('#rd').hidden)save()});
 addEventListener('pagehide',()=>{if(!busy&&!$('#rd').hidden)save()});
