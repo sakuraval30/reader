@@ -200,6 +200,8 @@ body{overflow-x:clip}
 .cc .ph b{font-size:.5rem;-webkit-line-clamp:5}
 .cc .ph small,.cc .ph::after{display:none}
 .cc .tx{display:block;min-width:0}
+.cc .tx b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cc .tx small:first-of-type{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cc b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
 .cc small{display:block;color:var(--mute);font-size:.82rem;margin-top:.15rem}
 #glib{display:grid;grid-template-columns:repeat(auto-fill,minmax(8.5rem,1fr));gap:1.6rem 1.1rem}
@@ -346,6 +348,7 @@ body{overflow-x:clip}
 <div id="toc" class="glass" hidden><h3>Оглавление<button class="pclose" aria-label="Свернуть"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button></h3><div id="tocList"></div></div>
 <div id="bkl" class="glass" hidden><h3>Закладки<button class="pclose" aria-label="Свернуть"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button></h3><div id="bklList"></div></div>
 <div id="bm" class="glass" hidden></div>
+<input type="file" id="covf" accept="image/*" hidden>
 <div id="srt" class="glass" hidden></div>
 <div id="cp" class="glass" hidden></div>
 <div id="toast" class="glass" hidden></div>
@@ -896,7 +899,7 @@ function openBM(i,btn){
   const it=(k,t)=>'<button data-k="'+k+'">'+t+'</button>';
   $('#bm').innerHTML=it('want',b.st==='want'?'Убрать из «Хочу прочитать»':'Хочу прочитать')+it('later',b.st==='later'?'Вернуть из заброшенных':'Забросить')+it('done',b.st==='done'?'Отметить непрочитанной':'Отметить прочитанной')
     +(cols.length?'<hr>'+cols.map(c=>'<button data-col="'+c.id+'" aria-pressed="'+(b.cs||[]).includes(c.id)+'">'+esc(c.name)+'</button>').join(''):'')
-    +'<hr><button data-k="ren">Изменить название и автора</button><button data-k="del" class="dng">Удалить с устройства</button>';
+    +'<hr><button data-k="ren">Изменить название и автора</button><button data-k="cov">Изменить обложку</button><button data-k="del" class="dng">Удалить с устройства</button>';
   $('#srt').hidden=$('#cp').hidden=true;
   place($('#bm'),btn);
 }
@@ -1302,6 +1305,7 @@ $('#bm').addEventListener('click',async e=>{
   const k=bt.dataset.k,c=bt.dataset.col;
   if(c){b.cs=(b.cs||[]).includes(c)?b.cs.filter(x=>x!==c):[...(b.cs||[]),c];saveLib();bt.setAttribute('aria-pressed',String(b.cs.includes(c)));renderLib();return}
   $('#bm').hidden=true;
+  if(k==='cov'){$('#covf').click();return}
   if(k==='ren'){
     const t=prompt('Название',b.title||'');if(t===null)return;
     const a=prompt('Автор',b.author||'');if(a===null)return;
@@ -1316,6 +1320,14 @@ $('#bm').addEventListener('click',async e=>{
       renderLib();
     }
   }else if(k){b.st=b.st===k?'':k;saveLib();renderLib()}
+});
+$('#covf').addEventListener('change',async e=>{
+  const f=e.target.files[0];e.target.value='';const b=lib[bmI];if(!f||!b)return;
+  const url=URL.createObjectURL(f);
+  let t='';try{t=await thumb(url)}catch(err){}
+  URL.revokeObjectURL(url);
+  if(!t)return;
+  await kv.set('c:'+b.id,t);b.cv=1;b.t=Date.now();saveLib();renderLib();
 });
 $('#srt').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(b){lsort=b.dataset.s;ls.set('sort',lsort);$('#srt').hidden=true;renderLib()}});
 $('#cp').addEventListener('click',e=>{
