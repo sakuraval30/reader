@@ -127,7 +127,11 @@ a.fn{cursor:pointer}
 #onb h3{margin:0;font-size:1.3rem}
 #onb p{color:var(--mute);margin:0}
 #pal,.pal{display:flex;flex-wrap:wrap;gap:.5rem}
-.tc{width:3rem;height:2rem;padding:0;border-radius:8px;font-size:.85rem;font-weight:600;border:1px solid var(--line)}
+.tc{width:auto;height:auto;padding:.5rem 1rem;border-radius:999px;font-size:.85rem;font-weight:600;border:1px solid var(--line);white-space:nowrap}
+#pal,#p1,#p2{display:flex;flex-wrap:wrap;gap:.5rem}
+.tc[data-t="auto"]{color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.55)}
+#mg{flex-wrap:wrap}
+#mg button{width:auto;height:auto;padding:.5rem .8rem;white-space:nowrap}
 .tc[aria-pressed="true"]{outline:2px solid var(--acc);outline-offset:2px}
 #auto{display:grid;gap:.5rem}
 #auto input[type=time]{font:inherit;color:var(--fg);background:transparent;border:1px solid var(--line);border-radius:8px;padding:.2rem .4rem}
@@ -159,7 +163,7 @@ body{overflow-x:clip}
 #pl{position:fixed;inset:0;width:100%;height:100%;max-height:100%;overflow:auto;overflow-x:hidden;z-index:10;border-radius:0;padding:calc(1.2rem + env(safe-area-inset-top,0px)) 1.1rem calc(2rem + env(safe-area-inset-bottom,0px));display:grid;gap:.9rem;align-content:start;background:var(--bg)}
 #pl>h3{width:100%;max-width:34rem;margin:0 auto .2rem;text-align:center;display:flex;align-items:center;justify-content:center;position:relative}
 #pl>h3 .pclose{position:absolute;right:0}
-#pl .plsec{width:100%;max-width:34rem;margin:0 auto;border:1px solid var(--line);border-radius:14px;padding:1.1rem;background:color-mix(in srgb,var(--pn) 55%,transparent);display:grid;gap:.7rem}
+#pl .plsec{width:100%;max-width:34rem;margin:0 auto;border:1px solid color-mix(in srgb,var(--fg) 18%,var(--bg));border-radius:14px;padding:1.1rem;background:color-mix(in srgb,var(--fg) 6%,var(--bg));display:grid;gap:.7rem}
 #pl .plsec h4{margin:0;text-align:center;font-size:1.02rem}
 #pl .row{display:flex;flex-direction:column;align-items:stretch;gap:.35rem}
 #pl .row>span:first-child{color:var(--mute)}
@@ -167,20 +171,20 @@ body{overflow-x:clip}
 #pl label.row.ckrow{flex-direction:row;align-items:center;justify-content:flex-start;gap:.6rem}
 #pl label.row.ckrow span{color:var(--fg)}
 #pl .seg{flex-wrap:wrap;display:flex;gap:.35rem}
-#pl input,#pl select{font:inherit;color:var(--fg);background:color-mix(in srgb,var(--pn) 80%,transparent);border:1px solid var(--line);border-radius:8px;padding:.4rem .5rem}
+#pl input,#pl select{font:inherit;color:var(--fg);background:color-mix(in srgb,var(--fg) 9%,var(--bg));border:1px solid color-mix(in srgb,var(--fg) 22%,var(--bg));border-radius:8px;padding:.4rem .5rem}
 #pl input[type=number]{width:5rem}
 #pl input[type=checkbox]{width:1.1rem;height:1.1rem;accent-color:var(--acc);flex:none}
 #pl .gminwrap{display:flex;align-items:center;gap:.4rem}
 #pl .gminwrap input,#pl .gminwrap select{width:auto}
-#pl button{border:1px solid var(--line);border-radius:10px;padding:.55rem .9rem;background:color-mix(in srgb,var(--pn) 78%,transparent);color:var(--fg);font-weight:500}
+#pl button{border:1px solid color-mix(in srgb,var(--fg) 24%,var(--bg));border-radius:10px;padding:.55rem .9rem;background:color-mix(in srgb,var(--fg) 11%,var(--bg));color:var(--fg);font-weight:500}
 #pl .seg button{width:2.3rem;height:2rem;padding:0}
 #pl .seg button[aria-pressed="true"]{background:color-mix(in srgb,var(--acc) 22%,transparent);border-color:var(--acc);color:var(--acc)}
 #pl .plsec-toggle{width:100%;text-align:center}
-#pl .plsec-toggle[aria-expanded="true"]{background:color-mix(in srgb,var(--pn) 95%,transparent)}
+#pl .plsec-toggle[aria-expanded="true"]{background:color-mix(in srgb,var(--fg) 16%,var(--bg))}
 #pl #gnewB{display:grid;gap:.7rem;padding-top:.3rem;border-top:1px solid var(--line)}
 #pl #gadd{background:var(--acc);border-color:var(--acc);color:#fff}
 #pl small{color:var(--mute);font-size:.85rem}
-.gl{display:grid;gap:.25rem;padding:.6rem;border:1px solid var(--line);border-radius:10px;background:color-mix(in srgb,var(--pn) 70%,transparent)}
+.gl{display:grid;gap:.25rem;padding:.6rem;border:1px solid color-mix(in srgb,var(--fg) 16%,var(--bg));border-radius:10px;background:color-mix(in srgb,var(--fg) 4%,var(--bg))}
 #pl .gl .row{flex-direction:row;align-items:center;justify-content:space-between}
 .gl .row b{font-weight:600}
 .gl .row button{padding:.3rem .6rem;font-size:.82rem}
@@ -298,7 +302,7 @@ body{overflow-x:clip}
 
   <div id="set" class="glass" hidden>
     <div class="row"><span>Размер текста</span><span><button id="sm" aria-label="Уменьшить шрифт">А−</button> <button id="sp" aria-label="Увеличить шрифт">А+</button></span></div>
-    <div class="row" id="mset"><span>Поля</span><input type="range" id="mg" min="0" max="4" step="1"></div>
+    <div class="row" id="mset"><span>Поля</span><span class="seg" id="mg"><button data-m="0">Узкие</button><button data-m="2">Средние</button><button data-m="4">Широкие</button></span></div>
     <div class="row"><span>Выравнивание</span><span class="seg" id="ta">
       <button data-a="left" aria-label="По левому краю" title="По левому краю"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 10h10M4 14h16M4 18h10"/></svg></button>
       <button data-a="center" aria-label="По центру" title="По центру"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 10h10M4 14h16M7 18h10"/></svg></button>
@@ -669,7 +673,7 @@ async function parseBook(name,buf){
 }
 
 /* ---------- Настройки ---------- */
-let fs=ls.get('fs',19),th=ls.get('th','auto'),ta=ls.get('ta','left'),mg=ls.get('mg',0);
+let fs=ls.get('fs',19),th=ls.get('th','auto'),ta=ls.get('ta','left'),mg=[0,2,4].includes(+ls.get('mg',0))?+ls.get('mg',0):0;
 const THEMES=[
   {id:'light',name:'Светлая',bg:'#f7f7f4',fg:'#23262b'},
   {id:'sepia',name:'Сепия',bg:'#f1e6d0',fg:'#3a2f22'},
@@ -687,14 +691,14 @@ function prefs(){
   root.style.setProperty('--fs',fs+'px');
   root.style.setProperty('--ta',ta);
   root.style.setProperty('--mg',mg);
-  $('#mg').value=mg;
-  const et=effTheme(),c=TH[et];
+    const et=effTheme(),c=TH[et];
   root.setAttribute('data-theme',et);
   $('#dfx').checked=dashFix;
   document.querySelectorAll('#pal .tc').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.t===th)));
   document.querySelectorAll('#p1 .tc').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.t===au.day)));
   document.querySelectorAll('#p2 .tc').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.t===au.night)));
   document.querySelectorAll('#ta button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.a===ta)));
+  document.querySelectorAll('#mg button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.m===mg)));
   $('#auto').hidden=th!=='auto';
   if(document.activeElement!==$('#t1'))$('#t1').value=au.t1;
   if(document.activeElement!==$('#t2'))$('#t2').value=au.t2;
@@ -1210,8 +1214,8 @@ addEventListener('drop',e=>{e.preventDefault();const f=e.dataTransfer&&e.dataTra
 const keep=fn=>{const f=frac(),i=cur;fn();requestAnimationFrame(()=>{goTo(i,f);updatePos();save()})};
 $('#sm').onclick=()=>keep(()=>{fs=Math.max(14,fs-1);ls.set('fs',fs);prefs()});
 $('#sp').onclick=()=>keep(()=>{fs=Math.min(30,fs+1);ls.set('fs',fs);prefs()});
-$('#mg').oninput=e=>keep(()=>{mg=+e.target.value;ls.set('mg',mg);prefs()});
-const closeSet=()=>{$('#set').hidden=true;$('#aa').setAttribute('aria-expanded','false')};
+$('#mg').addEventListener('click',e=>{const b=e.target.closest('button');if(b)keep(()=>{mg=+b.dataset.m;ls.set('mg',mg);prefs()})});
+const closeSet=()=>{$('#set').hidden=true;$('#aa').setAttribute('aria-expanded','false');$('#thm').hidden=true;$('#tb').setAttribute('aria-expanded','false')};
 const toggleSet=(e,inLib)=>{e.stopPropagation();updateEnd();const st=$('#set'),o=st.hidden;st.classList.toggle('lib',inLib);st.style.top=inLib?(e.currentTarget.getBoundingClientRect().bottom+6)+'px':'';st.hidden=!o;$('#aa').setAttribute('aria-expanded',String(o&&!inLib))};
 $('#aa').onclick=e=>toggleSet(e,false);
 $('#aa2').onclick=e=>toggleSet(e,true);
@@ -1380,8 +1384,8 @@ $('#colb').onclick=e=>{e.stopPropagation();const el=$('#cp');if(!el.hidden){el.h
 $('#sortb').onclick=e=>{e.stopPropagation();const el=$('#srt');if(!el.hidden){el.hidden=true;return}$('#bm').hidden=$('#cp').hidden=true;renderSort();place(el,e.currentTarget)};
 document.addEventListener('click',e=>{for(const s of ['#bm','#srt','#cp']){const el=$(s);if(!el.hidden&&!el.contains(e.target))el.hidden=true}});
 addEventListener('keydown',e=>{if(e.key==='Escape')for(const s of ['#bm','#srt','#cp'])$(s).hidden=true});
-const chip=t=>'<button class="tc" data-t="'+t.id+'" aria-pressed="false" aria-label="'+t.name+'" title="'+t.name+'" style="background:'+t.bg+'"></button>';
-$('#pal').innerHTML='<button class="tc" data-t="auto" aria-pressed="false" aria-label="Авто по времени суток" title="Авто по времени суток"></button>'+THEMES.map(chip).join('');
+const chip=t=>'<button class="tc" data-t="'+t.id+'" aria-pressed="false" style="background:'+t.bg+';color:'+t.fg+'">'+t.name+'</button>';
+$('#pal').innerHTML='<button class="tc" data-t="auto" aria-pressed="false">Авто</button>'+THEMES.map(chip).join('');
 $('#p1').innerHTML=THEMES.map(chip).join('');
 $('#p2').innerHTML=THEMES.map(chip).join('');
 $('#tb').onclick=()=>{const o=$('#thm').hidden;$('#thm').hidden=!o;$('#tb').setAttribute('aria-expanded',String(o))};
