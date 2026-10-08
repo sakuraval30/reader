@@ -128,10 +128,32 @@ a.fn{cursor:pointer}
 #onb p{color:var(--mute);margin:0}
 #pal,.pal{display:flex;flex-wrap:wrap;gap:.5rem}
 .tc{width:auto;height:auto;padding:.5rem 1rem;border-radius:999px;font-size:.85rem;font-weight:600;border:1px solid var(--line);white-space:nowrap}
-#pal,#p1,#p2{display:flex;flex-wrap:wrap;gap:.5rem}
+#pal,#p1,#p2{display:flex;flex-wrap:nowrap;gap:.5rem}
+.scrollrow{overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0 -1rem;padding:.35rem 1rem}
+.scrollrow::-webkit-scrollbar{display:none}
+.scrollrow .tc{flex:none;scroll-snap-align:start}
+#set{top:auto;bottom:0;left:50%;right:auto;transform:translateX(-50%);width:min(100%,34rem);max-height:82vh;border-radius:18px 18px 0 0;border-bottom:0;padding:.9rem 1rem calc(1.1rem + env(safe-area-inset-bottom,0px));box-shadow:0 -10px 34px rgba(0,0,0,.28)}
+#set.lib{top:auto}
+#set.glass{background:var(--pn);background:color-mix(in srgb,var(--pn) 97%,transparent)}
+#set .linkbtn{border:0;background:transparent;color:var(--mute);text-align:left;padding:.2rem 0;font-size:.85rem;width:auto}
+#set .linkbtn[aria-expanded="true"]{color:var(--acc)}
+#set .fsrow{align-items:center;gap:1rem}
+#fontPick{display:flex;align-items:center;gap:.2rem;flex:1;min-width:0}
+#fontPick button{border:0;background:transparent;font-size:1.5rem;line-height:1;padding:.2rem .5rem;color:var(--mute)}
+#fcenter{display:grid;justify-items:center;gap:.3rem;flex:1;min-width:0}
+#fname{font-size:1.35rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;cursor:pointer}
+#fdots{display:flex;gap:.35rem}
+#fdots i{width:.4rem;height:.4rem;border-radius:50%;background:var(--line);display:block}
+#fdots i.on{background:var(--acc)}
+#set .pill{display:inline-flex;border:1px solid var(--fg);border:1px solid color-mix(in srgb,var(--fg) 55%,var(--bg));border-radius:999px;overflow:hidden;flex:none}
+#set .pill button{border:0;border-radius:0;width:3.2rem;height:2.5rem;padding:0;font-size:1.4rem;display:inline-flex;align-items:center;justify-content:center;background:transparent}
+#set .pill button+button{border-left:1px solid color-mix(in srgb,var(--fg) 55%,var(--bg))}
+#set .icrow{gap:1rem}
+#set .icrow .seg{gap:.3rem}
+#set .icrow .seg button{width:2.7rem;height:2.5rem}
+#set .icrow .seg svg{width:1.4rem;height:1.4rem}
+#text{font-family:var(--ff,inherit)}
 .tc[data-t="auto"]{color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.55)}
-#mg{flex-wrap:wrap}
-#mg button{width:auto;height:auto;padding:.5rem .8rem;white-space:nowrap}
 .tc[aria-pressed="true"]{outline:2px solid var(--acc);outline-offset:2px}
 #auto{display:grid;gap:.5rem}
 #auto input[type=time]{font:inherit;color:var(--fg);background:transparent;border:1px solid var(--line);border-radius:8px;padding:.2rem .4rem}
@@ -301,24 +323,31 @@ body{overflow-x:clip}
 </div>
 
   <div id="set" class="glass" hidden>
-    <div class="row"><span>Размер текста</span><span><button id="sm" aria-label="Уменьшить шрифт">А−</button> <button id="sp" aria-label="Увеличить шрифт">А+</button></span></div>
-    <div class="row" id="mset"><span>Поля</span><span class="seg" id="mg"><button data-m="0">Узкие</button><button data-m="2">Средние</button><button data-m="4">Широкие</button></span></div>
-    <div class="row"><span>Выравнивание</span><span class="seg" id="ta">
-      <button data-a="left" aria-label="По левому краю" title="По левому краю"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 10h10M4 14h16M4 18h10"/></svg></button>
-      <button data-a="center" aria-label="По центру" title="По центру"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 10h10M4 14h16M7 18h10"/></svg></button>
-      <button data-a="justify" aria-label="По ширине" title="По ширине"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg></button>
-    </span></div>
-    <label class="row"><span>Исправлять дефисы</span><input type="checkbox" id="dfx"></label>
-    <div class="row"><span>Тема</span><button id="tb" aria-label="Выбрать тему" aria-expanded="false"></button></div>
-    <div id="thm" hidden>
-      <div id="pal"></div>
-      <div id="auto" hidden>
-        <div class="row"><span>День с</span><input type="time" id="t1"></div>
-        <div id="p1" class="pal"></div>
-        <div class="row"><span>Ночь с</span><input type="time" id="t2"></div>
-        <div id="p2" class="pal"></div>
-      </div>
+    <div id="pal" class="scrollrow"></div>
+    <button id="autoT" class="linkbtn" aria-expanded="false" hidden>Время переключения дня и ночи</button>
+    <div id="auto" hidden>
+      <div class="row"><span>День с</span><input type="time" id="t1"></div>
+      <div id="p1" class="scrollrow"></div>
+      <div class="row"><span>Ночь с</span><input type="time" id="t2"></div>
+      <div id="p2" class="scrollrow"></div>
     </div>
+    <div class="row fsrow">
+      <div id="fontPick"><button id="fprev" aria-label="Предыдущий шрифт">‹</button><div id="fcenter"><span id="fname"></span><span id="fdots"></span></div><button id="fnext" aria-label="Следующий шрифт">›</button></div>
+      <span class="pill"><button id="sm" aria-label="Уменьшить шрифт">−</button><button id="sp" aria-label="Увеличить шрифт">+</button></span>
+    </div>
+    <div class="row icrow">
+      <span class="seg" id="mg">
+        <button data-m="0" aria-label="Узкие поля" title="Узкие поля"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M5.5 8h13M5.5 12h13M5.5 16h13"/></svg></button>
+        <button data-m="2" aria-label="Средние поля" title="Средние поля"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7.5 8h9M7.5 12h9M7.5 16h9"/></svg></button>
+        <button data-m="4" aria-label="Широкие поля" title="Широкие поля"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9.5 8h5M9.5 12h5M9.5 16h5"/></svg></button>
+      </span>
+      <span class="seg" id="ta">
+        <button data-a="left" aria-label="По левому краю" title="По левому краю"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 10h10M4 14h16M4 18h10"/></svg></button>
+        <button data-a="center" aria-label="По центру" title="По центру"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 10h10M4 14h16M7 18h10"/></svg></button>
+        <button data-a="justify" aria-label="По ширине" title="По ширине"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg></button>
+      </span>
+    </div>
+    <label class="row"><span>Исправлять дефисы</span><input type="checkbox" id="dfx"></label>
     <button id="endh"></button>
     <button id="bkOpen" class="bkadd">Закладки</button>
   </div>
@@ -674,12 +703,18 @@ async function parseBook(name,buf){
 
 /* ---------- Настройки ---------- */
 let fs=ls.get('fs',19),th=ls.get('th','auto'),ta=ls.get('ta','left'),mg=[0,2,4].includes(+ls.get('mg',0))?+ls.get('mg',0):0;
+const FONTS=[
+  {n:'Literata',f:'Literata,Georgia,"Times New Roman",serif'},
+  {n:'Georgia',f:'Georgia,"Times New Roman",serif'},
+  {n:'Без засечек',f:'system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif'}
+];
+let ffi=+ls.get('ff',0);if(!FONTS[ffi])ffi=0;
 const THEMES=[
-  {id:'light',name:'Светлая',bg:'#f7f7f4',fg:'#23262b'},
+  {id:'light',name:'Белый',bg:'#f7f7f4',fg:'#23262b'},
   {id:'sepia',name:'Сепия',bg:'#f1e6d0',fg:'#3a2f22'},
-  {id:'gray',name:'Тёмно-серая',bg:'#232323',fg:'#d2d2d2'},
-  {id:'brown',name:'Тёмно-коричневая',bg:'#211a15',fg:'#dccfbf'},
-  {id:'dark',name:'Тёмно-синяя',bg:'#15181d',fg:'#d8dbe0'}
+  {id:'gray',name:'Серый',bg:'#232323',fg:'#d2d2d2'},
+  {id:'brown',name:'Коричневый',bg:'#211a15',fg:'#dccfbf'},
+  {id:'dark',name:'Синий',bg:'#15181d',fg:'#d8dbe0'}
 ];
 const TH=Object.fromEntries(THEMES.map(t=>[t.id,t]));
 let au=Object.assign({day:'sepia',night:'brown',t1:'07:00',t2:'19:00'},ls.get('auto',{}));
@@ -699,12 +734,15 @@ function prefs(){
   document.querySelectorAll('#p2 .tc').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.t===au.night)));
   document.querySelectorAll('#ta button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.a===ta)));
   document.querySelectorAll('#mg button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.m===mg)));
-  $('#auto').hidden=th!=='auto';
+  $('#autoT').hidden=th!=='auto';
+  $('#auto').hidden=th!=='auto'||$('#autoT').getAttribute('aria-expanded')!=='true';
+  root.style.setProperty('--ff',FONTS[ffi].f);
+  $('#fname').textContent=FONTS[ffi].n;$('#fname').style.fontFamily=FONTS[ffi].f;
+  $('#fdots').innerHTML=FONTS.map((x,i)=>'<i'+(i===ffi?' class="on"':'')+'></i>').join('');
   if(document.activeElement!==$('#t1'))$('#t1').value=au.t1;
   if(document.activeElement!==$('#t2'))$('#t2').value=au.t2;
   const A=$('#pal [data-t="auto"]');
   if(A)A.style.background='linear-gradient(135deg,'+TH[au.day].bg+' 50%,'+TH[au.night].bg+' 50%)';
-  $('#tb').style.background=c.bg;$('#tb').style.borderColor=c.fg;
 }
 
 /* ---------- Профиль и синхронизация (Supabase) ----------
@@ -1214,9 +1252,11 @@ addEventListener('drop',e=>{e.preventDefault();const f=e.dataTransfer&&e.dataTra
 const keep=fn=>{const f=frac(),i=cur;fn();requestAnimationFrame(()=>{goTo(i,f);updatePos();save()})};
 $('#sm').onclick=()=>keep(()=>{fs=Math.max(14,fs-1);ls.set('fs',fs);prefs()});
 $('#sp').onclick=()=>keep(()=>{fs=Math.min(30,fs+1);ls.set('fs',fs);prefs()});
+const setFont=d=>keep(()=>{ffi=(ffi+d+FONTS.length)%FONTS.length;ls.set('ff',ffi);prefs()});
+$('#fprev').onclick=()=>setFont(-1);$('#fnext').onclick=()=>setFont(1);$('#fname').onclick=()=>setFont(1);
 $('#mg').addEventListener('click',e=>{const b=e.target.closest('button');if(b)keep(()=>{mg=+b.dataset.m;ls.set('mg',mg);prefs()})});
-const closeSet=()=>{$('#set').hidden=true;$('#aa').setAttribute('aria-expanded','false');$('#thm').hidden=true;$('#tb').setAttribute('aria-expanded','false')};
-const toggleSet=(e,inLib)=>{e.stopPropagation();updateEnd();const st=$('#set'),o=st.hidden;st.classList.toggle('lib',inLib);st.style.top=inLib?(e.currentTarget.getBoundingClientRect().bottom+6)+'px':'';st.hidden=!o;$('#aa').setAttribute('aria-expanded',String(o&&!inLib))};
+const closeSet=()=>{$('#set').hidden=true;$('#aa').setAttribute('aria-expanded','false');$('#autoT').setAttribute('aria-expanded','false');$('#auto').hidden=true};
+const toggleSet=(e,inLib)=>{e.stopPropagation();updateEnd();const st=$('#set'),o=st.hidden;st.hidden=!o;$('#aa').setAttribute('aria-expanded',String(o&&!inLib))};
 $('#aa').onclick=e=>toggleSet(e,false);
 $('#aa2').onclick=e=>toggleSet(e,true);
 $('#aa3').onclick=e=>toggleSet(e,true);
@@ -1388,7 +1428,7 @@ const chip=t=>'<button class="tc" data-t="'+t.id+'" aria-pressed="false" style="
 $('#pal').innerHTML='<button class="tc" data-t="auto" aria-pressed="false">Авто</button>'+THEMES.map(chip).join('');
 $('#p1').innerHTML=THEMES.map(chip).join('');
 $('#p2').innerHTML=THEMES.map(chip).join('');
-$('#tb').onclick=()=>{const o=$('#thm').hidden;$('#thm').hidden=!o;$('#tb').setAttribute('aria-expanded',String(o))};
+$('#autoT').onclick=()=>{const o=$('#autoT').getAttribute('aria-expanded')!=='true';$('#autoT').setAttribute('aria-expanded',String(o));$('#auto').hidden=!o};
 const onChip=(sel,fn)=>$(sel).addEventListener('click',e=>{const b=e.target.closest('.tc');if(b){fn(b.dataset.t);prefs()}});
 onChip('#pal',v=>{th=v;ls.set('th',th)});
 onChip('#p1',v=>{au.day=v;ls.set('auto',au)});
