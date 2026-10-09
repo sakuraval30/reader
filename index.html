@@ -41,7 +41,7 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;a
 #mset input[type=range]{flex:1}
 #bar{position:absolute;left:0;bottom:-1px;height:2px;width:var(--p,0%);background:var(--acc)}
 main{max-width:36rem;margin:0 auto;padding:1.6rem calc(1.1rem + var(--mg,0)*.9rem) 2rem}
-#text{font-size:var(--fs);line-height:1.72;hyphens:auto;-webkit-hyphens:auto;overflow-wrap:break-word}
+#text{font-size:var(--fs);line-height:var(--lh,1.72);hyphens:auto;-webkit-hyphens:auto;overflow-wrap:break-word}
 #text p{margin:0 0 .85em}
 #text h1,#text h2,#text h3{line-height:1.25;font-weight:600;margin:1.6em 0 .7em;text-wrap:balance}
 #text h2{font-size:1.35em}#text h3{font-size:1.12em}
@@ -127,7 +127,7 @@ a.fn{cursor:pointer}
 #onb h3{margin:0;font-size:1.3rem}
 #onb p{color:var(--mute);margin:0}
 #pal,.pal{display:flex;flex-wrap:wrap;gap:.5rem}
-.tc{width:auto;height:auto;padding:.5rem 1rem;border-radius:999px;font-size:.85rem;font-weight:600;border:1px solid var(--line);white-space:nowrap}
+.tc{width:auto;height:auto;padding:.5rem 1rem;border-radius:999px;font-size:.85rem;font-weight:400;border:1px solid var(--line);white-space:nowrap}
 #pal,#p1,#p2{display:flex;flex-wrap:nowrap;gap:.5rem}
 .scrollrow{overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0 -1rem;padding:.35rem 1rem}
 .scrollrow::-webkit-scrollbar{display:none}
@@ -138,23 +138,33 @@ a.fn{cursor:pointer}
 #set .linkbtn{border:0;background:transparent;color:var(--mute);text-align:left;padding:.2rem 0;font-size:.85rem;width:auto}
 #set .linkbtn[aria-expanded="true"]{color:var(--acc)}
 #set .fsrow{align-items:center;gap:1rem}
-#fontPick{display:flex;align-items:center;gap:.2rem;flex:1;min-width:0}
-#fontPick button{border:0;background:transparent;font-size:1.5rem;line-height:1;padding:.2rem .5rem;color:var(--mute)}
-#fcenter{display:grid;justify-items:center;gap:.3rem;flex:1;min-width:0}
+#fontPick{display:grid;gap:.35rem;justify-items:start;flex:1;min-width:0}
 #fname{font-size:1.35rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;cursor:pointer}
-#fdots{display:flex;gap:.35rem}
-#fdots i{width:.4rem;height:.4rem;border-radius:50%;background:var(--line);display:block}
-#fdots i.on{background:var(--acc)}
+#fdots{display:flex;gap:.1rem}
+#fdots button{width:1rem;height:1rem;padding:0;border:0;background:transparent;display:grid;place-items:center}
+#fdots button::before{content:"";width:.42rem;height:.42rem;border-radius:50%;background:var(--line);display:block}
+#fdots button.on::before{background:var(--acc)}
 #set .pill{display:inline-flex;border:1px solid var(--fg);border:1px solid color-mix(in srgb,var(--fg) 55%,var(--bg));border-radius:999px;overflow:hidden;flex:none}
-#set .pill button{border:0;border-radius:0;width:3.2rem;height:2.5rem;padding:0;font-size:1.4rem;display:inline-flex;align-items:center;justify-content:center;background:transparent}
+#set .pill button{border:0;border-radius:0;width:3.2rem;height:2.5rem;padding:0;display:inline-flex;align-items:center;justify-content:center;background:transparent}
+#set .pill svg{width:1.2rem;height:1.2rem;display:block}
 #set .pill button+button{border-left:1px solid color-mix(in srgb,var(--fg) 55%,var(--bg))}
 #set .icrow{gap:1rem}
 #set .icrow .seg{gap:.3rem}
 #set .icrow .seg button{width:2.7rem;height:2.5rem}
 #set .icrow .seg svg{width:1.4rem;height:1.4rem}
 #text{font-family:var(--ff,inherit)}
+#set.lib .rdonly{display:none}
+#set .moreT{display:block;width:100%;text-align:center;text-transform:uppercase;letter-spacing:.05em;font-size:.78rem;padding:.7rem 0 .2rem;margin-top:.3rem}
+#more{display:grid;gap:.7rem;padding-top:.5rem}
+#more .seg{gap:.3rem}
+#set .row>.seg{flex:none}
+@media (min-width:820px){
+  #set{top:calc(env(safe-area-inset-top,0px) + 4.2rem);bottom:auto;left:auto;right:.8rem;transform:none;width:min(23rem,calc(100vw - 1.6rem));max-height:calc(100vh - 6rem);border-radius:14px;border-bottom:1px solid var(--line);padding:.9rem 1rem 1rem;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+  #set.lib{top:calc(env(safe-area-inset-top,0px) + 6vh + 3.8rem)}
+  :root:not(.ispdf) main{max-width:calc(36rem + (4 - var(--mg,0)) * 6.5rem);padding-left:1.6rem;padding-right:1.6rem}
+}
 .tc[data-t="auto"]{color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.55)}
-.tc[aria-pressed="true"]{outline:2px solid var(--acc);outline-offset:2px}
+.tc[aria-pressed="true"]{outline:2.5px solid var(--acc);outline-offset:0}
 #auto{display:grid;gap:.5rem}
 #auto input[type=time]{font:inherit;color:var(--fg);background:transparent;border:1px solid var(--line);border-radius:8px;padding:.2rem .4rem}
 #endh{width:100%}
@@ -285,7 +295,7 @@ body{overflow-x:clip}
   <nav id="tabs" aria-label="Разделы"><button data-p="home" aria-pressed="true">Главная</button><button data-p="lib" aria-pressed="false">Библиотека</button></nav>
   <p id="msg" role="status"></p>
   <div id="pgH">
-    <div class="ph1"><h1 id="hTitle">Главная</h1><div class="acts"><button id="aa2" class="ib" aria-label="Оформление">Аа</button><span class="ringw"><svg class="ring" viewBox="0 0 44 44" aria-hidden="true"><circle class="r0" cx="22" cy="22" r="19"/><circle class="r1" id="ringp" cx="22" cy="22" r="19"/></svg><label class="btn add" for="f" aria-label="Добавить книгу" title="Добавить книгу"></label></span><button id="prof1" class="ib avatar" aria-label="Профиль"><span class="avPic"></span><span class="avDot"></span></button></div></div>
+    <div class="ph1"><h1 id="hTitle">Главная</h1><div class="acts"><button id="aa2" class="ib" aria-label="Настройки темы"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button><span class="ringw"><svg class="ring" viewBox="0 0 44 44" aria-hidden="true"><circle class="r0" cx="22" cy="22" r="19"/><circle class="r1" id="ringp" cx="22" cy="22" r="19"/></svg><label class="btn add" for="f" aria-label="Добавить книгу" title="Добавить книгу"></label></span><button id="prof1" class="ib avatar" aria-label="Профиль"><span class="avPic"></span><span class="avDot"></span></button></div></div>
     <p id="hSub" class="em" hidden></p>
     <p id="hEmpty">Нажмите «+», чтобы добавить книгу с этого устройства (EPUB, FB2, PDF; файл можно перетащить в окно). Файл останется здесь, а место, где вы остановились, запомнится.</p>
     <h2 class="sh">Продолжить</h2><div id="rowC" class="row2"></div>
@@ -295,7 +305,7 @@ body{overflow-x:clip}
   </div>
   <div id="pgL" hidden>
     <div class="ph1"><h1 id="lt">Библиотека</h1><div class="acts">
-      <button id="aa3" class="ib" aria-label="Оформление">Аа</button>
+      <button id="aa3" class="ib" aria-label="Настройки темы"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
       <button id="colb" class="ib" aria-label="Коллекции"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h.01M9 6h11M4 12h.01M9 12h11M4 18h.01M9 18h11"/></svg></button>
       <button id="sortb" class="ib" aria-label="Сортировка"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5v14M8 19l-3-3M8 19l3-3M16 19V5M16 5l-3 3M16 5l3 3"/></svg></button>
       <button id="prof2" class="ib avatar" aria-label="Профиль"><span class="avPic"></span><span class="avDot"></span></button>
@@ -331,27 +341,38 @@ body{overflow-x:clip}
       <div class="row"><span>Ночь с</span><input type="time" id="t2"></div>
       <div id="p2" class="scrollrow"></div>
     </div>
+    <div class="rdonly">
     <div class="row fsrow">
-      <div id="fontPick"><button id="fprev" aria-label="Предыдущий шрифт">‹</button><div id="fcenter"><span id="fname"></span><span id="fdots"></span></div><button id="fnext" aria-label="Следующий шрифт">›</button></div>
-      <span class="pill"><button id="sm" aria-label="Уменьшить шрифт">−</button><button id="sp" aria-label="Увеличить шрифт">+</button></span>
+      <div id="fontPick"><span id="fname"></span><span id="fdots"></span></div>
+      <span class="pill"><button id="sm" aria-label="Уменьшить шрифт"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h12"/></svg></button><button id="sp" aria-label="Увеличить шрифт"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h12M12 6v12"/></svg></button></span>
     </div>
     <div class="row icrow">
+      <span class="seg" id="lh">
+        <button data-l="1.5" aria-label="Малый межстрочный интервал" title="Малый межстрочный интервал"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">M5 7.5h14M5 10.5h14M5 13.5h14M5 16.5h14</svg></button>
+        <button data-l="1.72" aria-label="Средний межстрочный интервал" title="Средний межстрочный интервал"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">M5 6h14M5 10h14M5 14h14M5 18h14</svg></button>
+        <button data-l="2" aria-label="Большой межстрочный интервал" title="Большой межстрочный интервал"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">M5 4.5h14M5 9.5h14M5 14.5h14M5 19.5h14</svg></button>
+      </span>
       <span class="seg" id="mg">
         <button data-m="0" aria-label="Узкие поля" title="Узкие поля"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M5.5 8h13M5.5 12h13M5.5 16h13"/></svg></button>
         <button data-m="2" aria-label="Средние поля" title="Средние поля"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7.5 8h9M7.5 12h9M7.5 16h9"/></svg></button>
         <button data-m="4" aria-label="Широкие поля" title="Широкие поля"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9.5 8h5M9.5 12h5M9.5 16h5"/></svg></button>
       </span>
-      <span class="seg" id="ta">
-        <button data-a="left" aria-label="По левому краю" title="По левому краю"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 10h10M4 14h16M4 18h10"/></svg></button>
-        <button data-a="center" aria-label="По центру" title="По центру"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 10h10M4 14h16M7 18h10"/></svg></button>
-        <button data-a="justify" aria-label="По ширине" title="По ширине"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg></button>
-      </span>
     </div>
-    <label class="row"><span>Исправлять дефисы</span><input type="checkbox" id="dfx"></label>
-    <button id="endh"></button>
     <button id="bkOpen" class="bkadd">Закладки</button>
+    <button id="moreT" class="linkbtn moreT" aria-expanded="false">Дополнительные настройки</button>
+    <div id="more" hidden>
+      <div class="row"><span>Выравнивание</span>
+        <span class="seg" id="ta">
+          <button data-a="left" aria-label="По левому краю" title="По левому краю"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 10h10M4 14h16M4 18h10"/></svg></button>
+          <button data-a="center" aria-label="По центру" title="По центру"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 10h10M4 14h16M7 18h10"/></svg></button>
+          <button data-a="justify" aria-label="По ширине" title="По ширине"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg></button>
+        </span>
+      </div>
+      <label class="row"><span>Исправлять дефисы</span><input type="checkbox" id="dfx"></label>
+      <button id="endh"></button>
+    </div>
+    </div>
   </div>
-
   <div id="sy" class="glass" hidden>
     <h3>Профиль</h3>
     <div class="prow">
@@ -709,6 +730,7 @@ const FONTS=[
   {n:'Без засечек',f:'system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif'}
 ];
 let ffi=+ls.get('ff',0);if(!FONTS[ffi])ffi=0;
+let lh=+ls.get('lh',1.72);if(![1.5,1.72,2].includes(lh))lh=1.72;
 const THEMES=[
   {id:'light',name:'Белый',bg:'#f7f7f4',fg:'#23262b'},
   {id:'sepia',name:'Сепия',bg:'#f1e6d0',fg:'#3a2f22'},
@@ -726,6 +748,7 @@ function prefs(){
   root.style.setProperty('--fs',fs+'px');
   root.style.setProperty('--ta',ta);
   root.style.setProperty('--mg',mg);
+  root.style.setProperty('--lh',lh);
     const et=effTheme(),c=TH[et];
   root.setAttribute('data-theme',et);
   $('#dfx').checked=dashFix;
@@ -734,11 +757,12 @@ function prefs(){
   document.querySelectorAll('#p2 .tc').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.t===au.night)));
   document.querySelectorAll('#ta button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.a===ta)));
   document.querySelectorAll('#mg button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.m===mg)));
+  document.querySelectorAll('#lh button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.l===lh)));
   $('#autoT').hidden=th!=='auto';
   $('#auto').hidden=th!=='auto'||$('#autoT').getAttribute('aria-expanded')!=='true';
   root.style.setProperty('--ff',FONTS[ffi].f);
   $('#fname').textContent=FONTS[ffi].n;$('#fname').style.fontFamily=FONTS[ffi].f;
-  $('#fdots').innerHTML=FONTS.map((x,i)=>'<i'+(i===ffi?' class="on"':'')+'></i>').join('');
+  $('#fdots').innerHTML=FONTS.map((x,i)=>'<button data-i="'+i+'" aria-label="'+x.n+'"'+(i===ffi?' class="on"':'')+'></button>').join('');
   if(document.activeElement!==$('#t1'))$('#t1').value=au.t1;
   if(document.activeElement!==$('#t2'))$('#t2').value=au.t2;
   const A=$('#pal [data-t="auto"]');
@@ -1094,7 +1118,7 @@ async function load(name,buf,start,silent){
   try{
     const b=await parseBook(name,buf);
     if(!b.chapters.length)throw new Error('В книге не нашлось текста');
-    book=b;key=name+':'+buf.byteLength;
+    book=b;key=name+':'+buf.byteLength;root.classList.toggle('ispdf',!!b.pdf);
     let e=ent(key);
     if(!e){
       let r=null;
@@ -1252,11 +1276,14 @@ addEventListener('drop',e=>{e.preventDefault();const f=e.dataTransfer&&e.dataTra
 const keep=fn=>{const f=frac(),i=cur;fn();requestAnimationFrame(()=>{goTo(i,f);updatePos();save()})};
 $('#sm').onclick=()=>keep(()=>{fs=Math.max(14,fs-1);ls.set('fs',fs);prefs()});
 $('#sp').onclick=()=>keep(()=>{fs=Math.min(30,fs+1);ls.set('fs',fs);prefs()});
-const setFont=d=>keep(()=>{ffi=(ffi+d+FONTS.length)%FONTS.length;ls.set('ff',ffi);prefs()});
-$('#fprev').onclick=()=>setFont(-1);$('#fnext').onclick=()=>setFont(1);$('#fname').onclick=()=>setFont(1);
+const setFontTo=i=>keep(()=>{ffi=i;ls.set('ff',ffi);prefs()});
+$('#fname').onclick=()=>setFontTo((ffi+1)%FONTS.length);
+$('#fdots').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setFontTo(+b.dataset.i)});
+$('#lh').addEventListener('click',e=>{const b=e.target.closest('button');if(b)keep(()=>{lh=+b.dataset.l;ls.set('lh',lh);prefs()})});
+$('#moreT').onclick=()=>{const o=$('#moreT').getAttribute('aria-expanded')!=='true';$('#moreT').setAttribute('aria-expanded',String(o));$('#more').hidden=!o};
 $('#mg').addEventListener('click',e=>{const b=e.target.closest('button');if(b)keep(()=>{mg=+b.dataset.m;ls.set('mg',mg);prefs()})});
-const closeSet=()=>{$('#set').hidden=true;$('#aa').setAttribute('aria-expanded','false');$('#autoT').setAttribute('aria-expanded','false');$('#auto').hidden=true};
-const toggleSet=(e,inLib)=>{e.stopPropagation();updateEnd();const st=$('#set'),o=st.hidden;st.hidden=!o;$('#aa').setAttribute('aria-expanded',String(o&&!inLib))};
+const closeSet=()=>{$('#set').hidden=true;$('#aa').setAttribute('aria-expanded','false');$('#autoT').setAttribute('aria-expanded','false');$('#auto').hidden=true;$('#moreT').setAttribute('aria-expanded','false');$('#more').hidden=true};
+const toggleSet=(e,inLib)=>{e.stopPropagation();updateEnd();const st=$('#set'),o=st.hidden;st.classList.toggle('lib',inLib);st.hidden=!o;$('#aa').setAttribute('aria-expanded',String(o&&!inLib))};
 $('#aa').onclick=e=>toggleSet(e,false);
 $('#aa2').onclick=e=>toggleSet(e,true);
 $('#aa3').onclick=e=>toggleSet(e,true);
