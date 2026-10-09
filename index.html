@@ -127,7 +127,7 @@ a.fn{cursor:pointer}
 #onb h3{margin:0;font-size:1.3rem}
 #onb p{color:var(--mute);margin:0}
 #pal,.pal{display:flex;flex-wrap:wrap;gap:.5rem}
-.tc{width:auto;height:auto;padding:.5rem 1rem;border-radius:999px;font-size:.85rem;font-weight:400;border:1px solid var(--line);white-space:nowrap}
+.tc{width:auto;height:auto;padding:.35rem .8rem;border-radius:999px;font-size:.8rem;font-weight:400;border:1px solid var(--line);white-space:nowrap}
 #pal,#p1,#p2{display:flex;flex-wrap:nowrap;gap:.5rem}
 .scrollrow{overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0 -1rem;padding:.35rem 1rem}
 .scrollrow::-webkit-scrollbar{display:none}
@@ -138,8 +138,11 @@ a.fn{cursor:pointer}
 #set .linkbtn{border:0;background:transparent;color:var(--mute);text-align:left;padding:.2rem 0;font-size:.85rem;width:auto}
 #set .linkbtn[aria-expanded="true"]{color:var(--acc)}
 #set .fsrow{align-items:center;gap:1rem}
-#fontPick{display:grid;gap:.35rem;justify-items:start;flex:1;min-width:0}
-#fname{font-size:1.35rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;cursor:pointer}
+#fontPick{display:flex;align-items:center;gap:.1rem;flex:none}
+#fcenter{display:grid;justify-items:center;gap:.3rem;min-width:7rem}
+#fname{font-size:1.25rem;white-space:nowrap;cursor:pointer}
+#fontPick .far{border:0;background:transparent;color:var(--fg);padding:.4rem .3rem;width:auto;height:auto;display:inline-flex}
+#fontPick .far svg{width:1.3rem;height:1.3rem}
 #fdots{display:flex;gap:.1rem}
 #fdots button{width:1rem;height:1rem;padding:0;border:0;background:transparent;display:grid;place-items:center}
 #fdots button::before{content:"";width:.42rem;height:.42rem;border-radius:50%;background:var(--line);display:block}
@@ -154,12 +157,13 @@ a.fn{cursor:pointer}
 #set .icrow .seg svg{width:1.4rem;height:1.4rem}
 #text{font-family:var(--ff,inherit)}
 #set.lib .rdonly{display:none}
+@media (hover:hover) and (pointer:fine){.scrollrow{scrollbar-width:thin;cursor:grab}.scrollrow::-webkit-scrollbar{display:block;height:6px}.scrollrow::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}}
 #set .moreT{display:block;width:100%;text-align:center;text-transform:uppercase;letter-spacing:.05em;font-size:.78rem;padding:.7rem 0 .2rem;margin-top:.3rem}
 #more{display:grid;gap:.7rem;padding-top:.5rem}
 #more .seg{gap:.3rem}
 #set .row>.seg{flex:none}
 @media (min-width:820px){
-  #set{top:calc(env(safe-area-inset-top,0px) + 4.2rem);bottom:auto;left:auto;right:.8rem;transform:none;width:min(23rem,calc(100vw - 1.6rem));max-height:calc(100vh - 6rem);border-radius:14px;border-bottom:1px solid var(--line);padding:.9rem 1rem 1rem;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+  #set{top:calc(env(safe-area-inset-top,0px) + 4.2rem);bottom:auto;left:auto;right:.8rem;transform:none;width:min(26rem,calc(100vw - 1.6rem));max-height:calc(100vh - 6rem);border-radius:14px;border-bottom:1px solid var(--line);padding:.9rem 1rem 1rem;box-shadow:0 12px 40px rgba(0,0,0,.3)}
   #set.lib{top:calc(env(safe-area-inset-top,0px) + 6vh + 3.8rem)}
   :root:not(.ispdf) main{max-width:calc(36rem + (4 - var(--mg,0)) * 6.5rem);padding-left:1.6rem;padding-right:1.6rem}
 }
@@ -343,14 +347,14 @@ body{overflow-x:clip}
     </div>
     <div class="rdonly">
     <div class="row fsrow">
-      <div id="fontPick"><span id="fname"></span><span id="fdots"></span></div>
+      <div id="fontPick"><button id="fprev" class="far" aria-label="Предыдущий шрифт"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><div id="fcenter"><span id="fname"></span><span id="fdots"></span></div><button id="fnext" class="far" aria-label="Следующий шрифт"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button></div>
       <span class="pill"><button id="sm" aria-label="Уменьшить шрифт"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h12"/></svg></button><button id="sp" aria-label="Увеличить шрифт"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h12M12 6v12"/></svg></button></span>
     </div>
     <div class="row icrow">
       <span class="seg" id="lh">
-        <button data-l="1.5" aria-label="Малый межстрочный интервал" title="Малый межстрочный интервал"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">M5 7.5h14M5 10.5h14M5 13.5h14M5 16.5h14</svg></button>
-        <button data-l="1.72" aria-label="Средний межстрочный интервал" title="Средний межстрочный интервал"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">M5 6h14M5 10h14M5 14h14M5 18h14</svg></button>
-        <button data-l="2" aria-label="Большой межстрочный интервал" title="Большой межстрочный интервал"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">M5 4.5h14M5 9.5h14M5 14.5h14M5 19.5h14</svg></button>
+        <button data-l="1.5" aria-label="Малый межстрочный интервал" title="Малый межстрочный интервал"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7.5h14M5 10.5h14M5 13.5h14M5 16.5h14"/></svg></button>
+        <button data-l="1.72" aria-label="Средний межстрочный интервал" title="Средний межстрочный интервал"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6h14M5 10h14M5 14h14M5 18h14"/></svg></button>
+        <button data-l="2" aria-label="Большой межстрочный интервал" title="Большой межстрочный интервал"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5h14M5 9.5h14M5 14.5h14M5 19.5h14"/></svg></button>
       </span>
       <span class="seg" id="mg">
         <button data-m="0" aria-label="Узкие поля" title="Узкие поля"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M5.5 8h13M5.5 12h13M5.5 16h13"/></svg></button>
@@ -1278,8 +1282,18 @@ $('#sm').onclick=()=>keep(()=>{fs=Math.max(14,fs-1);ls.set('fs',fs);prefs()});
 $('#sp').onclick=()=>keep(()=>{fs=Math.min(30,fs+1);ls.set('fs',fs);prefs()});
 const setFontTo=i=>keep(()=>{ffi=i;ls.set('ff',ffi);prefs()});
 $('#fname').onclick=()=>setFontTo((ffi+1)%FONTS.length);
+$('#fprev').onclick=()=>setFontTo((ffi-1+FONTS.length)%FONTS.length);
+$('#fnext').onclick=()=>setFontTo((ffi+1)%FONTS.length);
 $('#fdots').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setFontTo(+b.dataset.i)});
 $('#lh').addEventListener('click',e=>{const b=e.target.closest('button');if(b)keep(()=>{lh=+b.dataset.l;ls.set('lh',lh);prefs()})});
+document.querySelectorAll('.scrollrow').forEach(r=>{
+  r.addEventListener('wheel',e=>{if(r.scrollWidth>r.clientWidth&&Math.abs(e.deltaY)>Math.abs(e.deltaX)){r.scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});
+  let d=null,moved=false;
+  r.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse')return;d={x:e.clientX,l:r.scrollLeft};moved=false});
+  addEventListener('pointermove',e=>{if(!d)return;const dx=e.clientX-d.x;if(Math.abs(dx)>4)moved=true;if(moved)r.scrollLeft=d.l-dx});
+  addEventListener('pointerup',()=>{d=null});
+  r.addEventListener('click',e=>{if(moved){e.stopPropagation();e.preventDefault();moved=false}},true);
+});
 $('#moreT').onclick=()=>{const o=$('#moreT').getAttribute('aria-expanded')!=='true';$('#moreT').setAttribute('aria-expanded',String(o));$('#more').hidden=!o};
 $('#mg').addEventListener('click',e=>{const b=e.target.closest('button');if(b)keep(()=>{mg=+b.dataset.m;ls.set('mg',mg);prefs()})});
 const closeSet=()=>{$('#set').hidden=true;$('#aa').setAttribute('aria-expanded','false');$('#autoT').setAttribute('aria-expanded','false');$('#auto').hidden=true;$('#moreT').setAttribute('aria-expanded','false');$('#more').hidden=true};
