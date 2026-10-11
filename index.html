@@ -168,6 +168,11 @@ a.fn{cursor:pointer}
 .sr small{display:block;color:var(--mute);font-size:.78rem}
 .sr span{display:block;font-size:.92rem;line-height:1.4}
 .sqmsg{padding:.4rem 1rem;color:var(--mute);font-size:.9rem;margin:0}
+.fmc{font-style:normal;font-size:.62rem;font-weight:600;letter-spacing:.03em;padding:.05rem .42rem;border:1px solid currentColor;border-radius:999px;opacity:.6;cursor:pointer;display:inline-block;line-height:1.4}
+.fmc.on{opacity:1;background:color-mix(in srgb,currentColor 18%,transparent)}
+.cc .pl2{display:flex;align-items:center;justify-content:space-between;gap:.4rem}
+.cc .fmw{display:inline-flex;gap:.25rem}
+.fmr{display:flex;gap:.3rem;margin-top:.2rem;color:var(--mute)}
 #rn{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(26rem,calc(100vw - 1.2rem));z-index:13;border-radius:14px;padding:1.1rem;box-shadow:0 12px 40px rgba(0,0,0,.3);display:grid;gap:.8rem}
 #rn h3{margin:0}
 #rn label{display:grid;gap:.3rem;color:var(--mute);font-size:.85rem}
@@ -457,6 +462,7 @@ body{overflow-x:clip}
 <div id="bkl" class="glass" hidden><h3>Закладки<button class="pclose" aria-label="Свернуть"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button></h3><div id="bklList"></div></div>
 <div id="bm" class="glass" hidden></div>
 <input type="file" id="covf" accept="image/*" hidden>
+<input type="file" id="vf" hidden>
 <div id="rn" class="glass" hidden><h3>Название и автор</h3><label>Название<input type="text" id="rnT" autocomplete="off"></label><label>Автор<input type="text" id="rnA" autocomplete="off"></label><div class="rnbtns"><button id="rnCancel">Отмена</button><button id="rnOk">Сохранить</button></div></div>
 <div id="srt" class="glass" hidden></div>
 <div id="cp" class="glass" hidden></div>
@@ -969,14 +975,31 @@ const CMP={
   title:(a,b)=>(a.title||'').localeCompare(b.title||'','ru'),
   author:(a,b)=>(a.author||'').localeCompare(b.author||'','ru')||(a.title||'').localeCompare(b.title||'','ru')
 };
+let attachTarget=null,pendingAttach=null,pendingPP=null;
+const vers=b=>b.g?lib.filter(x=>x.g===b.g):[b];
+const isPri=b=>{if(!b.g)return true;let m=null;for(const x of lib){if(x.g===b.g&&(!m||(x.t||0)>(m.t||0)))m=x}return m===b};
+const fmtOf=x=>{const n=String(x.name||String(x.id||'').replace(/:\d+$/,'')).toLowerCase();if(/\.fb2\.zip$/.test(n))return'FB2';const m=n.match(/\.([a-z0-9]+)$/);return m?m[1].toUpperCase():'ФАЙЛ'};
+const chips=b=>vers(b).length>1?vers(b).map(x=>'<i class="fmc'+(x===b?' on':'')+'" data-v="'+lib.indexOf(x)+'">'+fmtOf(x)+'</i>').join(''):'';
+function gsync(b){vers(b).forEach(x=>{if(x===b)return;x.st=b.st;x.cs=(b.cs||[]).slice();x.doneAt=b.doneAt;if(b.tcustom){x.title=b.title;x.author=b.author;x.tcustom=true}})}
+function posFromPercent(b,p){
+  const target=Math.min(.999,Math.max(0,p/100))*b.total;let ch=0;
+  for(let i=0;i<b.chapters.length;i++){if(b.chapters[i].aux)continue;if(b.off[i]<=target)ch=i;else break}
+  const c=b.chapters[ch],len=c.aux?0:(c.len||1);
+  return{ch,f:len?Math.min(1,Math.max(0,(target-b.off[ch])/len)):0};
+}
+async function openVersion(x){
+  const pr=vers(x).reduce((m,y)=>(y.t||0)>(m.t||0)?y:m,x);
+  if(pr!==x)pendingPP={id:x.id,p:pr.p||0};
+  await openBook(x);pendingPP=null;
+}
 const coverEl=(b,i,cls)=>b.cv===1?'<img class="'+cls+'" data-c="'+i+'" alt="">':'<span class="'+cls+' ph'+(b.ph?' gh':'')+'" style="--h:'+hue(b.title)+'"><b>'+esc(b.title||'')+'</b><small>'+esc(b.author||'')+'</small></span>';
 function tile(b,i){
   const p=b.p||0,st=b.ph?'Нет на устройстве'+(p?', '+p+' %':''):(isDone(b)?'Закончено':p>0?p+' %':'<em class="nw">Новая</em>');
-  return '<div class="tl"><button class="cb" data-o="'+i+'" aria-label="'+esc(b.title||'').replace(/"/g,'&quot;')+'">'+coverEl(b,i,'cvr')+'</button><div class="ts"><span>'+st+'</span><button class="mb" data-m="'+i+'" aria-label="Меню книги">…</button></div></div>';
+  return '<div class="tl"><button class="cb" data-o="'+i+'" aria-label="'+esc(b.title||'').replace(/"/g,'&quot;')+'">'+coverEl(b,i,'cvr')+'</button><div class="ts"><span>'+st+'</span><button class="mb" data-m="'+i+'" aria-label="Меню книги">…</button></div>'+(vers(b).length>1?'<div class="fmr">'+chips(b)+'</div>':'')+'</div>';
 }
 function card(b,i){
   const p=isDone(b)?100:(b.p||0);
-  return '<button class="cc" data-o="'+i+'" style="--h:'+hue(b.title)+'"><span class="bgc" data-cb="'+i+'"></span>'+coverEl(b,i,'cvs')+'<span class="tx"><b>'+esc(b.title||'')+'</b><small>'+esc(b.author||'')+'</small><small>'+(b.ph?'Нет на устройстве, '+p+' %':(isDone(b)?'Закончено':p+' %'))+'</small><em class="tr ctr"><i style="width:'+p+'%"></i></em></span></button>';
+  return '<button class="cc" data-o="'+i+'" style="--h:'+hue(b.title)+'"><span class="bgc" data-cb="'+i+'"></span>'+coverEl(b,i,'cvs')+'<span class="tx"><b>'+esc(b.title||'')+'</b><small>'+esc(b.author||'')+'</small><small class="pl2"><span>'+(b.ph?'Нет на устройстве, '+p+' %':(isDone(b)?'Закончено':p+' %'))+'</span><span class="fmw">'+chips(b)+'</span></small><em class="tr ctr"><i style="width:'+p+'%"></i></em></span></button>';
 }
 const filterName=()=>({all:'Библиотека',want:'Хочу прочитать',later:'Заброшено',done:'Закончено'}[lf]||(cols.find(c=>c.id===lf)||{}).name||'Библиотека');
 function ringVal(){
@@ -1007,12 +1030,12 @@ function autoArchive(){
 function renderLib(){
   autoArchive();
   const ix=b=>lib.indexOf(b),emp=t=>'<small class="em">'+t+'</small>';
-  const cont=lib.filter(b=>(b.p||0)>0&&!isDone(b)&&b.st!=='later').sort(CMP.recent).slice(0,10);
-  const want=lib.filter(b=>b.st==='want'),later=lib.filter(b=>b.st==='later');
+  const cont=lib.filter(b=>isPri(b)&&(b.p||0)>0&&!isDone(b)&&b.st!=='later').sort(CMP.recent).slice(0,10);
+  const want=lib.filter(b=>isPri(b)&&b.st==='want'),later=lib.filter(b=>isPri(b)&&b.st==='later');
   $('#rowC').innerHTML=cont.length?cont.map(b=>card(b,ix(b))).join(''):emp('Здесь появятся книги, которые вы читаете');
   $('#rowW').innerHTML=want.length?want.map(b=>tile(b,ix(b))).join(''):emp('В меню книги («…» в библиотеке) выберите «Хочу прочитать»');
   $('#rowL').innerHTML=later.length?later.map(b=>tile(b,ix(b))).join(''):emp('Здесь будут книги, которые вы забросили');
-  const arr=lib.filter(b=>inF(b,lf)).sort(CMP[lsort]||CMP.recent);
+  const arr=lib.filter(b=>isPri(b)&&inF(b,lf)).sort(CMP[lsort]||CMP.recent);
   $('#glib').innerHTML='<label class="tl" for="f"><span class="cvr plus">+</span><div class="ts"><span>Добавить книгу</span></div></label>'+arr.map(b=>tile(b,ix(b))).join('');
   $('#lt').textContent=filterName();
   $('#hEmpty').hidden=lib.length>0;
@@ -1038,12 +1061,12 @@ function openBM(i,btn){
   const it=(k,t)=>'<button data-k="'+k+'">'+t+'</button>';
   $('#bm').innerHTML=it('want',b.st==='want'?'Убрать из «Хочу прочитать»':'Хочу прочитать')+it('later',b.st==='later'?'Вернуть из заброшенных':'Забросить')+it('done',b.st==='done'?'Отметить непрочитанной':'Отметить прочитанной')
     +(cols.length?'<hr>'+cols.map(c=>'<button data-col="'+c.id+'" aria-pressed="'+(b.cs||[]).includes(c.id)+'">'+esc(c.name)+'</button>').join(''):'')
-    +'<hr><button data-k="ren">Изменить название и автора</button><button data-k="cov">Изменить обложку</button><button data-k="del" class="dng">Удалить с устройства</button>';
+    +'<hr><button data-k="addv">Добавить другой формат</button><button data-k="ren">Изменить название и автора</button><button data-k="cov">Изменить обложку</button><button data-k="del" class="dng">Удалить с устройства</button>';
   $('#srt').hidden=$('#cp').hidden=true;
   place($('#bm'),btn);
 }
 function renderCP(){
-  const n=f=>lib.filter(b=>inF(b,f)).length;
+  const n=f=>lib.filter(b=>isPri(b)&&inF(b,f)).length;
   const r=(id,name,del)=>'<div class="cr"><button data-f="'+id+'" aria-pressed="'+(lf===id)+'">'+esc(name)+'<span>'+n(id)+'</span></button>'+(del?'<button data-xc="'+id+'" aria-label="Удалить коллекцию">×</button>':'')+'</div>';
   $('#cp').innerHTML=r('all','Все книги')+r('want','Хочу прочитать')+r('later','Заброшено')+r('done','Закончено')+(cols.length?'<hr>':'')+cols.map(c=>r(c.id,c.name,true)).join('')+'<hr><button data-newc="1">Новая коллекция</button>';
 }
@@ -1177,14 +1200,22 @@ async function load(name,buf,start,silent){
       e=r?{id:key,name,title:r.title||b.title,author:r.author||b.author,ch:r.ch||0,f:r.f||0,p:r.p||0,t:r.t||Date.now(),st:r.st||'',cs:r.cs||[]}
          :{id:key,name,title:b.title,author:b.author,ch:start?start.ch:0,f:start?start.f:0,p:0,t:Date.now()};
       lib.push(e);
+      if(pendingAttach){
+        const pr=pendingAttach.pri;pendingAttach=null;
+        if(!pr.g)pr.g=pr.id;
+        e.g=pr.g;e.title=pr.title;e.author=pr.author;e.tcustom=true;e.st=pr.st||'';e.cs=(pr.cs||[]).slice();
+        if(pr.cv===1){e.cv=1;kv.get('c:'+pr.id).then(u=>{if(u)kv.set('c:'+e.id,u)})}
+        pendingPP={id:key,p:pr.p||0};
+      }
     }else if(!e.tcustom){e.title=b.title;e.author=b.author}
     e.name=name;delete e.ph;
     await kv.set('b:'+key,{name,buf});
-    if(e.st==='want'||e.st==='later')e.st='';
+    if(e.st==='want'||e.st==='later'){e.st='';vers(e).forEach(x=>{if(x.st==='want'||x.st==='later')x.st=''})}
     saveLib();
     let h='',g='';
     b.chapters.forEach(c=>{c.a0=!!c.aux||AUX.test(c.title||'')||AUX.test(c.group||'')});
     weigh(b,e);
+    if(pendingPP&&pendingPP.id===key){const q=posFromPercent(b,pendingPP.p);e.ch=q.ch;e.f=q.f;e.p=pendingPP.p;e.t=Date.now();e.fa=[q.ch,q.f];pendingPP=null;saveLib()}
     b.chapters.forEach((c,i)=>{
       const cg=c.group||'';
       if(cg!==g){g=cg;if(g)h+='<div class="tocgrp">'+esc(g)+'</div>'}
@@ -1200,6 +1231,7 @@ async function load(name,buf,start,silent){
     if(!e.cv&&b.cover)(async()=>{try{const u=await b.cover();const t=u?await thumb(u):'';if(t)await kv.set('c:'+e.id,t);e.cv=t?1:2}catch(err){e.cv=2}saveLib()})();
     return true;
   }catch(e){
+    pendingAttach=null;
     msg(e.message||'Не удалось открыть файл');
     return false;
   }
@@ -1227,7 +1259,7 @@ function goalInfo(g){
   if(g.type==='year'){
     target=g.min;
     name='Книг за год: '+target;
-    done=lib.filter(x=>x.doneAt&&new Date(x.doneAt).getFullYear()===t.getFullYear()).length;
+    {const seen=new Set();lib.forEach(x=>{if(x.doneAt&&new Date(x.doneAt).getFullYear()===t.getFullYear())seen.add(x.g||x.id)});done=seen.size}
     note=done>=target?'план выполнен':'';
   }else if(g.type==='day'){
     target=g.min*60;
@@ -1259,7 +1291,7 @@ function renderPlSum(){
 function openPl(){
   updateTimer(false);
   $('#rson').checked=RS.on;$('#ridle').value=RS.idle;
-  $('#gbook').innerHTML='<option value="">Любая книга</option>'+lib.map(b=>'<option value="'+esc(b.id).replace(/"/g,'&quot;')+'">'+esc(b.title)+'</option>').join('');
+  $('#gbook').innerHTML='<option value="">Любая книга</option>'+lib.filter(isPri).map(b=>'<option value="'+esc(b.id).replace(/"/g,'&quot;')+'">'+esc(b.title)+'</option>').join('');
   $('#gnewB').hidden=true;$('#gnewT').setAttribute('aria-expanded','false');
   renderPlSum();renderGoals();closeSet();$('#pl').hidden=false;
 }
@@ -1534,14 +1566,16 @@ $('#hm').onclick=home;
 $('#home').addEventListener('click',async e=>{
   const t=e.target.closest('#tabs button');if(t){setPage(t.dataset.p);return}
   const m=e.target.closest('[data-m]');if(m){e.stopPropagation();openBM(+m.dataset.m,m);return}
+  const v=e.target.closest('[data-v]');if(v){const x=lib[+v.dataset.v];if(x)await openVersion(x);return}
   const o=e.target.closest('[data-o]');if(o){const b=lib[+o.dataset.o];if(b)await openBook(b)}
 });
 $('#bm').addEventListener('click',async e=>{
   const bt=e.target.closest('button'),b=lib[bmI];if(!bt||!b)return;
   const k=bt.dataset.k,c=bt.dataset.col;
-  if(c){b.cs=(b.cs||[]).includes(c)?b.cs.filter(x=>x!==c):[...(b.cs||[]),c];saveLib();bt.setAttribute('aria-pressed',String(b.cs.includes(c)));renderLib();return}
+  if(c){b.cs=(b.cs||[]).includes(c)?b.cs.filter(x=>x!==c):[...(b.cs||[]),c];gsync(b);saveLib();bt.setAttribute('aria-pressed',String(b.cs.includes(c)));renderLib();return}
   $('#bm').hidden=true;
   if(k==='cov'){$('#covf').click();return}
+  if(k==='addv'){attachTarget=b;$('#vf').click();return}
   if(k==='ren'){
     $('#rnT').value=b.title||'';$('#rnA').value=b.author||'';
     $('#rn').dataset.i=String(bmI);$('#rn').hidden=false;
@@ -1549,17 +1583,22 @@ $('#bm').addEventListener('click',async e=>{
     return;
   }
   if(k==='del'){
-    if(confirm('Удалить «'+(b.title||'книгу')+'» с этого устройства?')){
+    if(confirm('Удалить «'+(b.title||'книгу')+'»'+(vers(b).length>1?' ('+fmtOf(b)+')':'')+' с этого устройства?')){
       lib=lib.filter(x=>x.id!==b.id);saveLib();
       await kvDel('b:'+b.id);await kvDel('c:'+b.id);
       if(ls.get('cur','')===b.id)ls.set('cur','');
       if(key===b.id){book=null;key=''}
       renderLib();
     }
-  }else if(k){const was=b.st==='done';b.st=b.st===k?'':k;if(k==='done'){if(b.st==='done'&&!was)b.doneAt=Date.now();else if(was&&b.st!=='done')b.doneAt=null}saveLib();renderLib()}
+  }else if(k){const was=b.st==='done';b.st=b.st===k?'':k;if(k==='done'){if(b.st==='done'&&!was)b.doneAt=Date.now();else if(was&&b.st!=='done')b.doneAt=null}gsync(b);saveLib();renderLib()}
+});
+$('#vf').addEventListener('change',async e=>{
+  const f=e.target.files[0];e.target.value='';const pr=attachTarget;attachTarget=null;if(!f||!pr)return;
+  if(ent(f.name+':'+f.size)){msg('Этот файл уже есть в библиотеке.');return}
+  pendingAttach={pri:pr};await openFile(f);pendingAttach=null;
 });
 const rnClose=()=>{$('#rn').hidden=true};
-const rnSave=()=>{const b=lib[+$('#rn').dataset.i];if(b){const t=$('#rnT').value.trim(),a=$('#rnA').value.trim();if(t)b.title=t;b.author=a;b.tcustom=true;b.t=Date.now();saveLib();renderLib()}rnClose()};
+const rnSave=()=>{const b=lib[+$('#rn').dataset.i];if(b){const t=$('#rnT').value.trim(),a=$('#rnA').value.trim();if(t)b.title=t;b.author=a;b.tcustom=true;b.t=Date.now();gsync(b);saveLib();renderLib()}rnClose()};
 $('#rnOk').onclick=rnSave;$('#rnCancel').onclick=rnClose;
 $('#rn').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();rnSave()}else if(e.key==='Escape')rnClose()});
 $('#covf').addEventListener('change',async e=>{
@@ -1568,7 +1607,7 @@ $('#covf').addEventListener('change',async e=>{
   let t='';try{t=await thumb(url)}catch(err){}
   URL.revokeObjectURL(url);
   if(!t)return;
-  await kv.set('c:'+b.id,t);b.cv=1;b.t=Date.now();saveLib();renderLib();
+  await kv.set('c:'+b.id,t);b.cv=1;for(const x of vers(b)){if(x!==b){await kv.set('c:'+x.id,t);x.cv=1}}b.t=Date.now();saveLib();renderLib();
 });
 $('#srt').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(b){lsort=b.dataset.s;ls.set('sort',lsort);$('#srt').hidden=true;renderLib()}});
 $('#cp').addEventListener('click',e=>{
