@@ -129,8 +129,10 @@ a.fn{cursor:pointer}
 #pal,.pal{display:flex;flex-wrap:wrap;gap:.5rem}
 .tc{width:auto;height:auto;padding:.35rem .8rem;border-radius:999px;font-size:.8rem;font-weight:400;border:1px solid var(--line);white-space:nowrap}
 #pal,#p1,#p2{display:flex;flex-wrap:nowrap;gap:.5rem}
-.scrollrow{overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0 -1rem;padding:.35rem 1rem}
+.scrollrow{overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0 -1rem;padding:.35rem 1.1rem}
 .scrollrow::-webkit-scrollbar{display:none}
+.scrollrow{scroll-padding:0 1.1rem}
+.scrollrow::after{content:"";flex:none;width:.6rem}
 .scrollrow .tc{flex:none;scroll-snap-align:start}
 #set{top:auto;bottom:0;left:50%;right:auto;transform:translateX(-50%);width:min(100%,34rem);max-height:82vh;border-radius:18px 18px 0 0;border-bottom:0;padding:.9rem 1rem calc(1.1rem + env(safe-area-inset-bottom,0px));box-shadow:0 -10px 34px rgba(0,0,0,.28)}
 #set.lib{top:auto}
@@ -166,6 +168,13 @@ a.fn{cursor:pointer}
 .sr small{display:block;color:var(--mute);font-size:.78rem}
 .sr span{display:block;font-size:.92rem;line-height:1.4}
 .sqmsg{padding:.4rem 1rem;color:var(--mute);font-size:.9rem;margin:0}
+#rn{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(26rem,calc(100vw - 1.2rem));z-index:13;border-radius:14px;padding:1.1rem;box-shadow:0 12px 40px rgba(0,0,0,.3);display:grid;gap:.8rem}
+#rn h3{margin:0}
+#rn label{display:grid;gap:.3rem;color:var(--mute);font-size:.85rem}
+#rn input{font:inherit;font-size:1rem;color:var(--fg);background:transparent;border:1px solid var(--line);border-radius:10px;padding:.6rem .7rem;width:100%}
+.rnbtns{display:flex;gap:.6rem;justify-content:flex-end}
+.rnbtns button{padding:.55rem 1rem;border-radius:10px;border:1px solid var(--line)}
+#rnOk{background:var(--acc);border-color:var(--acc);color:#fff}
 mark,mark.sh{background:#ffd54a;color:#000;border-radius:2px}
 @media (max-width:480px){
   .ph1{flex-wrap:wrap}
@@ -203,7 +212,7 @@ body{overflow-x:clip}
 :root[data-theme="brown"]{--pn:#382c21}
 :root[data-theme="dark"]{--pn:#28303b}
 #set.glass,#pl.glass,#toast.glass{background:var(--pn);background:color-mix(in srgb,var(--pn) 70%,transparent);-webkit-backdrop-filter:blur(16px) saturate(1.3);backdrop-filter:blur(16px) saturate(1.3);border:1px solid var(--line);border-color:color-mix(in srgb,var(--fg) 14%,transparent)}
-#pl.glass,#sy.glass,#onb.glass,#toc.glass,#bkl.glass,#sq.glass{background:var(--pn);background:color-mix(in srgb,var(--pn) 96%,transparent)}
+#pl.glass,#sy.glass,#onb.glass,#toc.glass,#bkl.glass,#sq.glass,#rn.glass{background:var(--pn);background:color-mix(in srgb,var(--pn) 96%,transparent)}
 #text .ch{margin:0 0 2.4rem}
 .pdfmode #text .ch{margin:0 0 .6rem}
 .tr{display:block;height:3px;border-radius:2px;background:var(--line);margin:.4rem 0;overflow:hidden}
@@ -448,6 +457,7 @@ body{overflow-x:clip}
 <div id="bkl" class="glass" hidden><h3>Закладки<button class="pclose" aria-label="Свернуть"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button></h3><div id="bklList"></div></div>
 <div id="bm" class="glass" hidden></div>
 <input type="file" id="covf" accept="image/*" hidden>
+<div id="rn" class="glass" hidden><h3>Название и автор</h3><label>Название<input type="text" id="rnT" autocomplete="off"></label><label>Автор<input type="text" id="rnA" autocomplete="off"></label><div class="rnbtns"><button id="rnCancel">Отмена</button><button id="rnOk">Сохранить</button></div></div>
 <div id="srt" class="glass" hidden></div>
 <div id="cp" class="glass" hidden></div>
 <div id="toast" class="glass" hidden></div>
@@ -717,10 +727,10 @@ async function openPdf(buf,name){
     const c=document.createElement('canvas');
     c.width=Math.floor(vp.width);c.height=Math.floor(vp.height);
     await pg.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
-    return c.toDataURL('image/jpeg',.9);
+    return{url:c.toDataURL('image/jpeg',.9),w:c.width,h:c.height};
   };
   const chapters=[];
-  for(let i=1;i<=pdf.numPages;i++)chapters.push({title:'Страница '+i,group:'',len:1,load:async()=>'<img class="pg" alt="" src="'+await render(i,Math.min(document.documentElement.clientWidth-40,960))+'">'});
+  for(let i=1;i<=pdf.numPages;i++)chapters.push({title:'Страница '+i,group:'',len:1,load:async()=>{const r=await render(i,Math.min(document.documentElement.clientWidth-40,960));return '<img class="pg" alt="" width="'+r.w+'" height="'+r.h+'" src="'+r.url+'">'}});
   const toc=await pdfOutline(pdf);
   if(toc.length){
     const byPage={};
@@ -1167,7 +1177,7 @@ async function load(name,buf,start,silent){
       e=r?{id:key,name,title:r.title||b.title,author:r.author||b.author,ch:r.ch||0,f:r.f||0,p:r.p||0,t:r.t||Date.now(),st:r.st||'',cs:r.cs||[]}
          :{id:key,name,title:b.title,author:b.author,ch:start?start.ch:0,f:start?start.f:0,p:0,t:Date.now()};
       lib.push(e);
-    }else{e.title=b.title;e.author=b.author}
+    }else if(!e.tcustom){e.title=b.title;e.author=b.author}
     e.name=name;delete e.ph;
     await kv.set('b:'+key,{name,buf});
     if(e.st==='want'||e.st==='later')e.st='';
@@ -1533,9 +1543,10 @@ $('#bm').addEventListener('click',async e=>{
   $('#bm').hidden=true;
   if(k==='cov'){$('#covf').click();return}
   if(k==='ren'){
-    const t=prompt('Название',b.title||'');if(t===null)return;
-    const a=prompt('Автор',b.author||'');if(a===null)return;
-    if(t.trim())b.title=t.trim();b.author=a.trim();b.t=Date.now();saveLib();renderLib();return;
+    $('#rnT').value=b.title||'';$('#rnA').value=b.author||'';
+    $('#rn').dataset.i=String(bmI);$('#rn').hidden=false;
+    setTimeout(()=>{$('#rnT').focus();$('#rnT').select()},30);
+    return;
   }
   if(k==='del'){
     if(confirm('Удалить «'+(b.title||'книгу')+'» с этого устройства?')){
@@ -1547,6 +1558,10 @@ $('#bm').addEventListener('click',async e=>{
     }
   }else if(k){const was=b.st==='done';b.st=b.st===k?'':k;if(k==='done'){if(b.st==='done'&&!was)b.doneAt=Date.now();else if(was&&b.st!=='done')b.doneAt=null}saveLib();renderLib()}
 });
+const rnClose=()=>{$('#rn').hidden=true};
+const rnSave=()=>{const b=lib[+$('#rn').dataset.i];if(b){const t=$('#rnT').value.trim(),a=$('#rnA').value.trim();if(t)b.title=t;b.author=a;b.tcustom=true;b.t=Date.now();saveLib();renderLib()}rnClose()};
+$('#rnOk').onclick=rnSave;$('#rnCancel').onclick=rnClose;
+$('#rn').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();rnSave()}else if(e.key==='Escape')rnClose()});
 $('#covf').addEventListener('change',async e=>{
   const f=e.target.files[0];e.target.value='';const b=lib[bmI];if(!f||!b)return;
   const url=URL.createObjectURL(f);
