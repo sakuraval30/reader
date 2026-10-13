@@ -851,7 +851,7 @@ function sbInit(){
   if(!sbcfg||!sbcfg.url||!sbcfg.key||typeof supabase==='undefined')return;
   try{SB=supabase.createClient(sbcfg.url,sbcfg.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}})}catch(e){SB=null}
 }
-function syRow(b){return{book_key:b.id,title:b.title||'',author:b.author||'',ch:b.ch||0,f:b.f||0,p:b.p||0,t:b.t||0,st:b.st||null,cs:b.cs||[],bm:b.bm||[]}}
+function syRow(b){return{book_key:b.id,title:b.title||'',author:b.author||'',ch:b.ch||0,f:b.f||0,p:b.p||0,t:b.t||0,st:b.st||null,cs:b.cs||[],bm:b.bm||[],g:b.g||null}}
 let syErr=false,userMoved=false;
 function syDot(){document.querySelectorAll('.avDot').forEach(d=>{d.classList.toggle('on',!!syUser&&!syErr);d.classList.toggle('err',!!syUser&&syErr)});renderAvatarBtn()}
 function syRenderAuth(){
@@ -870,10 +870,11 @@ async function syncPull(){
     if(error){syErr=true;syDot();throw error}
     syErr=false;syDot();
     let changed=false,jump=null;
+    for(const r of (data||[])){const e0=ent(r.book_key);if(e0&&r.g&&e0.g!==r.g){e0.g=r.g;changed=true}}
     for(const r of (data||[])){
       let e=ent(r.book_key);
       if(!e){
-        e={id:r.book_key,name:'',title:r.title||'',author:r.author||'',ch:r.ch||0,f:r.f||0,p:r.p||0,t:r.t||0,st:r.st||'',cs:r.cs||[],bm:r.bm||[],ph:1};
+        e={id:r.book_key,name:'',title:r.title||'',author:r.author||'',ch:r.ch||0,f:r.f||0,p:r.p||0,t:r.t||0,st:r.st||'',cs:r.cs||[],bm:r.bm||[],g:r.g||undefined,ph:1};
         lib.push(e);changed=true;
       }else if((r.t||0)>(e.t||0)){
         const open=book&&key===e.id&&!$('#rd').hidden;
@@ -890,12 +891,20 @@ async function syncPull(){
 async function syncPush(){
   if(!SB||!syUser)return;
   try{
-    const q=await SB.from('book_progress').select('book_key,t');
-    const rm=new Map(((q&&q.data)||[]).map(r=>[r.book_key,r.t||0]));
-    const rows=lib.filter(b=>!(rm.has(b.id)&&rm.get(b.id)>(b.t||0))).map(b=>Object.assign({user_id:syUser.id},syRow(b)));
+    let q=await SB.from('book_progress').select('book_key,t,g'),colG=true;
+    if(q.error){colG=false;q=await SB.from('book_progress').select('book_key,t')}
+    const rm=new Map(((q&&q.data)||[]).map(r=>[r.book_key,r]));
+    let rows=lib.filter(b=>{const r=rm.get(b.id);return !(r&&(r.t||0)>(b.t||0))}).map(b=>Object.assign({user_id:syUser.id},syRow(b)));
+    if(!colG)rows=rows.map(r=>{const c=Object.assign({},r);delete c.g;return c});
     if(rows.length){
       const {error}=await SB.from('book_progress').upsert(rows,{onConflict:'user_id,book_key'});
       syErr=!!error;if(error)console.warn('sync push:',error.message);syDot();
+    }
+    if(colG){
+      for(const b of lib){
+        const r=rm.get(b.id);
+        if(b.g&&r&&r.g!==b.g&&!rows.some(x=>x.book_key===b.id))await SB.from('book_progress').update({g:b.g}).eq('user_id',syUser.id).eq('book_key',b.id);
+      }
     }
   }catch(e){syErr=true;syDot()}
 }
