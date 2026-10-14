@@ -874,6 +874,7 @@ async function syncPull(){
     for(const r of (data||[])){
       let e=ent(r.book_key);
       if(!e){
+        if(dels().includes(r.book_key))continue;
         e={id:r.book_key,name:'',title:r.title||'',author:r.author||'',ch:r.ch||0,f:r.f||0,p:r.p||0,t:r.t||0,st:r.st||'',cs:r.cs||[],bm:r.bm||[],g:r.g||undefined,ph:1};
         lib.push(e);changed=true;
       }else if((r.t||0)>(e.t||0)){
@@ -891,6 +892,7 @@ async function syncPull(){
 async function syncPush(){
   if(!SB||!syUser)return;
   try{
+    await syDelRemote();
     let q=await SB.from('book_progress').select('book_key,t,g'),colG=true;
     if(q.error){colG=false;q=await SB.from('book_progress').select('book_key,t')}
     const rm=new Map(((q&&q.data)||[]).map(r=>[r.book_key,r]));
@@ -985,6 +987,13 @@ const CMP={
   author:(a,b)=>(a.author||'').localeCompare(b.author||'','ru')||(a.title||'').localeCompare(b.title||'','ru')
 };
 let attachTarget=null,pendingAttach=null,pendingPP=null;
+const dels=()=>ls.get('dels',[]);
+async function syDelRemote(){
+  if(!SB||!syUser)return;
+  const d=dels();if(!d.length)return;
+  try{const left=[];for(const id of d){const {error}=await SB.from('book_progress').delete().eq('user_id',syUser.id).eq('book_key',id);if(error)left.push(id)}ls.set('dels',left)}catch(e){}
+}
+function syForget(id){const d=dels();if(!d.includes(id)){d.push(id);ls.set('dels',d)}syDelRemote()}
 const vers=b=>b.g?lib.filter(x=>x.g===b.g):[b];
 const isPri=b=>{if(!b.g)return true;let m=null;for(const x of lib){if(x.g===b.g&&(!m||(x.t||0)>(m.t||0)))m=x}return m===b};
 const fmtOf=x=>{const n=String(x.name||String(x.id||'').replace(/:\d+$/,'')).toLowerCase();if(/\.fb2\.zip$/.test(n))return'FB2';const m=n.match(/\.([a-z0-9]+)$/);return m?m[1].toUpperCase():'ФАЙЛ'};
@@ -1070,7 +1079,7 @@ function openBM(i,btn){
   const it=(k,t)=>'<button data-k="'+k+'">'+t+'</button>';
   $('#bm').innerHTML=it('want',b.st==='want'?'Убрать из «Хочу прочитать»':'Хочу прочитать')+it('later',b.st==='later'?'Вернуть из заброшенных':'Забросить')+it('done',b.st==='done'?'Отметить непрочитанной':'Отметить прочитанной')
     +(cols.length?'<hr>'+cols.map(c=>'<button data-col="'+c.id+'" aria-pressed="'+(b.cs||[]).includes(c.id)+'">'+esc(c.name)+'</button>').join(''):'')
-    +'<hr><button data-k="addv">Добавить другой формат</button><button data-k="ren">Изменить название и автора</button><button data-k="cov">Изменить обложку</button><button data-k="del" class="dng">Удалить с устройства</button>';
+    +'<hr><button data-k="addv">Добавить другой формат</button><button data-k="ren">Изменить название и автора</button><button data-k="cov">Изменить обложку</button>'+(b.ph?'':'<button data-k="rmf">Убрать файл с устройства</button>')+'<button data-k="del" class="dng">Удалить из библиотеки</button>';
   $('#srt').hidden=$('#cp').hidden=true;
   place($('#bm'),btn);
 }
@@ -1202,6 +1211,7 @@ async function load(name,buf,start,silent){
     const b=await parseBook(name,buf);
     if(!b.chapters.length)throw new Error('В книге не нашлось текста');
     book=b;key=name+':'+buf.byteLength;root.classList.toggle('ispdf',!!b.pdf);userMoved=false;
+    if(!ent(key)){const sz=':'+buf.byteLength,gs=lib.filter(x=>x.ph&&String(x.id).endsWith(sz));if(gs.length===1)key=gs[0].id}
     let e=ent(key);
     if(!e){
       let r=null;
@@ -1209,6 +1219,7 @@ async function load(name,buf,start,silent){
       e=r?{id:key,name,title:r.title||b.title,author:r.author||b.author,ch:r.ch||0,f:r.f||0,p:r.p||0,t:r.t||Date.now(),st:r.st||'',cs:r.cs||[]}
          :{id:key,name,title:b.title,author:b.author,ch:start?start.ch:0,f:start?start.f:0,p:0,t:Date.now()};
       lib.push(e);
+      {const d=dels();if(d.includes(key))ls.set('dels',d.filter(x=>x!==key))}
       if(pendingAttach){
         const pr=pendingAttach.pri;pendingAttach=null;
         if(!pr.g)pr.g=pr.id;
@@ -1216,7 +1227,7 @@ async function load(name,buf,start,silent){
         if(pr.cv===1){e.cv=1;kv.get('c:'+pr.id).then(u=>{if(u)kv.set('c:'+e.id,u)})}
         pendingPP={id:key,p:pr.p||0};
       }
-    }else if(!e.tcustom){e.title=b.title;e.author=b.author}
+    }else if(!e.tcustom&&!e.ph){e.title=b.title;e.author=b.author}
     e.name=name;delete e.ph;
     await kv.set('b:'+key,{name,buf});
     if(e.st==='want'||e.st==='later'){e.st='';vers(e).forEach(x=>{if(x.st==='want'||x.st==='later')x.st=''})}
@@ -1591,13 +1602,22 @@ $('#bm').addEventListener('click',async e=>{
     setTimeout(()=>{$('#rnT').focus();$('#rnT').select()},30);
     return;
   }
-  if(k==='del'){
-    if(confirm('Удалить «'+(b.title||'книгу')+'»'+(vers(b).length>1?' ('+fmtOf(b)+')':'')+' с этого устройства?')){
-      lib=lib.filter(x=>x.id!==b.id);saveLib();
-      await kvDel('b:'+b.id);await kvDel('c:'+b.id);
+  const lbl='«'+(b.title||'книгу')+'»'+(vers(b).length>1?' ('+fmtOf(b)+')':'');
+  if(k==='rmf'){
+    if(confirm('Убрать файл '+lbl+' с этого устройства? Прогресс и закладки останутся, файл можно добавить снова.')){
+      await kvDel('b:'+b.id);b.ph=1;saveLib();
       if(ls.get('cur','')===b.id)ls.set('cur','');
       if(key===b.id){book=null;key=''}
       renderLib();
+    }
+  }else if(k==='del'){
+    if(confirm('Удалить '+lbl+' из библиотеки совсем? Книга пропадёт и из облака, на всех устройствах.')){
+      const id=b.id;
+      lib=lib.filter(x=>x.id!==id);saveLib();
+      await kvDel('b:'+id);await kvDel('c:'+id);
+      if(ls.get('cur','')===id)ls.set('cur','');
+      if(key===id){book=null;key=''}
+      syForget(id);renderLib();
     }
   }else if(k){const was=b.st==='done';b.st=b.st===k?'':k;if(k==='done'){if(b.st==='done'&&!was)b.doneAt=Date.now();else if(was&&b.st!=='done')b.doneAt=null}gsync(b);saveLib();renderLib()}
 });
