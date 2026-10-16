@@ -988,6 +988,57 @@ const CMP={
 };
 let attachTarget=null,pendingAttach=null,pendingPP=null;
 const dels=()=>ls.get('dels',[]);
+const extOf=id=>{const n=String(id).replace(/:\d+$/,'').toLowerCase();return /\.fb2\.zip$/.test(n)?'fb2':((n.match(/\.([a-z0-9]+)$/)||[])[1]||'')};
+const sizeOf=id=>{const m=String(id).match(/:(\d+)$/);return m?m[1]:''};
+const sameFile=(a,b)=>a!==b&&!!sizeOf(a)&&sizeOf(a)===sizeOf(b)&&extOf(a)===extOf(b);
+const reading=()=>!!book&&!$('#rd').hidden;
+function hasDups(){const m=new Set();for(const e of lib){const z=sizeOf(e.id);if(!z)continue;const k=extOf(e.id)+'|'+z;if(m.has(k))return true;m.add(k)}return false}
+async function rekey(e,nid){
+  const old=e.id;if(old===nid)return;
+  const bv=await kv.get('b:'+old);if(bv){await kv.set('b:'+nid,bv);await kvDel('b:'+old)}
+  const cv=await kv.get('c:'+old);if(cv){await kv.set('c:'+nid,cv);await kvDel('c:'+old)}
+  RS.goals.forEach(g=>{if(g.book===old)g.book=nid});saveRS();
+  if(ls.get('cur','')===old)ls.set('cur',nid);
+  e.id=nid;
+}
+let dedupBusy=false;
+async function dedupeFiles(){
+  if(dedupBusy||reading())return;
+  dedupBusy=true;
+  try{
+    const groups=new Map();
+    for(const e of lib){const z=sizeOf(e.id);if(!z)continue;const k=extOf(e.id)+'|'+z;if(!groups.has(k))groups.set(k,[]);groups.get(k).push(e)}
+    let changed=false;
+    for(const arr of groups.values()){
+      if(arr.length<2)continue;
+      const canon=arr.map(x=>x.id).sort()[0];
+      const surv=arr.find(x=>!x.ph)||arr.find(x=>x.id===canon)||arr[0];
+      const best=arr.reduce((m,x)=>(x.t||0)>(m.t||0)?x:m,arr[0]);
+      if(best!==surv){surv.ch=best.ch;surv.f=best.f;surv.p=best.p;surv.t=best.t;surv.fa=[best.ch,best.f]}
+      for(const x of arr){
+        if(x===surv)continue;
+        if(x.ph&&!surv.tcustom&&x.title){surv.title=x.title;surv.author=x.author;surv.tcustom=true}
+        if(x.tcustom&&!surv.tcustom){surv.title=x.title;surv.author=x.author;surv.tcustom=true}
+        if(!surv.st&&x.st)surv.st=x.st;
+        if(!surv.g&&x.g)surv.g=x.g;
+        if(!(surv.cs||[]).length&&(x.cs||[]).length)surv.cs=x.cs;
+        if((x.bm||[]).length&&!(surv.bm||[]).length)surv.bm=x.bm;
+        if(x.doneAt&&!surv.doneAt)surv.doneAt=x.doneAt;
+        if(x.cv===1&&surv.cv!==1){const cv=await kv.get('c:'+x.id);if(cv){await kv.set('c:'+surv.id,cv);surv.cv=1}}
+        const xid=x.id;
+        lib=lib.filter(y=>y!==x);
+        if(xid!==surv.id){await kvDel('b:'+xid);await kvDel('c:'+xid)}
+        if(xid!==canon)syForget(xid);
+      }
+      const old=surv.id;
+      if(old!==canon){await rekey(surv,canon);syForget(old)}
+      ls.set('dels',dels().filter(i=>i!==canon));
+      changed=true;
+    }
+    if(changed){saveLib();renderLib()}
+  }catch(e){console.warn('dedupe:',e)}
+  dedupBusy=false;
+}
 async function syDelRemote(){
   if(!SB||!syUser)return;
   const d=dels();if(!d.length)return;
@@ -1058,6 +1109,7 @@ function renderLib(){
   $('#lt').textContent=filterName();
   $('#hEmpty').hidden=lib.length>0;
   loadCovers();
+  if(!reading()&&hasDups())dedupeFiles();
 }
 function setPage(p){
   page=p;ls.set('pg',p);
@@ -1211,7 +1263,7 @@ async function load(name,buf,start,silent){
     const b=await parseBook(name,buf);
     if(!b.chapters.length)throw new Error('В книге не нашлось текста');
     book=b;key=name+':'+buf.byteLength;root.classList.toggle('ispdf',!!b.pdf);userMoved=false;
-    if(!ent(key)){const sz=':'+buf.byteLength,gs=lib.filter(x=>x.ph&&String(x.id).endsWith(sz));if(gs.length===1)key=gs[0].id}
+    if(!ent(key)){const cs=lib.filter(x=>sameFile(key,x.id)).sort((a,b)=>a.id<b.id?-1:1);if(cs.length)key=cs[0].id}
     let e=ent(key);
     if(!e){
       let r=null;
