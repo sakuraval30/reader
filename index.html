@@ -183,6 +183,16 @@ a.fn{cursor:pointer}
 .pt .th img{width:100%;height:100%;object-fit:cover;display:block}
 .pt.cur .th{outline:2.5px solid var(--acc)}
 .pt.cur{color:var(--acc);font-weight:600}
+#pgg{overflow:hidden;display:flex;flex-direction:column}
+#pgg .pgh{position:static;flex:none}
+#pggS{flex:1 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch}
+.fmc{display:inline-flex;align-items:center;justify-content:center;width:2.4rem;height:2.4rem;padding:0;border-radius:50%;font-size:.56rem;letter-spacing:0;line-height:1}
+.cc .fmw{margin:-.6rem 0}
+.fmr{gap:.4rem}
+#stat{display:flex;align-items:center;justify-content:center;line-height:1.2;padding:.3rem .9rem}
+html{touch-action:pan-x pan-y}
+html:has(#rd:not([hidden])).ispdf{touch-action:pan-x pan-y pinch-zoom}
+@media (pointer:coarse){input,select,textarea{font-size:16px!important}}
 #rn{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(26rem,calc(100vw - 1.2rem));z-index:13;border-radius:14px;padding:1.1rem;box-shadow:0 12px 40px rgba(0,0,0,.3);display:grid;gap:.8rem}
 #rn h3{margin:0}
 #rn label{display:grid;gap:.3rem;color:var(--mute);font-size:.85rem}
@@ -473,7 +483,7 @@ body{overflow-x:clip}
 <div id="bm" class="glass" hidden></div>
 <input type="file" id="covf" accept="image/*" hidden>
 <input type="file" id="vf" hidden>
-<div id="pgg" class="glass" hidden><div class="pgh"><b id="pggT"></b><span><button id="pggToc" class="linkbtn" hidden>Оглавление</button><button class="pclose" aria-label="Закрыть"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button></span></div><div id="pggG"></div></div>
+<div id="pgg" class="glass" hidden><div class="pgh"><b id="pggT"></b><span><button id="pggToc" class="linkbtn" hidden>Оглавление</button><button class="pclose" aria-label="Закрыть"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button></span></div><div id="pggS"><div id="pggG"></div></div></div>
 <div id="rn" class="glass" hidden><h3>Название и автор</h3><label>Название<input type="text" id="rnT" autocomplete="off"></label><label>Автор<input type="text" id="rnA" autocomplete="off"></label><div class="rnbtns"><button id="rnCancel">Отмена</button><button id="rnOk">Сохранить</button></div></div>
 <div id="srt" class="glass" hidden></div>
 <div id="cp" class="glass" hidden></div>
@@ -1632,6 +1642,7 @@ function pgPump(){
   }
 }
 function openPgg(){
+  resetZoom();
   $('#bkl').hidden=true;$('#sq').hidden=true;$('#toc').hidden=true;closeSet();
   const g=$('#pggG');
   if(pgBook!==book||g.childElementCount!==book.chapters.length){
@@ -1639,7 +1650,7 @@ function openPgg(){
     if(pgIO)pgIO.disconnect();
     $('#pggT').textContent=book.title||'';
     g.innerHTML=book.chapters.map((c,i)=>'<button class="pt" data-i="'+i+'"><span class="th"></span><span>'+(i+1)+'</span></button>').join('');
-    pgIO=new IntersectionObserver(es=>{es.forEach(x=>{x.target._vis=x.isIntersecting;if(x.isIntersecting){pgQ.unshift(x.target)}});pgPump()},{root:$('#pgg'),rootMargin:'400px'});
+    pgIO=new IntersectionObserver(es=>{es.forEach(x=>{x.target._vis=x.isIntersecting;if(x.isIntersecting){pgQ.unshift(x.target)}});pgPump()},{root:$('#pggS'),rootMargin:'400px'});
     g.querySelectorAll('.pt').forEach(el=>pgIO.observe(el));
   }
   $('#pggToc').hidden=!book.chapters.some(c=>!/^Страница \d+$/.test(c.title));
@@ -1648,7 +1659,7 @@ function openPgg(){
   const c1=g.querySelector('.pt.cur');if(c1)c1.scrollIntoView({block:'center'});
 }
 $('#pggG').addEventListener('click',e=>{const b=e.target.closest('.pt');if(b){$('#pgg').hidden=true;show(+b.dataset.i)}});
-$('#pggToc').onclick=()=>{$('#pgg').hidden=true;openToc()};
+$('#pggToc').onclick=e=>{e.stopPropagation();$('#pgg').hidden=true;openToc()};
 $('#chs').onclick=e=>{e.stopPropagation();if(book&&book.pdf)openPgg();else openToc()};
 $('#tocList').addEventListener('click',e=>{const b=e.target.closest('.tocitem');if(b){$('#toc').hidden=true;show(+b.dataset.i)}});
 function bmAt(){
@@ -1704,7 +1715,16 @@ function home(){
   setPage(page);
   document.title='Читалка';scrollTo(0,0);
 }
+function resetZoom(){
+  const vv=window.visualViewport;if(!vv||vv.scale<1.02)return;
+  const m=document.querySelector('meta[name=viewport]');if(!m)return;
+  const c=m.getAttribute('content');
+  m.setAttribute('content','width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover');
+  setTimeout(()=>m.setAttribute('content',c),400);
+}
+document.addEventListener('gesturestart',e=>{if(!(root.classList.contains('ispdf')&&!$('#rd').hidden))e.preventDefault()});
 $('#hm').onclick=home;
+$('#hm').addEventListener('click',()=>setTimeout(resetZoom,60));
 $('#home').addEventListener('click',async e=>{
   const t=e.target.closest('#tabs button');if(t){setPage(t.dataset.p);return}
   const m=e.target.closest('[data-m]');if(m){e.stopPropagation();openBM(+m.dataset.m,m);return}
