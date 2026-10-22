@@ -193,6 +193,11 @@ a.fn{cursor:pointer}
 html{touch-action:pan-x pan-y}
 html:has(#rd:not([hidden])).ispdf{touch-action:pan-x pan-y pinch-zoom}
 @media (pointer:coarse){input,select,textarea{font-size:16px!important}}
+html.zoomed{touch-action:pan-x pan-y pinch-zoom}
+.tc{display:inline-flex;align-items:center;justify-content:center;line-height:1;padding:.34rem .8rem .44rem}
+.cc .pl2{min-height:2.2rem}
+.cc .fmw{margin:0}
+.cc .fmc{width:2rem;height:2rem;font-size:.5rem}
 #rn{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(26rem,calc(100vw - 1.2rem));z-index:13;border-radius:14px;padding:1.1rem;box-shadow:0 12px 40px rgba(0,0,0,.3);display:grid;gap:.8rem}
 #rn h3{margin:0}
 #rn label{display:grid;gap:.3rem;color:var(--mute);font-size:.85rem}
@@ -1722,7 +1727,8 @@ function resetZoom(){
   m.setAttribute('content','width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover');
   setTimeout(()=>m.setAttribute('content',c),400);
 }
-document.addEventListener('gesturestart',e=>{if(!(root.classList.contains('ispdf')&&!$('#rd').hidden))e.preventDefault()});
+document.addEventListener('gesturestart',e=>{if(!root.classList.contains('zoomed')&&!(root.classList.contains('ispdf')&&!$('#rd').hidden))e.preventDefault()});
+setTimeout(resetZoom,500);
 $('#hm').onclick=home;
 $('#hm').addEventListener('click',()=>setTimeout(resetZoom,60));
 $('#home').addEventListener('click',async e=>{
@@ -1768,11 +1774,14 @@ $('#vf').addEventListener('change',async e=>{
   if(ent(f.name+':'+f.size)){msg('Этот файл уже есть в библиотеке.');return}
   pendingAttach={pri:pr};await openFile(f);pendingAttach=null;
 });
+let rzBusy=false;
 (function(){
   const vv=window.visualViewport;if(!vv)return;
   const hdr=document.querySelector('#rd header'),st=$('#stat');
   function fix(){
     const z=vv.scale||1;
+    root.classList.toggle('zoomed',z>1.02);
+    if(z>1.02&&!(root.classList.contains('ispdf')&&!$('#rd').hidden)&&!rzBusy){rzBusy=true;resetZoom();setTimeout(()=>{rzBusy=false},1500)}
     if(z<1.02){hdr.style.transform='';st.style.transform='';return}
     const W=document.documentElement.clientWidth,H=document.documentElement.clientHeight;
     hdr.style.transformOrigin='0 0';
