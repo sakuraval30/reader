@@ -34,6 +34,11 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;a
 .bkitem .bkgo{flex:1;min-width:0;text-align:left;padding:.55rem .6rem;border:0;background:transparent;border-radius:8px}
 .bkitem .bkgo small{display:block;color:var(--mute);font-weight:400;font-size:.78rem;margin-top:.1rem}
 .bkitem .bkdel{border:0;background:transparent;color:var(--mute);font-size:1.15rem;line-height:1;padding:.5rem .6rem;flex:none}
+#trSt{display:block;text-align:center;font-size:.78rem;opacity:.7;padding:0 .8rem .5rem}
+#trSt:empty{display:none}
+.ispdf #trRow{display:none}
+#trPill{position:fixed;left:50%;bottom:calc(3rem + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:4;padding:.3rem .9rem;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--fg);font-size:.8rem;max-width:90vw;text-align:center}
+#trPill[hidden]{display:none}
 .bkadd{display:block;width:100%;text-align:center;padding:.75rem;border:0;border-top:1px solid var(--line);color:var(--acc);background:transparent;font-weight:600}
 #bkm.on{color:#ef4444}
 #bkm.on svg path{fill:currentColor}
@@ -389,6 +394,7 @@ div.cc{border:1px solid transparent;cursor:pointer;font:inherit;font-size:.9rem;
   </header>
   <main><article id="text"></article></main>
   <div id="stat"></div>
+  <div id="trPill" hidden></div>
   <nav>
     <button id="pv">Назад</button>
     <span id="pos"></span>
@@ -422,6 +428,7 @@ div.cc{border:1px solid transparent;cursor:pointer;font:inherit;font-size:.9rem;
         <button data-m="4" aria-label="Широкие поля" title="Широкие поля"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9.5 8h5M9.5 12h5M9.5 16h5"/></svg></button>
       </span>
     </div>
+    <div id="trRow"><button id="trBtn" class="bkadd">Перевод на русский: выкл</button><small id="trSt"></small></div>
     <button id="bkOpen" class="bkadd">Закладки</button>
     <button id="moreT" class="linkbtn moreT" aria-expanded="false">Дополнительные настройки</button>
     <div id="more" hidden>
@@ -1231,12 +1238,228 @@ function sync(){
   if(i!==cur){cur=i;$('#chs').textContent=tocLabel();$('#pv').disabled=i===0;$('#nx').disabled=i===book.chapters.length-1;$('#note').hidden=true}
   updatePos();
 }
+// ===== Перевод EN→RU (EPUB/FB2) =====
+const TRSEL='p,h1,h2,h3,h4,h5,h6,li,dt,dd,figcaption,td,th,div,blockquote';
+const TRLIB='https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1/dist/transformers.min.js';
+const TRMODEL='Xenova/opus-mt-en-ru';
+const TR={on:false,eng:null,engP:null,cache:{},key:'',dirty:false,saveT:0,run:false,kickT:0};
+const trH=t=>{let h=5381;for(let i=0;i<t.length;i++)h=((h<<5)+h+t.charCodeAt(i))|0;return (h>>>0).toString(36)+'.'+t.length};
+const trNeeds=t=>{const lat=(t.match(/[A-Za-z]/g)||[]).length,cyr=(t.match(/[\u0400-\u04FF]/g)||[]).length;return lat>=3&&cyr<lat*.3};
+const trBlocks=root=>[...root.querySelectorAll(TRSEL)].filter(el=>!el.querySelector(TRSEL));
+function trSrc(el){
+  if(el._s!==undefined)return el._s;
+  const c=el.cloneNode(true);c.querySelectorAll('a.fn,img').forEach(x=>x.remove());
+  const t=c.textContent.replace(/\s+/g,' ').trim();
+  el._s=trNeeds(t)?t:'';return el._s;
+}
+function trPut(el,t){
+  if(el._o===undefined){el._o=el.innerHTML;el._k=[...el.querySelectorAll('img,a.fn')].map(x=>x.cloneNode(true))}
+  el.textContent='';
+  el._k.forEach(x=>{if(x.tagName==='IMG')el.appendChild(x.cloneNode(true))});
+  el.appendChild(document.createTextNode(t));
+  el._k.forEach(x=>{if(x.tagName!=='IMG')el.appendChild(x.cloneNode(true))});
+  el.dataset.tr='1';
+}
+function trUndo(el){if(el.dataset.tr&&el._o!==undefined){el.innerHTML=el._o;delete el.dataset.tr}}
+// замена блока внутри уже показанного текста: если блок выше экрана, компенсируем сдвиг прокрутки
+function trAdj(el,fn){
+  const above=el.getBoundingClientRect().bottom<=HO(),h0=el.offsetHeight;
+  fn();
+  const d=el.offsetHeight-h0;
+  if(d&&above)scrollTo(0,scrollY+d);
+}
+function trApplySec(sec){
+  for(const el of trBlocks(sec)){const s=trSrc(el);if(!s)continue;const t=TR.cache[trH(s)];if(t)trPut(el,t)}
+}
+function trApplyDom(){
+  for(const el of trBlocks(txt)){
+    if(el.dataset.tr)continue;
+    const s=trSrc(el);if(!s)continue;
+    const t=TR.cache[trH(s)];if(t)trAdj(el,()=>trPut(el,t));
+  }
+}
+function trNext(){
+  const H=innerHeight,top=HO();let below=null,above=null,ab=-1e9;
+  for(const el of trBlocks(txt)){
+    if(el.dataset.tr||el._f)continue;
+    const s=trSrc(el);if(!s)continue;
+    const r=el.getBoundingClientRect();
+    if(r.top>H*3)break;
+    if(r.bottom<-H*.5)continue;
+    if(TR.cache[trH(s)])return el;
+    if(r.bottom>top){below=el;break}
+    if(r.bottom>ab){ab=r.bottom;above=el}
+  }
+  return below||above;
+}
+function trChunks(t,max){
+  const ss=t.match(/[^.!?\u2026]+(?:[.!?\u2026]+["\u201D\u00BB\u2019')\]]*|$)\s*/g)||[t];
+  const out=[];let c='';
+  for(const s of ss){if(c&&(c+s).length>max){out.push(c.trim());c=''}c+=s}
+  if(c.trim())out.push(c.trim());
+  const res=[];
+  for(const x of out){
+    if(x.length<=max*1.6){res.push(x);continue}
+    const parts=x.match(new RegExp('[\\s\\S]{1,'+max+'}(?:\\s|$)','g'))||[x];
+    parts.forEach(p=>{if(p.trim())res.push(p.trim())});
+  }
+  return res;
+}
+async function trRun(s){
+  const out=[];
+  for(const c of trChunks(s,TR.eng.max)){
+    if(!TR.on)throw new Error('off');
+    const r=await TR.eng.tr(c);
+    out.push(String(r||'').trim());
+  }
+  const t=out.join(' ').trim();
+  if(!t)throw new Error('empty');
+  return t;
+}
+function trPill(t){const p=$('#trPill');p.textContent=t||'';p.hidden=!t}
+function trSt(t){$('#trSt').textContent=t||''}
+function trBtn(){$('#trBtn').textContent='Перевод на русский: '+(TR.on?'вкл':'выкл')}
+function trSaveSoon(){TR.dirty=true;if(TR.saveT)return;TR.saveT=setTimeout(()=>{TR.saveT=0;trFlush()},4000)}
+async function trFlush(){
+  if(TR.saveT){clearTimeout(TR.saveT);TR.saveT=0}
+  if(TR.dirty&&TR.key){TR.dirty=false;await kv.set('tr:'+TR.key,TR.cache)}
+}
+function trKick(){
+  if(!TR.on||!TR.eng||TR.run||!book||book.pdf)return;
+  TR.run=true;trPump().catch(()=>{}).then(()=>{TR.run=false;trPill('')});
+}
+async function trPump(){
+  let fails=0;
+  while(TR.on&&TR.eng){
+    const el=trNext();if(!el)break;
+    const s=el._s,h=trH(s);
+    let out=TR.cache[h];
+    if(!out){
+      trPill('Перевожу…');
+      try{out=await trRun(s)}catch(err){
+        if(!TR.on)break;
+        el._f=1;
+        if(++fails>=3){trOff('Перевод остановлен: '+(err&&err.message||'ошибка переводчика'));break}
+        continue;
+      }
+      fails=0;
+      if(!TR.on)break;
+      TR.cache[h]=out;trSaveSoon();
+    }
+    if(el.isConnected&&!el.dataset.tr)trAdj(el,()=>trPut(el,out));
+  }
+}
+function trOff(why){
+  TR.on=false;
+  for(const el of trBlocks(txt)){if(el.dataset.tr)trAdj(el,()=>trUndo(el))}
+  const e=ent(key);if(e){e.tr=false;saveLib()}
+  trPill('');trSt(why||'');trBtn();trFlush();
+}
+// движок 1: встроенный переводчик Chrome (ПК, Chrome 138+)
+async function trChrome(){
+  if(typeof Translator==='undefined')return null;
+  const o={sourceLanguage:'en',targetLanguage:'ru'};
+  let av;try{av=await Translator.availability(o)}catch(e){return null}
+  if(av==='unavailable')return null;
+  const t=await Translator.create(Object.assign({},o,{monitor(m){m.addEventListener('downloadprogress',ev=>trPill('Загрузка переводчика: '+Math.round(ev.loaded*100)+'%'))}}));
+  return {name:'chrome',max:1500,tr:s=>t.translate(s)};
+}
+// движок 2: модель Opus-MT прямо на устройстве (Transformers.js, отдельный поток)
+function trWorkerMain(){
+  let pipe=null;
+  self.onmessage=async e=>{
+    const m=e.data;
+    try{
+      if(m.t==='init'){
+        const lib=await import(m.url);
+        pipe=await lib.pipeline('translation',m.model,{dtype:'q8',progress_callback:p=>self.postMessage({t:'prog',p:{status:p.status,file:p.file,loaded:p.loaded,total:p.total}})});
+        self.postMessage({t:'ready'});
+      }else if(m.t==='tr'){
+        const r=await pipe(m.text,{max_new_tokens:400,num_beams:2});
+        self.postMessage({t:'res',id:m.id,text:r[0].translation_text});
+      }
+    }catch(err){self.postMessage({t:'err',id:m.id,msg:String(err&&err.message||err)})}
+  };
+}
+function trWorker(onProg){
+  return new Promise((res,rej)=>{
+    let w;
+    try{w=new Worker(URL.createObjectURL(new Blob(['('+trWorkerMain.toString()+')()'],{type:'text/javascript'})),{type:'module'})}
+    catch(e){rej(new Error('Этот браузер не умеет запускать переводчик'));return}
+    const pend=new Map(),files={};let id=0,ready=false;
+    w.onmessage=e=>{
+      const m=e.data;
+      if(m.t==='prog'){
+        const p=m.p;
+        if(p&&p.total){files[p.file]=[p.loaded||0,p.total];let L=0,T=0;for(const k in files){L+=files[k][0];T+=files[k][1]}if(T)onProg(Math.round(L/T*100))}
+      }else if(m.t==='ready'){
+        ready=true;
+        res({name:'opus',max:380,tr:s=>new Promise((ok,no)=>{const i=++id;pend.set(i,[ok,no]);w.postMessage({t:'tr',id:i,text:s})})});
+      }else if(m.t==='res'){const q=pend.get(m.id);pend.delete(m.id);if(q)q[0](m.text)}
+      else if(m.t==='err'){
+        const q=pend.get(m.id);
+        if(q){pend.delete(m.id);q[1](new Error(m.msg))}
+        else if(!ready)rej(new Error('Не удалось загрузить модель: '+m.msg));
+      }
+    };
+    w.onerror=()=>{if(!ready)rej(new Error('Не удалось загрузить модель. Проверь интернет'))};
+    w.postMessage({t:'init',url:TRLIB,model:TRMODEL});
+  });
+}
+async function trInit(gesture){
+  let ch=null;
+  try{ch=await trChrome()}catch(err){
+    if(err&&err.name==='NotAllowedError'&&!gesture)throw new Error('Нажми «Перевод на русский» в «Аа», чтобы скачать переводчик.');
+    ch=null;
+  }
+  if(ch)return ch;
+  if(!ls.get('trOk',false)){
+    if(!gesture)throw new Error('Нажми «Перевод на русский» в «Аа»: нужно один раз скачать модель.');
+    if(!confirm('Для перевода на этом устройстве нужно один раз скачать модель (около 140 МБ). Скачать?'))throw new Error('Перевод отменён.');
+  }
+  trSt('Загружаю модель перевода…');
+  const en=await trWorker(p=>trPill('Загрузка модели перевода: '+p+'%'));
+  ls.set('trOk',true);return en;
+}
+function trEnsureEng(gesture){
+  if(TR.eng)return Promise.resolve(TR.eng);
+  if(!TR.engP)TR.engP=trInit(gesture).then(en=>{TR.eng=en;TR.engP=null;return en},err=>{TR.engP=null;throw err});
+  return TR.engP;
+}
+async function trEnable(e,gesture){
+  TR.key=key;TR.cache=(await kv.get('tr:'+key))||{};
+  TR.on=true;e.tr=true;saveLib();trBtn();trSt('Подготовка перевода…');
+  try{await trEnsureEng(gesture)}
+  catch(err){TR.on=false;e.tr=false;saveLib();trBtn();trPill('');trSt(err&&err.message||'Не удалось включить перевод');return false}
+  if(!TR.on)return false;
+  trSt(TR.eng.name==='chrome'?'Встроенный переводчик Chrome':'Модель на устройстве (Opus-MT)');
+  trPill('');trApplyDom();trKick();return true;
+}
+async function trToggle(){
+  if(!book||book.pdf)return;
+  const e=ent(key);if(!e)return;
+  if(TR.on){trOff();return}
+  await trEnable(e,true);
+}
+async function trOpen(e){
+  await trFlush();
+  TR.on=false;TR.cache={};TR.key=key;trPill('');trSt('');
+  if(book.pdf||!e.tr){trBtn();return}
+  TR.cache=(await kv.get('tr:'+key))||{};
+  TR.on=true;trBtn();
+  trEnsureEng(false).then(()=>{if(TR.on&&TR.key===key){trSt(TR.eng.name==='chrome'?'Встроенный переводчик Chrome':'Модель на устройстве (Opus-MT)');trApplyDom();trKick()}})
+    .catch(err=>{TR.on=false;e.tr=false;saveLib();trBtn();trPill('');trSt(err&&err.message||'')});
+}
+addEventListener('scroll',()=>{if(TR.on&&!TR.kickT)TR.kickT=setTimeout(()=>{TR.kickT=0;trKick()},300)},{passive:true});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)trFlush()});
+// ===== конец блока перевода =====
 async function mk(i){
   let html;
   try{html=await book.chapters[i].load()}catch(e){html='<p>Не удалось показать этот раздел.</p>'}
   const sec=document.createElement('section');
   sec.className='ch';sec.dataset.i=i;
   sec.innerHTML=book.pdf?(html||''):fixDash(html||'<p>В этом разделе нет текста.</p>');
+  if(!book.pdf&&TR.on){try{trApplySec(sec)}catch(err){}setTimeout(trKick,400)}
   return sec;
 }
 let filling=false;
@@ -1347,6 +1570,7 @@ async function load(name,buf,start,silent){
     let h='',g='';
     b.chapters.forEach(c=>{c.a0=!!c.aux||AUX.test(c.title||'')||AUX.test(c.group||'')});
     weigh(b,e);
+    try{await trOpen(e)}catch(err){}
     if(pendingPP&&pendingPP.id===key){const q=posFromPercent(b,pendingPP.p);e.ch=q.ch;e.f=q.f;e.p=pendingPP.p;e.t=Date.now();e.fa=[q.ch,q.f];pendingPP=null;saveLib()}
     b.chapters.forEach((c,i)=>{
       const cg=c.group||'';
@@ -1690,6 +1914,7 @@ function openBk(){
   renderBk();$('#bkl').hidden=false;
 }
 $('#bkOpen').onclick=e=>{e.stopPropagation();openBk()};
+$('#trBtn').onclick=e=>{e.stopPropagation();trToggle()};
 $('#bkm').onclick=e=>{
   e.stopPropagation();
   const en=ent(key);if(!en||!book)return;
@@ -1769,7 +1994,7 @@ $('#bm').addEventListener('click',async e=>{
     if(confirm('Удалить '+lbl+' из библиотеки совсем? Книга пропадёт и из облака, на всех устройствах.')){
       const id=b.id;
       lib=lib.filter(x=>x.id!==id);saveLib();
-      await kvDel('b:'+id);await kvDel('c:'+id);
+      await kvDel('b:'+id);await kvDel('c:'+id);await kvDel('tr:'+id);
       if(ls.get('cur','')===id)ls.set('cur','');
       if(key===id){book=null;key=''}
       syForget(id);renderLib();
