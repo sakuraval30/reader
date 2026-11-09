@@ -1599,6 +1599,25 @@ function ocrColors(ctx,x,y,w,h,W,H){
   const hx=c=>'#'+c.map(v=>('0'+Math.max(0,Math.min(255,v)).toString(16)).slice(-2)).join('');
   return{bg:hx(bg),fg:hx(fg)};
 }
+// светлая страница с цветными рисунками: закрашиваем всё сильно окрашенное (рисунки, орнаменты) цветом бумаги,
+// чтобы распознавание видело только текст; порог насыщенности считаем от цвета самих букв
+function ocrPrep(cv){
+  const W=cv.width,H=cv.height,d=cv.getContext('2d').getImageData(0,0,W,H).data;
+  let s=0,n=0;const ts=[];
+  for(let i=0;i<d.length;i+=64){const l=.299*d[i]+.587*d[i+1]+.114*d[i+2];s+=l;n++;if(l<90){const mx=Math.max(d[i],d[i+1],d[i+2]),mn=Math.min(d[i],d[i+1],d[i+2]);ts.push(mx?(mx-mn)/mx:0)}}
+  if(n===0||s/n<130)return null;
+  ts.sort((a,b)=>a-b);
+  const th=Math.max(.3,Math.min(.6,(ts.length?ts[ts.length>>1]:.1)+.18));
+  const out=document.createElement('canvas');out.width=W;out.height=H;
+  const o=out.getContext('2d'),res=o.createImageData(W,H),r=res.data;
+  for(let i=0;i<d.length;i+=4){
+    const R=d[i],G=d[i+1],B=d[i+2],mx=Math.max(R,G,B),mn=Math.min(R,G,B);
+    if(mx>40&&(mx-mn)/mx>th){r[i]=r[i+1]=r[i+2]=255}else{r[i]=R;r[i+1]=G;r[i+2]=B}
+    r[i+3]=255;
+  }
+  o.putImageData(res,0,0);
+  return out;
+}
 const ocrMed=a=>{const s=[...a].sort((p,q)=>p-q);return s.length?s[s.length>>1]:0};
 // слово оставляем, если оно похоже на слово; мусор от орнаментов («~*~», «v4]», «2 7 HF») отбрасываем
 function ocrKeepWord(w){
@@ -1625,6 +1644,7 @@ function ocrItems(data){
           x1=Math.max(...ws.map(w=>w.bbox.x1));y1=Math.max(...ws.map(w=>w.bbox.y1));
           t=ws.map(w=>String(w.text).trim()).join(' ');
           c=ws.reduce((a,w)=>a+(typeof w.confidence==='number'?w.confidence:100),0)/ws.length;
+          if(c<55)continue;
         }else if(l.bbox){
           x0=l.bbox.x0;y0=l.bbox.y0;x1=l.bbox.x1;y1=l.bbox.y1;t=String(l.text||'').trim();
           c=typeof l.confidence==='number'?l.confidence:100;if(c<50)continue;
@@ -1634,19 +1654,27 @@ function ocrItems(data){
       if(!lines.length)continue;
       // новый абзац: предыдущая строка закончена знаком, а эта с отступом или предыдущая заметно короче остальных
       const px0=Math.min(...lines.map(l=>l.x0)),px1=Math.max(...lines.map(l=>l.x1)),lh0=ocrMed(lines.map(l=>l.y1-l.y0));
-      const groups=[[lines[0]]];
-      for(let i=1;i<lines.length;i++){
+      // строки с «рваными» краями и справа и слева (оглавление, стихи): каждая строка отдельным блоком
+      const sd=a=>{const m=a.reduce((x,y)=>x+y,0)/a.length;return Math.sqrt(a.reduce((x,y)=>x+(y-m)*(y-m),0)/a.length)};
+      let ragged=false,center=false;
+      if(lines.length>=3){
+        const sl=sd(lines.map(l=>l.x0)),sr=sd(lines.map(l=>l.x1)),sc=sd(lines.map(l=>(l.x0+l.x1)/2));
+        const wm=Math.max(...lines.map(l=>l.x1-l.x0)),shorts=lines.filter(l=>l.x1-l.x0<wm*.8).length;
+        if(sl>lh0*1.2&&sr>lh0*1.2&&shorts>=lines.length/2){ragged=true;center=sc<lh0*.8}
+      }
+      const groups=ragged?lines.map(l=>[l]):[[lines[0]]];
+      if(!ragged)for(let i=1;i<lines.length;i++){
         const prev=lines[i-1],cur=lines[i];
         if(ocrEnds(prev.t)&&(cur.x0-px0>lh0*.8||prev.x1<px1-lh0*3))groups.push([cur]);
         else groups[groups.length-1].push(cur);
       }
       for(const g of groups){
-        const t=ocrParas(g.map(l=>l.t).join('\n')).join(' ');
+        const t=ocrParas(g.map(l=>l.t).join('\n')).join(' ').replace(/\bGhapter\b/g,'Chapter').replace(/\bGHAPTER\b/g,'CHAPTER');
         if(ocrLetters(t)<3)continue;
         if(t.split(/\s+/).length<2&&ocrLetters(t)<8)continue;
         const c=g.reduce((a,l)=>a+l.c,0)/g.length;
         if(c<60)continue;
-        items.push({t,lines:g,c});
+        items.push({t,lines:g,c,rag:ragged,center:ragged&&center});
       }
     }
   }
@@ -1665,13 +1693,14 @@ function ocrItems(data){
     again=false;
     for(let i=0;i<items.length&&!again;i++){
       const A=items[i];
-      if(A.t.length<20||ocrEnds(A.t))continue;
+      if(A.rag||A.t.length<20||ocrEnds(A.t))continue;
       for(let j=0;j<items.length;j++){
-        const B=items[j];if(B===A)continue;
-        if(!(/^(?:[a-z]|\u2026|\.\.\.)/.test(B.t)||/,$/.test(A.t)))continue;
+        const B=items[j];if(B===A||B.rag)continue;
+        if(!(/^(?:[\u2018\u201C"'(]\s*)?(?:[a-z]|\u2026|\.\.\.)/.test(B.t)||/,$/.test(A.t)))continue;
         const gap=B.y0-A.y1,wa=A.x1-A.x0,wb=B.x1-B.x0;
         if(gap<-A.lh*.5||gap>A.lh*1.6)continue;
-        if(Math.abs(A.x0-B.x0)>A.lh*1.5)continue;
+        const dx=Math.abs(A.x0-B.x0),dr=Math.abs(A.x1-B.x1);
+        if(!(dx<=A.lh*1.5||(dr<=A.lh*1.2&&dx<=A.lh*4)))continue;
         if(Math.abs(wa-wb)>.35*Math.max(wa,wb)&&!(B.x1<=A.x1+A.lh))continue;
         A.t=A.t+' '+B.t;A.lines=A.lines.concat(B.lines);A.c=(A.c+B.c)/2;
         geo(A);items.splice(j,1);again=true;break;
@@ -1680,32 +1709,65 @@ function ocrItems(data){
   }
   return items;
 }
+const OCR_DC={he:'The',r:'Mr',rs:'Mrs',rand:'Mr and',t:'It',n:'In',nd:'And',ut:'But',hey:'They'};
+// крупная буква слева от абзаца: рамка по «чернилам» (тёмным на светлой странице или светлым на тёмной)
+function ocrInkBox(cv,r){
+  const X=Math.max(0,Math.round(r.left)),Y=Math.max(0,Math.round(r.top)),Wd=Math.min(cv.width-X,Math.round(r.width)),Ht=Math.min(cv.height-Y,Math.round(r.height));
+  if(Wd<10||Ht<10)return null;
+  const d=cv.getContext('2d').getImageData(X,Y,Wd,Ht).data,ls=[];
+  for(let i=0;i<d.length;i+=40)ls.push(.299*d[i]+.587*d[i+1]+.114*d[i+2]);
+  ls.sort((a,b)=>a-b);
+  const lightPage=ls[ls.length>>1]>=128;
+  let x0=1e9,y0=1e9,x1=-1,y1=-1,cnt=0;
+  for(let y=0;y<Ht;y++)for(let x=0;x<Wd;x++){
+    const i=(y*Wd+x)*4,R=d[i],G=d[i+1],B=d[i+2],l=.299*R+.587*G+.114*B,mx=Math.max(R,G,B),mn=Math.min(R,G,B),sat=mx?(mx-mn)/mx:0;
+    if(lightPage?(l<90&&sat<.45):(l>170&&sat<.45)){cnt++;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+  }
+  if(x1<0||cnt<Wd*Ht*.01)return null;
+  return{left:X+x0-4,top:Y+y0-4,width:x1-x0+9,height:y1-y0+9};
+}
 // буква-буквица: вырезаем её и распознаём отдельно (режим «один символ», только заглавные)
-async function ocrDropCaps(w,blob,items){
+async function ocrDropCaps(w,blob,items,cv){
   const cands=[];
   for(const it of items){
+    if(it.rag)continue;
     const L=it.lines,lh=it.lh;
+    let rect=null,cons=55;
     if(L.length>=4){
       const base=ocrMed(L.slice(3).map(l=>l.x0));let k=0;
       while(k<L.length-1&&L[k].x0>base+lh*1.3)k++;
       if(k>=2&&k<=5){
         const minx=Math.min(...L.slice(0,k).map(l=>l.x0));
-        cands.push({it,cons:50,r:{left:Math.max(0,base-lh*.2),top:Math.max(0,L[0].y0-lh*.3),width:minx-base+lh*.2,height:L[k-1].y1-L[0].y0+lh*.6}});
-        continue;
+        rect={left:Math.max(0,base-lh*.2),top:Math.max(0,L[0].y0-lh*.3),width:minx-base+lh*.2,height:L[k-1].y1-L[0].y0+lh*.6};
+        const ink=ocrInkBox(cv,rect);if(ink)rect=ink;
+        cons=50;
       }
     }
-    if(/^[a-z]/.test(it.t)&&L.length>=2){
-      cands.push({it,cons:70,r:{left:Math.max(0,it.x0-lh*5),top:Math.max(0,it.y0-lh*.3),width:lh*5-2,height:lh*3.4}});
+    if(!rect&&/^[a-z]/.test(it.t)&&L.length>=2){
+      const ink=ocrInkBox(cv,{left:Math.max(0,it.x0-6*lh),top:Math.max(0,it.y0-.6*lh),width:6*lh-2,height:Math.min(it.y1-it.y0+1.2*lh,10*lh)});
+      if(ink&&ink.height>=1.8*lh&&ink.height<=10*lh&&ink.width>=.6*lh)rect=ink;
     }
+    if(rect&&rect.width>=lh*.6&&rect.height>=lh*1.5)cands.push({it,r:rect,cons});
   }
-  const todo=cands.filter(c=>c.r.width>=c.it.lh&&c.r.height>=c.it.lh*1.5).slice(0,3);
+  const todo=cands.slice(0,3);
   if(!todo.length)return;
   try{
     await w.setParameters({tessedit_pageseg_mode:'10',tessedit_char_whitelist:'ABCDEFGHIJKLMNOPQRSTUVWXYZ'});
+    const one=async r=>{
+      const x=await w.recognize(blob,{rectangle:{left:Math.max(0,Math.round(r.left)),top:Math.max(0,Math.round(r.top)),width:Math.round(r.width),height:Math.round(r.height)}},{text:true});
+      return{ch:String(x.data.text||'').trim(),c:x.data.confidence||0};
+    };
     for(const c of todo){
-      const r=await w.recognize(blob,{rectangle:{left:Math.round(c.r.left),top:Math.round(c.r.top),width:Math.round(c.r.width),height:Math.round(c.r.height)}},{text:true});
-      const ch=String(r.data.text||'').trim();
-      if(/^[A-Z]$/.test(ch)&&(r.data.confidence||0)>=c.cons)c.it.t=ch+c.it.t;
+      // две независимые попытки (рамка и чуть шире): букву принимаем, только если они совпали или уверенность очень высокая
+      const a=await one(c.r);
+      const b=await one({left:c.r.left-8,top:c.r.top-8,width:c.r.width+16,height:c.r.height+16});
+      const okA=/^[A-Z]$/.test(a.ch),okB=/^[A-Z]$/.test(b.ch);
+      if((okA&&okB&&a.ch===b.ch&&(a.c+b.c)/2>=70)||(okA&&a.c>=88&&(!okB||b.ch===a.ch)))c.it.t=a.ch+c.it.t;
+      else{
+        // букву не прочитали (узорная): достраиваем по самым частым началам абзацев, если остаток слова однозначный
+        const m=/^[a-z]+/.exec(c.it.t),g=m&&OCR_DC[m[0]];
+        if(g)c.it.t=g+c.it.t.slice(m[0].length);
+      }
     }
   }catch(e){}
   try{await w.setParameters({tessedit_pageseg_mode:'3',tessedit_char_whitelist:''})}catch(e){}
@@ -1717,7 +1779,7 @@ function ocrBoxes(items,cv){
     const pad=3,x=Math.max(0,it.x0-pad),y=Math.max(0,it.y0-pad),w=Math.min(W-x,it.x1-it.x0+2*pad),h=Math.min(H-y,it.y1-it.y0+2*pad);
     if(w<20||h<10)continue;
     let col;try{col=ocrColors(ctx,x,y,w,h,W,H)}catch(e){col={bg:'#ffffff',fg:'#111111'}}
-    const centered=it.lines.length===1&&Math.abs((it.x0+it.x1)/2-colC)<.05*W&&(it.x1-it.x0)<.6*W;
+    const centered=it.center||it.lines.length===1&&Math.abs((it.x0+it.x1)/2-colC)<.05*W&&(it.x1-it.x0)<.6*W;
     out.push({t:it.t,x:Math.round(x),y:Math.round(y),w:Math.round(w),h:Math.round(h),lh:Math.round(it.lh),ind:Math.round(it.ind),c:centered?1:0,bg:col.bg,fg:col.fg});
   }
   return out;
@@ -1746,13 +1808,13 @@ function ocrOverHtml(n,img){
 function ocrCanText(n){
   const c=OCR.cache[n];
   if(!OCR.on||!c||c.img)return false;
-  return OCR.mode==='over'?!!(c.q&&c.q.length&&c.v===2):!!(c.p&&c.p.length);
+  return OCR.mode==='over'?!!(c.q&&c.q.length&&c.v===3):!!(c.p&&c.p.length);
 }
 // HTML страницы-картинки с учётом режима (img — готовый тег картинки)
 function ocrPageHtml(n,img){
   if(OCR.mode==='over'){
     const c=OCR.cache[n];
-    if(!c||(!c.img&&!(c.q&&c.v===2))){ocrKick();return img}
+    if(!c||(!c.img&&!(c.q&&c.v===3))){ocrKick();return img}
     if(c.img||!c.q||!c.q.length)return img;
     if(OCR.show[n]==='img')return img+'<button class="pgo" data-act="txt" data-n="'+n+'">Показать перевод</button>';
     return ocrOverHtml(n,img);
@@ -1781,7 +1843,7 @@ function ocrHave(n){
   const c=OCR.cache[n];
   if(!c)return false;
   if(c.img)return true;
-  return OCR.mode==='over'?!!(c.q&&c.v===2):!!c.p;
+  return OCR.mode==='over'?!!(c.q&&c.v===3):!!c.p;
 }
 async function ocrDo(n){
   const over=OCR.mode==='over';
@@ -1790,21 +1852,23 @@ async function ocrDo(n){
   if(!paras){
     const w=await ocrEngine();
     const cv=await book.pageCanvas(n);
+    let pc=null;
     try{
       W=cv.width;H=cv.height;
-      const blob=await new Promise(res=>cv.toBlob(res,'image/jpeg',.92));
+      pc=ocrPrep(cv);
+      const blob=await new Promise(res=>(pc||cv).toBlob(res,'image/jpeg',.92));
       const r=await w.recognize(blob,{},{text:true,blocks:true});
       paras=ocrParas(r.data.text);
       conf=typeof r.data.confidence==='number'?r.data.confidence:100;
       const items=ocrItems(r.data);
-      if(over)await ocrDropCaps(w,blob,items);
+      if(over)await ocrDropCaps(w,blob,items,cv);
       q=ocrBoxes(items,cv);
-    }finally{cv.width=cv.height=0}
+    }finally{cv.width=cv.height=0;if(pc)pc.width=pc.height=0}
   }
   const letters=paras.reduce((a,t)=>a+ocrLetters(t),0);
   // мало текста или низкая уверенность (узоры, надписи на картинках): показываем саму страницу
   const img=(letters<60||conf<75||(over&&q&&!q.length))?1:0;
-  const e={p:paras,img,v:2};
+  const e={p:paras,img,v:3};
   if(q){e.q=q;e.W=W;e.H=H}
   OCR.cache[n]=e;
 }
@@ -1883,7 +1947,8 @@ document.addEventListener('click',e=>{
   e.stopPropagation();
   const n=+b.dataset.n;OCR.show[n]=b.dataset.act==='img'?'img':'txt';ocrSwap(n);
 });
-// вёрстка абзацев поверх страницы: один размер шрифта для основного текста, отступы, рост в свободное место под абзацем
+// вёрстка абзацев поверх страницы: отступы, выключка, один размер шрифта на группу блоков одинаковой высоты строки,
+// одиночные строки (заголовки, оглавление) не переносятся и подгоняются по ширине, абзац может дорасти вниз в свободное место
 function pgxFit(box){
   const r=box.getBoundingClientRect(),cw=r.width,ch=r.height;
   if(!cw||!ch)return;
@@ -1895,25 +1960,31 @@ function pgxFit(box){
       const ov=Math.min(a.x+a.w,b.x+b.w)-Math.max(a.x,b.x);
       if(ov>.4*Math.min(a.w,b.w)&&b.y>a.y+a.h*.5)room=Math.min(room,b.y-(a.y+a.h)-3);
     }
-    a.H=a.h+Math.max(0,Math.min(room,2*a.lh));
+    a.single=a.h<1.6*a.lh;
     const q=a.q;
-    q.style.height=a.H+'px';
+    q.style.height=(a.h+(a.single?0:Math.max(0,Math.min(room,2*a.lh))))+'px';
+    q.style.whiteSpace=a.single?'nowrap':'normal';
     q.style.textIndent=(a.ind>.5*a.lh?a.ind:0)+'px';
     q.style.textAlign=a.c?'center':'';
+    const ok=()=>q.scrollHeight<=q.clientHeight+1&&q.scrollWidth<=q.clientWidth+1;
     let lo=5,hi=Math.max(7,a.lh*.95);
     q.style.fontSize=hi+'px';
-    if(q.scrollHeight>q.clientHeight+1){
-      for(let k=0;k<10;k++){const m=(lo+hi)/2;q.style.fontSize=m+'px';if(q.scrollHeight<=q.clientHeight+1)lo=m;else hi=m}
+    if(!ok()){
+      for(let k=0;k<10;k++){const m=(lo+hi)/2;q.style.fontSize=m+'px';if(ok())lo=m;else hi=m}
       a.f=lo;
     }else a.f=hi;
-    a.body=a.h>1.6*a.lh&&!a.c;
   }
-  const bf=L.filter(a=>a.body).map(a=>a.f).sort((p,q)=>p-q);
-  const S=bf.length?bf[Math.floor((bf.length-1)*.35)]:0;
-  for(const a of L){
-    const f=(a.body&&S)?Math.min(a.f,S):a.f;
-    a.q.style.fontSize=(f*.97)+'px';
-    if(!a.c)a.q.style.textAlign=(a.w/f>=22)?'justify':'left';
+  const sorted=[...L].sort((p,q)=>p.lh-q.lh),groups=[];
+  let grp=[];
+  for(const a of sorted){if(grp.length&&a.lh>grp[0].lh*1.12){groups.push(grp);grp=[]}grp.push(a)}
+  if(grp.length)groups.push(grp);
+  for(const g of groups){
+    const fs=g.map(a=>a.f).sort((p,q)=>p-q),S=fs[Math.floor((fs.length-1)*.35)];
+    for(const a of g){
+      const f=g.length>1?Math.min(a.f,S):a.f;
+      a.q.style.fontSize=(f*.97)+'px';
+      if(!a.c)a.q.style.textAlign=(!a.single&&a.w/f>=22)?'justify':'left';
+    }
   }
 }
 function pgxInit(box){
