@@ -35,6 +35,59 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;a
 .bkitem .bkgo small{display:block;color:var(--mute);font-weight:400;font-size:.78rem;margin-top:.1rem}
 .bkitem .bkdel{border:0;background:transparent;color:var(--mute);font-size:1.15rem;line-height:1;padding:.5rem .6rem;flex:none}
 #ocrRow{display:none}
+.tadd{font-size:1.1rem;padding:.4rem .8rem!important}
+#tabs{max-width:calc(100vw - 1rem);overflow-x:auto;scrollbar-width:none}
+#tabs::-webkit-scrollbar{display:none}
+#tabs button{white-space:nowrap}
+#sxm .sxi{display:block;padding:.4rem .6rem;color:var(--mute);font-size:.8rem;max-width:15rem}
+#sxm button{text-align:left}
+#sxm .dng,#dl .dng,.dlb.dng{color:#d46060}
+#ap{position:fixed;inset:0;z-index:35;background:var(--bg);color:var(--fg);display:flex;flex-direction:column;overflow:hidden;padding-top:env(safe-area-inset-top,0px)}
+#ap[hidden]{display:none}
+.aph{display:flex;align-items:center;justify-content:space-between;padding:.6rem .9rem}
+.aph b{font-size:.95rem;color:var(--mute);font-weight:600}
+.apb{flex:1;display:flex;flex-direction:column;align-items:center;gap:1rem;padding:.5rem 1.4rem calc(1.4rem + env(safe-area-inset-bottom,0px));overflow:auto;max-width:34rem;width:100%;margin:0 auto;box-sizing:border-box}
+#apCov{width:min(60vw,16rem);aspect-ratio:2/3;max-height:40vh;flex:none}
+#apCov .apcv{width:100%;height:100%;border-radius:12px;object-fit:cover;box-shadow:0 14px 40px rgba(0,0,0,.3)}
+#apCov .ph{width:100%;height:100%;border-radius:12px}
+.apt{text-align:center;display:flex;flex-direction:column;gap:.2rem}
+.apt b{font-size:1.15rem}.apt small{color:var(--mute)}
+#apSeek{width:100%;accent-color:var(--acc)}
+.aptm{display:flex;justify-content:space-between;width:100%;font-size:.8rem;color:var(--mute);margin-top:-.6rem}
+.apc{display:flex;align-items:center;justify-content:center;gap:.8rem}
+.apc .ib{width:3rem;height:3rem;font-size:.85rem}
+.apc .ib svg{width:1.3rem;height:1.3rem}
+.apbig{width:4.4rem;height:4.4rem;border-radius:50%;border:none;background:var(--acc);color:#fff;display:grid;place-items:center}
+.apbig svg,#apmP svg{width:1.9rem;height:1.9rem}
+.apo{display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center}
+.apchip{padding:.45rem .9rem;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--fg);font-size:.85rem}
+#apLst{position:absolute;inset:3.8rem 0 0;background:var(--bg);overflow:auto;padding:.4rem 1rem 2rem;z-index:2;max-width:34rem;margin:0 auto}
+#apLst button{display:flex;justify-content:space-between;gap:1rem;width:100%;text-align:left;padding:.7rem .4rem;border:none;border-bottom:1px solid var(--line);background:transparent;color:var(--fg)}
+#apLst button[aria-pressed="true"]{color:var(--acc);font-weight:600}
+#apLst h3{margin:1.2rem 0 .3rem;font-size:.95rem;color:var(--mute)}
+.apbm{display:flex;align-items:center}.apbm .x{width:auto!important;color:var(--mute)}
+#apm{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(.8rem + env(safe-area-inset-bottom,0px));z-index:34;width:min(94vw,30rem);box-sizing:border-box;display:flex;align-items:center;gap:.7rem;padding:.5rem .6rem;border-radius:1rem;background:var(--pn,var(--bg));border:1px solid var(--line);box-shadow:0 8px 26px rgba(0,0,0,.25);cursor:pointer}
+#apm[hidden]{display:none}
+html:has(#rd:not([hidden])) #apm{display:none}
+#apmC{width:2.2rem;height:3.2rem;flex:none}
+#apmC .apmcv{width:100%;height:100%;object-fit:cover;border-radius:4px}
+#apmC .ph{width:100%;height:100%;border-radius:4px;padding:0}
+#apmC .ph b,#apmC .ph small{display:none}
+.apmt{flex:1;min-width:0}
+.apmt b{display:block;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.apmt small{display:block;color:var(--mute);font-size:.75rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#apmP{width:2.6rem;height:2.6rem}
+#pgD{max-width:44rem;margin:0 auto;padding-bottom:3rem}
+#dlSum{line-height:1.5;margin:.2rem 0 1rem}
+.dlh{font-size:1rem;margin:1.4rem 0 .4rem;color:var(--mute);font-weight:600}
+.dlr{display:flex;gap:.8rem;align-items:center;padding:.6rem .1rem;border-bottom:1px solid var(--line)}
+.dlr .cvs{width:2.6rem;height:3.9rem;border-radius:5px;object-fit:cover;flex:none;font-size:.4rem}
+.dlr .ph b,.dlr .ph small{display:none}
+.dlt{flex:1;min-width:0}
+.dlt b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dlt small{display:block;color:var(--mute);line-height:1.35}
+.dla{display:flex;flex-direction:column;gap:.3rem;flex:none}
+.dlb{padding:.3rem .8rem;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--fg);font-size:.78rem;white-space:nowrap}
 .swg{display:grid;grid-template-columns:repeat(4,2.5rem);gap:.5rem;padding:.5rem;justify-content:center}
 #bm .sw{width:2.5rem;height:2.5rem;padding:0;border-radius:50%;border:2px solid transparent;font-size:.6rem;color:#fff;text-align:center;background:linear-gradient(165deg,hsl(var(--h,0) var(--s,0%) 42%),hsl(var(--h,0) var(--s,0%) 24%))}
 #bm .sw[aria-pressed="true"]{border-color:var(--acc)}
@@ -59,6 +112,15 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;a
 .ispdf #trRow{display:none}
 #trPill{position:fixed;left:50%;bottom:calc(3rem + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:4;padding:.3rem .9rem;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--fg);font-size:.8rem;max-width:90vw;text-align:center}
 #trPill[hidden]{display:none}
+#dl{position:fixed;left:50%;bottom:calc(4.6rem + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:40;width:min(92vw,26rem);box-sizing:border-box;padding:.7rem .9rem .8rem;border-radius:1rem;border:1px solid var(--line);background:var(--pn,var(--bg));color:var(--fg);box-shadow:0 8px 28px rgba(0,0,0,.25);display:flex;flex-direction:column;gap:.25rem;font-size:.85rem}
+#dl[hidden]{display:none}
+#dl b{font-size:.9rem}
+#dl span{color:var(--mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#dl em{display:block;height:.3rem;border-radius:9px;background:var(--line);overflow:hidden;margin-top:.2rem}
+#dl i{display:block;height:100%;width:0;background:var(--acc);transition:width .2s}
+#dl.ind i{width:40%!important;animation:dlind 1.1s linear infinite}
+@keyframes dlind{0%{margin-left:-40%}100%{margin-left:100%}}
+#dl.err{border-color:#c0392b}#dl.err i{background:#c0392b}
 .bkadd{display:block;width:100%;text-align:center;padding:.75rem;border:0;border-top:1px solid var(--line);color:var(--acc);background:transparent;font-weight:600}
 #bkm.on{color:#ef4444}
 #bkm.on svg path{fill:currentColor}
@@ -333,8 +395,7 @@ body{overflow-x:clip}
 .cc .pr rect{fill:none;stroke:var(--acc);stroke-width:2;stroke-linecap:round;vector-effect:non-scaling-stroke;transition:stroke-dasharray 1s ease}
 .cc .cvs{width:2.8rem;height:4.2rem;flex:none;border-radius:4px;object-fit:cover;background:var(--line)}
 .cc .ph{padding:.35rem .3rem;gap:.15rem}
-.cc .ph b{font-size:.5rem;line-height:1.15;-webkit-line-clamp:4}
-.cc .ph small{display:-webkit-box;font-size:.4rem;line-height:1.15;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cc .ph b,.cc .ph small{display:none}
 .cc .ph::after{inset:.2rem}
 .cc .tx{display:block;min-width:0}
 div.cc{border:1px solid transparent;cursor:pointer;font:inherit;font-size:.9rem;color:var(--fg)}
@@ -358,7 +419,7 @@ div.cc{border:1px solid transparent;cursor:pointer;font:inherit;font-size:.9rem;
 .mb{border:0;padding:0 .2rem;font-size:1.1rem;line-height:1;color:var(--mute);background:transparent}
 .nw{font-style:normal;font-size:.68rem;font-weight:700;letter-spacing:.03em;padding:.1rem .4rem;border-radius:5px;background:var(--acc);color:var(--accfg)}
 #bm.glass,#srt.glass,#cp.glass{background:var(--pn);background:color-mix(in srgb,var(--pn) 70%,transparent);-webkit-backdrop-filter:blur(16px) saturate(1.3);backdrop-filter:blur(16px) saturate(1.3);border:1px solid var(--line);border-color:color-mix(in srgb,var(--fg) 14%,transparent)}
-#bm,#srt,#cp{position:fixed;z-index:11;min-width:13rem;max-width:calc(100vw - 1rem);max-height:70vh;overflow:auto;padding:.4rem;border-radius:12px;display:grid;gap:.15rem;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+#bm,#srt,#cp,#sxm,#apmn{position:fixed;z-index:11;min-width:13rem;max-width:calc(100vw - 1rem);max-height:70vh;overflow:auto;padding:.4rem;border-radius:12px;display:grid;gap:.15rem;box-shadow:0 12px 40px rgba(0,0,0,.3)}
 #bm button,#srt button,#cp button{border:0;text-align:left;padding:.55rem .7rem;border-radius:8px;background:transparent;display:flex;justify-content:space-between;gap:1rem;width:100%}
 #bm button[aria-pressed="true"],#srt button[aria-pressed="true"],#cp .cr>button[aria-pressed="true"]{color:var(--acc)}
 #bm hr,#cp hr{border:0;border-top:1px solid var(--line);margin:.2rem 0;width:100%}
@@ -379,6 +440,7 @@ div.cc{border:1px solid transparent;cursor:pointer;font:inherit;font-size:.9rem;
 </head>
 <body>
 <input type="file" id="f" hidden>
+<input type="file" id="af" accept="audio/*,.m4b,.m4a,.mp3,.aac,.ogg,.opus,.flac,.wav" multiple hidden>
 
 <section id="home">
   <nav id="tabs" aria-label="Разделы"><button data-p="home" aria-pressed="true">Главная</button><button data-p="lib" aria-pressed="false">Библиотека</button></nav>
@@ -397,9 +459,14 @@ div.cc{border:1px solid transparent;cursor:pointer;font:inherit;font-size:.9rem;
       <button id="aa3" class="ib" aria-label="Настройки темы"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
       <button id="colb" class="ib" aria-label="Коллекции"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h.01M9 6h11M4 12h.01M9 12h11M4 18h.01M9 18h11"/></svg></button>
       <button id="sortb" class="ib" aria-label="Сортировка"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5v14M8 19l-3-3M8 19l3-3M16 19V5M16 5l-3 3M16 5l3 3"/></svg></button>
+      <button id="secb" class="ib" aria-label="Раздел: настройки"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
       <button id="prof2" class="ib avatar" aria-label="Профиль"><span class="avPic"></span><span class="avDot"></span></button>
     </div></div>
     <div id="glib"></div>
+  </div>
+  <div id="pgD" hidden>
+    <div class="ph1"><h1>Скачано</h1></div>
+    <div id="dlSum"></div><div id="dlList"></div><div id="dlGh"></div><div id="dlDev"></div>
   </div>
 </section>
 
@@ -416,6 +483,7 @@ div.cc{border:1px solid transparent;cursor:pointer;font:inherit;font-size:.9rem;
   <main><article id="text"></article></main>
   <div id="stat"></div>
   <div id="trPill" hidden></div>
+  
   <nav>
     <button id="pv">Назад</button>
     <span id="pos"></span>
@@ -524,6 +592,28 @@ div.cc{border:1px solid transparent;cursor:pointer;font:inherit;font-size:.9rem;
 <div id="rn" class="glass" hidden><h3>Название и автор</h3><label>Название<input type="text" id="rnT" autocomplete="off"></label><label>Автор<input type="text" id="rnA" autocomplete="off"></label><div class="rnbtns"><button id="rnCancel">Отмена</button><button id="rnOk">Сохранить</button></div></div>
 <div id="srt" class="glass" hidden></div>
 <div id="cp" class="glass" hidden></div>
+<div id="sxm" class="glass" hidden></div>
+<div id="dl" hidden role="status"><b id="dlT"></b><span id="dlS"></span><em><i id="dlB"></i></em></div>
+  <section id="ap" hidden aria-label="Аудиоплеер">
+    <div class="aph"><button id="apX" class="ib" aria-label="Свернуть плеер"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><b>Аудиокнига</b><button id="apL" class="ib" aria-label="Главы и закладки"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></button></div>
+    <div class="apb">
+      <div id="apCov"></div>
+      <div class="apt"><b id="apT"></b><small id="apA"></small><small id="apC"></small></div>
+      <input id="apSeek" type="range" min="0" max="1000" value="0" aria-label="Перемотка">
+      <div class="aptm"><span id="apCur">0:00</span><span id="apRem"></span></div>
+      <div class="apc">
+        <button id="apPv" class="ib" aria-label="Предыдущая глава или файл"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5.5v13a1 1 0 0 1-1.6.8L9.6 13a1 1 0 0 1 0-1.6l8.8-6.7A1 1 0 0 1 20 5.5z"/></svg></button>
+        <button id="apB15" class="ib" aria-label="Назад на 15 секунд">−15</button>
+        <button id="apPP" class="apbig" aria-label="Играть или пауза"></button>
+        <button id="apF30" class="ib" aria-label="Вперёд на 30 секунд">+30</button>
+        <button id="apNx" class="ib" aria-label="Следующая глава или файл"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5.5v13a1 1 0 0 0 1.6.8l8.8-6.8a1 1 0 0 0 0-1.6L5.6 4.7A1 1 0 0 0 4 5.5z"/></svg></button>
+      </div>
+      <div class="apo"><button id="apSp" class="apchip">1×</button><button id="apSl" class="apchip">Таймер сна</button><button id="apBm" class="apchip">Закладка</button></div>
+    </div>
+    <div id="apLst" hidden></div>
+  </section>
+  <div id="apm" hidden role="button" aria-label="Открыть плеер"><div id="apmC"></div><div class="apmt"><b id="apmT"></b><small id="apmS"></small></div><button id="apmP" class="ib" aria-label="Играть или пауза"></button></div>
+  <div id="apmn" class="glass" hidden></div>
 <div id="toast" class="glass" hidden></div>
 <aside id="note" hidden><div id="nb"></div><button id="nc">Закрыть</button></aside>
 <script>/*!
@@ -604,6 +694,67 @@ const kv={
   async set(k,v){try{const d=await db();await new Promise((res,rej)=>{const t=d.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=res;t.onerror=()=>rej(t.error)})}catch(e){}}
 };
 const kvDel=async k=>{try{const d=await db();await new Promise((res,rej)=>{const t=d.transaction('kv','readwrite');t.objectStore('kv').delete(k);t.oncomplete=res;t.onerror=()=>rej(t.error)})}catch(e){}};
+/* ---------- Файлы книг: куски по 8 МБ, прогресс, понятные ошибки ---------- */
+const FS_CH=8*1024*1024;
+const fsz=n=>n>=1048576?(n>=10485760?Math.round(n/1048576):Math.round(n/104857.6)/10)+' МБ':Math.max(1,Math.round(n/1024))+' КБ';
+const kvPut=async(k,v)=>{const d=await db();await new Promise((res,rej)=>{const t=d.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=res;t.onerror=()=>rej(t.error||new Error('Ошибка записи'));t.onabort=()=>rej(t.error||new Error('Запись отменена'))})};
+const kvHas=async k=>{try{const d=await db();return await new Promise((res,rej)=>{const q=d.transaction('kv').objectStore('kv').count(k);q.onsuccess=()=>res(q.result>0);q.onerror=()=>rej(q.error)})}catch(e){return false}};
+const kvKeys=async()=>{try{const d=await db();return await new Promise((res,rej)=>{const q=d.transaction('kv').objectStore('kv').getAllKeys();q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}catch(e){return[]}};
+const fsErr=e=>{const n=(e&&e.name)||'',m=(e&&e.message)||String(e);if(e&&e.quota)return m;if(n==='QuotaExceededError'||/quota/i.test(m))return 'не хватает места в хранилище браузера';if(/memory|blob|allocation/i.test(m))return 'браузеру не хватило памяти ('+m+')';return(n?n+': ':'')+m};
+async function fsParts(id){const m=await kv.get('fm:'+id);if(!m)return null;const parts=[];for(let i=0;i<m.n;i++){const c=await kv.get('fc:'+id+':'+i);if(!c)return null;parts.push(c)}return{m,parts}}
+async function fsBlob(id){const r=await fsParts(id);if(r)return new Blob(r.parts,{type:r.m.type||''});const s=await kv.get('b:'+id);return s&&s.buf?new Blob([s.buf]):null}
+async function fsRead(id){const r=await fsParts(id);if(r)return{name:r.m.name,buf:await new Blob(r.parts).arrayBuffer()};const s=await kv.get('b:'+id);return s&&s.buf?s:null}
+async function fsDel(id,onProg){
+  const m=await kv.get('fm:'+id);
+  if(m){for(let i=0;i<m.n;i++){await kvDel('fc:'+id+':'+i);if(onProg)onProg((i+1)/m.n)}await kvDel('fm:'+id)}
+  await kvDel('b:'+id);
+}
+async function fsPut(id,file,onProg){
+  const size=file.size,n=Math.max(1,Math.ceil(size/FS_CH));
+  try{
+    const est=navigator.storage&&navigator.storage.estimate?await navigator.storage.estimate():null;
+    if(est&&est.quota&&est.quota-(est.usage||0)<size*1.05){const e=new Error('не хватает места на устройстве: нужно '+fsz(size)+', свободно около '+fsz(Math.max(0,est.quota-(est.usage||0))));e.quota=true;throw e}
+  }catch(e){if(e&&e.quota)throw e}
+  await fsDel(id);
+  let asBuf=false,i=0;
+  try{
+    while(i<n){
+      const part=file.slice(i*FS_CH,Math.min(size,(i+1)*FS_CH));
+      try{await kvPut('fc:'+id+':'+i,asBuf?await part.arrayBuffer():part)}
+      catch(err){if(!asBuf){asBuf=true;continue}throw err}
+      i++;
+      if(onProg)onProg(i/n,Math.min(size,i*FS_CH),size);
+    }
+    await kvPut('fm:'+id,{name:file.name||id,size,n,type:file.type||'',ab:asBuf,at:Date.now()});
+  }catch(err){
+    for(let j=0;j<=i&&j<n;j++)await kvDel('fc:'+id+':'+j);
+    throw err;
+  }
+  await kvDel('b:'+id);
+}
+async function fsMove(a,b){
+  const r=await fsParts(a);
+  if(r){for(let i=0;i<r.m.n;i++)await kvPut('fc:'+b+':'+i,r.parts[i]);await kvPut('fm:'+b,r.m);await fsDel(a);return}
+  const s=await kv.get('b:'+a);if(s){await kv.set('b:'+b,s);await kvDel('b:'+a)}
+}
+const fsHas=async id=>(await kvHas('fm:'+id))||(await kvHas('b:'+id));
+async function fsList(){
+  const keys=await kvKeys(),out=[],meta=new Set();
+  for(const k of keys){if(typeof k==='string'&&k.startsWith('fm:')){const id=k.slice(3),m=await kv.get(k);meta.add(id);out.push({id,size:(m&&m.size)||0,name:m&&m.name,at:m&&m.at,legacy:false})}}
+  for(const k of keys){if(typeof k==='string'&&k.startsWith('b:')){const id=k.slice(2);if(!meta.has(id)){const z=(String(id).match(/:(\d+)$/)||[])[1];out.push({id,size:z?+z:0,name:id.replace(/:\d+$/,''),legacy:true})}}}
+  return out;
+}
+/* плашка процесса: сохранение и удаление файлов */
+let dlT=0;
+function dlShow(t,sub,p){
+  const d=$('#dl');d.hidden=false;clearTimeout(dlT);d.classList.remove('err');d.classList.toggle('ind',p==null);
+  $('#dlT').textContent=t;$('#dlS').textContent=sub||'';$('#dlB').style.width=Math.round((p||0)*100)+'%';
+}
+function dlDone(t,err,sub){
+  const d=$('#dl');d.hidden=false;d.classList.remove('ind');d.classList.toggle('err',!!err);
+  $('#dlT').textContent=t;$('#dlS').textContent=sub||'';$('#dlB').style.width='100%';
+  clearTimeout(dlT);dlT=setTimeout(()=>{d.hidden=true},err?14000:3500);
+}
 const thumb=u=>new Promise(res=>{const im=new Image();im.onload=()=>{try{const r=Math.min(1,240/im.naturalWidth),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.naturalWidth*r));c.height=Math.max(1,Math.round(im.naturalHeight*r));const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.82))}catch(e){res('')}};im.onerror=()=>res('');im.src=u});
 let dashFix=ls.get('dfix',true);
 const SP='[ \u00A0\u2009\u202F]+',DA='[\u2012-\u2015\u2212]',D=SP+DA+SP,B='(^|[^\\p{L}])',E='(?!\\p{L})';
@@ -1106,10 +1257,405 @@ function sbInitEvents(){
 let lib=ls.get('lib',[]),view=[];
 const saveLib=()=>{ls.set('lib',lib);schedulePush()};
 const ent=i=>lib.find(b=>b.id===i);
-let page=ls.get('pg','home');if(page!=='lib')page='home';
+let page=ls.get('pg','home');if(page!=='lib'&&page!=='dl')page='home';
 let lsort=ls.get('sort','recent'),lf='all',cols=ls.get('cols',[]),bmI=-1;
 const saveCols=()=>ls.set('cols',cols);
 const isDone=b=>b.st==='done'||(b.p||0)>=99;
+/* ---------- Разделы: Библиотека, Аудиокниги и свои. В план чтения идут только отмеченные ---------- */
+const isAudioId=id=>/\.(mp3|m4b|m4a|aac|ogg|opus|flac|wav)(?::|#|$)/i.test(String(id||''));
+const isAudio=b=>!!(b&&(b.tracks||isAudioId(b.id)));
+let SX=ls.get('sx',null);
+{
+  const D=[{id:'lib',name:'Библиотека',plan:true},{id:'aud',name:'Аудиокниги',plan:false}];
+  if(!Array.isArray(SX))SX=[];
+  const old=id=>SX.find(x=>x&&x.id===id);
+  const custom=SX.filter(x=>x&&x.id&&x.id!=='lib'&&x.id!=='aud'&&x.name);
+  SX=[Object.assign({},D[0],old('lib')||{},{plan:true}),Object.assign({},D[1],old('aud')||{},{plan:false}),...custom];
+}
+const saveSX=()=>ls.set('sx',SX);
+const sxGet=id=>SX.find(x=>x.id===id)||SX[0];
+const sxOf=b=>(b&&b.sec&&SX.some(x=>x.id===b.sec))?b.sec:(isAudio(b)?'aud':'lib');
+const isPlanBook=id=>{const e=ent(id);return !e||sxGet(sxOf(e)).plan!==false};
+let curSx=ls.get('csx','lib');if(!SX.some(x=>x.id===curSx))curSx='lib';
+let addSec=null;
+function renderTabs(){
+  const cur=page==='home'?'home':page==='dl'?'dl':'sx:'+curSx;
+  $('#tabs').innerHTML='<button data-p="home">Главная</button>'+SX.map(x=>'<button data-p="sx:'+x.id+'">'+esc(x.name)+'</button>').join('')+'<button data-p="dl">Скачано</button><button data-p="+" class="tadd" aria-label="Добавить раздел" title="Добавить раздел">+</button>';
+  document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.p===cur)));
+}
+function addSection(){
+  const n=(prompt('Название нового раздела (например, «Фанфики»)','')||'').trim();
+  if(!n)return;
+  const id='s'+Date.now().toString(36);
+  SX.push({id,name:n.slice(0,30),plan:false});saveSX();setPage('sx:'+id);
+  msg('Раздел «'+n.slice(0,30)+'» создан. Книги из него не идут в план чтения, но попадают в статистику.');
+}
+function sxMenu(btn){
+  const x=sxGet(curSx),m=$('#sxm'),it=(k,t,cls)=>'<button data-sxk="'+k+'"'+(cls?' class="'+cls+'"':'')+'>'+t+'</button>';
+  let h='';
+  if(x.id==='lib')h='<small class="sxi">Книги этого раздела идут в план чтения.</small>';
+  else{
+    h=it('ren','Переименовать раздел');
+    if(x.id!=='aud')h+=it('plan',x.plan?'Не учитывать в плане чтения':'Учитывать в плане чтения')+'<hr>'+it('del','Удалить раздел','dng');
+    else h+='<small class="sxi">Время аудиокниг не идёт в план чтения, но попадает в статистику.</small>';
+    if(x.id!=='aud')h+='<small class="sxi">'+(x.plan?'Сейчас: время идёт в план чтения.':'Сейчас: в план чтения не идёт, в статистику попадает.')+'</small>';
+  }
+  m.innerHTML=h;place(m,btn);
+}
+$('#sxm').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  e.stopPropagation();
+  const x=sxGet(curSx),k=b.dataset.sxk;$('#sxm').hidden=true;
+  if(k==='ren'){const n=(prompt('Название раздела',x.name)||'').trim();if(n){x.name=n.slice(0,30);saveSX();renderTabs();renderLib()}}
+  else if(k==='plan'){x.plan=!x.plan;saveSX();msg(x.plan?'Раздел «'+x.name+'»: время теперь идёт в план чтения.':'Раздел «'+x.name+'»: время не идёт в план чтения, но попадает в статистику.');renderLib();if(!$('#pgH').hidden)ringAnim();renderPlb()}
+  else if(k==='del'){
+    const n=lib.filter(y=>sxOf(y)===x.id).length;
+    if(confirm('Удалить раздел «'+x.name+'»?'+(n?' Книги ('+n+') переедут в Библиотеку.':''))){
+      lib.forEach(y=>{if(y.sec===x.id)delete y.sec});saveLib();
+      SX=SX.filter(y=>y.id!==x.id);saveSX();setPage('sx:lib');
+    }
+  }
+});
+/* время: в план чтения идёт только то, что в разделах с отметкой «план»; всё остальное идёт в общую статистику */
+const planSecs=k=>{
+  let t=secs(k);
+  const ids=new Set([...Object.keys((rt[k]||{}).b||{}),...Object.keys((rtRemote[k]||{}).b||{})]);
+  for(const id of ids)if(!isPlanBook(id))t-=secs(k,id);
+  return Math.max(0,t);
+};
+const secsP=(k,b)=>b?secs(k,b):planSecs(k);
+const monthP=b=>{const p=dk().slice(0,8);const days=new Set([...Object.keys(rt),...Object.keys(rtRemote)].filter(k=>k.startsWith(p)));let s=0;for(const k of days)s+=secsP(k,b);return s};
+/* ---------- «Скачано»: файлы на этом устройстве и на других ---------- */
+const devName=()=>ls.get('dname',null)||(()=>{const u=navigator.userAgent;return /iPad/.test(u)||(/Macintosh/.test(u)&&navigator.maxTouchPoints>1)?'iPad':/iPhone/.test(u)?'iPhone':/Android/.test(u)?'Android':/Windows/.test(u)?'ПК с Windows':/Mac/.test(u)?'Mac':/Linux/.test(u)?'Linux':'Устройство'})();
+const bookFileIds=b=>(isAudio(b)&&b.tracks)?b.tracks.map((_,i)=>b.id+'/'+i):[b.id];
+async function localSize(b){let z=0;for(const id of bookFileIds(b)){const m=await kv.get('fm:'+id);if(m)z+=m.size||0;else if(await kvHas('b:'+id))z+=+(sizeOf(id)||0)}return z}
+async function devPush(b,present){
+  try{
+    if(!SB||!syUser)return;
+    if(present)await SB.from('device_books').upsert({user_id:syUser.id,device_id:deviceId,device_name:devName(),book_key:b.id,fmt:fmtOf(b),size:await localSize(b),updated_at:new Date().toISOString()});
+    else await SB.from('device_books').delete().eq('user_id',syUser.id).eq('device_id',deviceId).eq('book_key',b.id);
+  }catch(e){}
+}
+async function devFetch(){
+  if(!SB||!syUser)return{rows:[],note:'Войдите в профиль (аватарка), чтобы видеть, что загружено на других устройствах.'};
+  try{
+    const q=await SB.from('device_books').select('*').eq('user_id',syUser.id);
+    if(q.error)return{rows:[],note:'Чтобы видеть другие устройства, один раз выполните SQL из инструкции (таблица device_books).'};
+    return{rows:q.data||[]};
+  }catch(e){return{rows:[],note:'Не удалось получить данные с других устройств.'}}
+}
+let dlBusy=false;
+async function renderDL(){
+  if(dlBusy)return;dlBusy=true;
+  try{
+    const files=await fsList(),fmap=new Map(files.map(f=>[f.id,f]));
+    const est=navigator.storage&&navigator.storage.estimate?await navigator.storage.estimate().catch(()=>null):null;
+    const mine=[],ghosts=[],used=new Set();
+    lib.forEach((b,i)=>{
+      const ids=bookFileIds(b);let z=0,have=0,at=0;
+      for(const id of ids){const f=fmap.get(id);if(f){have++;z+=f.size;used.add(id);at=Math.max(at,f.at||0)}}
+      if(have)mine.push({b,i,z,at,partial:have<ids.length});else ghosts.push({b,i});
+    });
+    const orphan=files.filter(f=>!used.has(f.id));
+    const dev=await devFetch(),other={};
+    for(const r of dev.rows)if(r.device_id!==deviceId)(other[r.book_key]=other[r.book_key]||[]).push(r);
+    const tot=files.reduce((a,f)=>a+f.size,0);
+    $('#dlSum').innerHTML='<b>'+esc(devName())+'</b> (это устройство): файлов '+files.length+', '+fsz(tot)
+      +(est&&est.quota?'<br><small>Хранилище браузера: занято '+fsz(est.usage||0)+' из '+fsz(est.quota)+'</small>':'')
+      +'<br><button id="devRen" class="dlb">Переименовать устройство</button>';
+    const oth=b=>(other[b.id]||[]).map(r=>esc(r.device_name||'устройство')+' ('+esc(r.fmt||'')+')').join(', ');
+    $('#dlList').innerHTML=(mine.length?'<h2 class="dlh">Загружено на этом устройстве</h2>':'')+mine.map(m=>
+      '<div class="dlr">'+coverEl(m.b,m.i,'cvs')+'<div class="dlt"><b>'+esc(m.b.title||m.b.id)+'</b><small>'+esc(fmtOf(m.b))+' · '+fsz(m.z)+(m.at?' · сохранено '+new Date(m.at).toLocaleDateString('ru'):'')+(m.partial?' · не все файлы':'')+'</small>'
+      +(oth(m.b)?'<small>Также на: '+oth(m.b)+'</small>':'')+'</div><div class="dla"><button class="dlb" data-dlf="'+m.i+'">Удалить файл</button><button class="dlb dng" data-dld="'+m.i+'">Удалить совсем</button></div></div>').join('')
+      +(orphan.length?'<h2 class="dlh">Файлы без книги в библиотеке</h2>'+orphan.map(f=>'<div class="dlr"><div class="dlt"><b>'+esc(f.name||f.id)+'</b><small>'+fsz(f.size)+'</small></div><div class="dla"><button class="dlb dng" data-dlo="'+esc(f.id)+'">Удалить</button></div></div>').join(''):'');
+    const gh=ghosts.filter(g=>isPri(g.b)||true);
+    $('#dlGh').innerHTML=gh.length?'<h2 class="dlh">Есть в библиотеке, но не на этом устройстве</h2>'+gh.map(g=>
+      '<div class="dlr">'+coverEl(g.b,g.i,'cvs')+'<div class="dlt"><b>'+esc(g.b.title||g.b.id)+'</b><small>'+esc(fmtOf(g.b))+(oth(g.b)?' · есть на: '+oth(g.b):' · файла нет ни на одном известном устройстве')+'</small></div><div class="dla"><button class="dlb" data-dla="1">Добавить файл</button><button class="dlb dng" data-dld="'+g.i+'">Удалить из библиотеки</button></div></div>').join(''):'';
+    const byDev={};
+    for(const r of dev.rows){const d=byDev[r.device_id]=byDev[r.device_id]||{name:r.device_name||'Устройство',n:0,z:0,at:''};d.n++;d.z+=+r.size||0;if((r.updated_at||'')>d.at)d.at=r.updated_at}
+    $('#dlDev').innerHTML=dev.note?'<small class="em">'+esc(dev.note)+'</small>':(Object.keys(byDev).length?'<h2 class="dlh">Устройства</h2>'+Object.keys(byDev).map(id=>{const d=byDev[id];return '<div class="dlr"><div class="dlt"><b>'+esc(d.name)+(id===deviceId?' (это устройство)':'')+'</b><small>файлов: '+d.n+', '+fsz(d.z)+(d.at?' · обновлено '+new Date(d.at).toLocaleDateString('ru'):'')+'</small></div></div>'}).join(''):'');
+    loadCovers();
+    devSyncAll(mine,dev);
+  }finally{dlBusy=false}
+}
+// привести записи этого устройства в облаке в соответствие с тем, что реально лежит в хранилище
+async function devSyncAll(mine,dev){
+  try{
+    if(!SB||!syUser||dev.note)return;
+    const have=new Map(mine.map(m=>[m.b.id,m]));
+    const mineRows=dev.rows.filter(r=>r.device_id===deviceId);
+    for(const m of mine){const r=mineRows.find(x=>x.book_key===m.b.id);if(!r||(+r.size||0)!==m.z||r.device_name!==devName())await devPush(m.b,true)}
+    for(const r of mineRows)if(!have.has(r.book_key))await SB.from('device_books').delete().eq('user_id',syUser.id).eq('device_id',deviceId).eq('book_key',r.book_key);
+  }catch(e){}
+}
+$('#pgD').addEventListener('click',async e=>{
+  const f=e.target.closest('[data-dlf]'),d=e.target.closest('[data-dld]'),o=e.target.closest('[data-dlo]'),a=e.target.closest('[data-dla]'),r=e.target.closest('#devRen');
+  if(f){const b=lib[+f.dataset.dlf];if(b&&confirm('Убрать файл «'+(b.title||b.id)+'» с этого устройства? Прогресс и закладки останутся.')){await removeFile(b);renderDL()}return}
+  if(d){const b=lib[+d.dataset.dld];if(b&&confirm('Удалить «'+(b.title||b.id)+'» из библиотеки совсем? Книга пропадёт и из облака, на всех устройствах.')){await deleteBook(b);renderDL()}return}
+  if(o){const id=o.dataset.dlo;dlShow('Удаляю файл','',0);try{await fsDel(id,p=>dlShow('Удаляю файл','',p));dlDone('Файл удалён',false)}catch(x){dlDone('Не удалось удалить файл',true,fsErr(x))}renderDL();return}
+  if(a){msg('Нажмите «+» в разделе Библиотека (или «Добавить другой формат» в меню книги) и выберите файл: он вернётся к этой книге.');return}
+  if(r){const n=(prompt('Как назвать это устройство?',devName())||'').trim();if(n){ls.set('dname',n.slice(0,30));try{if(SB&&syUser)await SB.from('device_books').update({device_name:n.slice(0,30)}).eq('user_id',syUser.id).eq('device_id',deviceId)}catch(x){}renderDL()}}
+});
+/* ---------- Аудиоплеер ---------- */
+const AP={id:'',e:null,el:new Audio(),i:0,url:'',rate:+ls.get('arate',1)||1,sleepT:0,sleepEnd:0,sleepMode:'',saveAt:0,seeking:false};
+AP.el.preload='metadata';
+const aT=s=>{s=Math.max(0,Math.floor(s||0));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return(h?h+':'+String(m).padStart(2,'0'):m)+':'+String(x).padStart(2,'0')};
+const PLAYI='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>';
+const PAUSEI='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>';
+const apAvg=e=>{const k=e.tracks.map(t=>t.d||0).filter(x=>x>0);return k.length?k.reduce((a,b)=>a+b,0)/k.length:0};
+const apTotal=e=>{const a=apAvg(e);return e.tracks.reduce((s,t)=>s+(t.d||a),0)};
+const apBefore=(e,i)=>{const a=apAvg(e);let s=0;for(let k=0;k<i;k++)s+=e.tracks[k].d||a;return s};
+const apAbs=()=>AP.e?apBefore(AP.e,AP.i)+(AP.el.currentTime||0):0;
+const apChaps=e=>(e&&e.tracks&&e.tracks.length===1&&e.chs&&e.chs.length>1)?e.chs:null;
+function apChapIdx(){const c=apChaps(AP.e);if(!c)return -1;const t=AP.el.currentTime||0;let k=0;for(let j=0;j<c.length;j++)if(t>=c[j].t-.2)k=j;return k}
+const audTitle=n=>n.replace(/\.[a-z0-9]+$/i,'').replace(/_+/g,' ').replace(/^\s*\d{1,3}\s*[-._)]\s*/,'').trim()||n;
+function audioDur(file){return new Promise(res=>{const a=new Audio(),u=URL.createObjectURL(file);let done=false;const fin=v=>{if(done)return;done=true;try{URL.revokeObjectURL(u)}catch(x){}res(v)};a.preload='metadata';a.onloadedmetadata=()=>fin(isFinite(a.duration)?a.duration:0);a.onerror=()=>fin(0);setTimeout(()=>fin(0),12000);a.src=u})}
+function id3Text(enc,d){
+  try{
+    let t;
+    if(enc===1||enc===2){t=new TextDecoder(enc===2?'utf-16be':'utf-16').decode(d)}
+    else if(enc===3){t=new TextDecoder('utf-8').decode(d)}
+    else{let hi=false;for(const c of d)if(c>=128){hi=true;break}t=new TextDecoder(hi?'windows-1251':'latin1').decode(d)}
+    return t.replace(/\0+$/g,'').replace(/^\uFEFF/,'').trim();
+  }catch(e){return''}
+}
+async function id3Tags(file){
+  try{
+    const h=new Uint8Array(await file.slice(0,10).arrayBuffer());
+    if(String.fromCharCode(h[0],h[1],h[2])!=='ID3')return{};
+    const size=((h[6]&127)<<21)|((h[7]&127)<<14)|((h[8]&127)<<7)|(h[9]&127),ver=h[3];
+    const buf=new Uint8Array(await file.slice(10,10+Math.min(size,600000)).arrayBuffer());
+    let p=0;const out={};
+    while(p+10<buf.length){
+      const id=String.fromCharCode(buf[p],buf[p+1],buf[p+2],buf[p+3]);
+      if(!/^[A-Z0-9]{4}$/.test(id))break;
+      const fs=ver===4?((buf[p+4]&127)<<21)|((buf[p+5]&127)<<14)|((buf[p+6]&127)<<7)|(buf[p+7]&127):((buf[p+4]<<24)|(buf[p+5]<<16)|(buf[p+6]<<8)|buf[p+7]);
+      if(fs<=0||p+10+fs>buf.length)break;
+      if(id==='TIT2'||id==='TPE1'||id==='TALB'){const t=id3Text(buf[p+10],buf.slice(p+11,p+10+fs));if(t)out[id]=t}
+      p+=10+fs;
+    }
+    return{title:out.TALB||'',track:out.TIT2||'',author:out.TPE1||''};
+  }catch(e){return{}}
+}
+// главы m4b/m4a (атом chpl, который пишет большинство программ-склейщиков)
+async function mp4Chapters(file){
+  try{
+    let pos=0,moov=null;const total=file.size;
+    while(pos+8<=total){
+      const h=new DataView(await file.slice(pos,pos+16).arrayBuffer());
+      let sz=h.getUint32(0),hdr=8;
+      const type=String.fromCharCode(h.getUint8(4),h.getUint8(5),h.getUint8(6),h.getUint8(7));
+      if(sz===1){sz=Number(h.getBigUint64(8));hdr=16}else if(sz===0)sz=total-pos;
+      if(sz<8)break;
+      if(type==='moov'){moov={pos:pos+hdr,end:pos+sz};break}
+      pos+=sz;
+    }
+    if(!moov||moov.end-moov.pos>30*1024*1024)return null;
+    const buf=new Uint8Array(await file.slice(moov.pos,moov.end).arrayBuffer());
+    for(let i=4;i+9<buf.length;i++){
+      if(buf[i]===0x63&&buf[i+1]===0x68&&buf[i+2]===0x70&&buf[i+3]===0x6c){   // 'chpl'
+        const dv=new DataView(buf.buffer,buf.byteOffset+i+4);
+        const ver=dv.getUint8(0);let p=4+(ver===1?4:0);
+        const n=dv.getUint8(p);p+=1;
+        const out=[];
+        for(let k=0;k<n&&p+9<=dv.byteLength;k++){
+          const t=Number(dv.getBigUint64(p))/1e7;p+=8;
+          const l=dv.getUint8(p);p+=1;
+          const name=new TextDecoder('utf-8').decode(new Uint8Array(buf.buffer,buf.byteOffset+i+4+p,l));p+=l;
+          out.push({t,n:name});
+        }
+        return out.length>1?out:null;
+      }
+    }
+    return null;
+  }catch(e){return null}
+}
+async function addAudio(files){
+  files=[...files].filter(f=>/\.(mp3|m4b|m4a|aac|ogg|opus|flac|wav)$/i.test(f.name)||/^audio\//.test(f.type));
+  if(!files.length){msg('Это не аудиофайлы');return}
+  files.sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
+  const n=files.length,total=files.reduce((a,f)=>a+f.size,0);
+  const id=n===1?files[0].name+':'+files[0].size:files[0].name+':'+total+'#'+n;
+  let e=ent(id);
+  const sec=addSec||'aud';addSec=null;
+  if(e&&!e.ph&&e.tracks){let all=true;for(let i=0;i<n;i++)if(!await fsHas(id+'/'+i))all=false;if(all){msg('Эта аудиокнига уже на устройстве.');apOpen(e);return}}
+  const tags=await id3Tags(files[0]);
+  const title=(e&&e.tcustom&&e.title)||tags.title||audTitle(files[0].name);
+  const author=(e&&e.tcustom&&e.author)||tags.author||'';
+  dlShow('Сохраняю аудиокнигу','«'+title+'»',0);
+  try{
+    try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(x){}
+    for(let i=0;i<n;i++)await fsPut(id+'/'+i,files[i],(p,d,t)=>dlShow('Сохраняю аудиокнигу','«'+title+'» — файл '+(i+1)+' из '+n+' ('+fsz(d)+' из '+fsz(t)+')',(i+p)/n));
+  }catch(err){
+    for(let i=0;i<n;i++){try{await fsDel(id+'/'+i)}catch(x){}}
+    dlDone('Аудио не сохранилось на устройстве',true,fsErr(err));
+    return;
+  }
+  dlShow('Читаю длительность и главы','«'+title+'»',null);
+  const tracks=[];
+  for(let i=0;i<n;i++)tracks.push({n:files[i].name,s:files[i].size,d:await audioDur(files[i])});
+  const chs=n===1&&/\.(m4b|m4a)$/i.test(files[0].name)?await mp4Chapters(files[0]):null;
+  const isNew=!e;
+  if(!e){e={id,name:files[0].name,title,author,ch:0,f:0,p:0,t:Date.now()};lib.push(e)}
+  e.tracks=tracks;if(chs)e.chs=chs;else delete e.chs;
+  if(isNew||!e.sec)e.sec=sec;
+  e.title=e.tcustom?e.title:title;if(!e.author)e.author=author;
+  delete e.ph;
+  if(!e.ap){const i=Math.min(e.ch||0,n-1);e.ap={i,s:tracks[i].d?Math.floor((e.f||0)*tracks[i].d):0}}
+  saveLib();devPush(e,true);
+  dlDone('Аудиокнига сохранена',false,'«'+title+'» — '+fsz(total)+(chs?', глав: '+chs.length:''));
+  renderLib();
+  await apOpen(e,true);
+}
+async function apOpen(b,fromAdd){
+  if(!b.tracks){msg('Файлов этой аудиокниги нет на устройстве. Нажмите «+» в разделе Аудиокниги и выберите её файлы.');$('#af').click();return}
+  if(AP.id!==b.id){
+    if(AP.e){AP.el.pause();apSave(true)}
+    AP.e=b;AP.id=b.id;
+    const p=b.ap||{i:0,s:0};
+    const ok=await apLoad(Math.min(p.i||0,b.tracks.length-1),p.s||0,false);
+    if(!ok){AP.e=null;AP.id='';apUI();if(b.ph||true)$('#af').click();return}
+  }
+  $('#ap').hidden=false;$('#apLst').hidden=true;apUI();apMeta();
+}
+async function apLoad(i,pos,play){
+  const e=AP.e;if(!e||!e.tracks||!e.tracks[i])return false;
+  const blob=await fsBlob(e.id+'/'+i);
+  if(!blob){msg('Файла «'+e.tracks[i].n+'» нет на устройстве. Добавьте аудиофайлы этой книги снова: «+» в разделе Аудиокниги.');return false}
+  if(AP.url)URL.revokeObjectURL(AP.url);
+  AP.url=URL.createObjectURL(blob);AP.i=i;
+  const el=AP.el;el.src=AP.url;el.playbackRate=AP.rate;try{el.preservesPitch=true}catch(x){}
+  await new Promise(res=>{let done=false;const f=()=>{if(done)return;done=true;el.removeEventListener('loadedmetadata',f);el.removeEventListener('error',f);res()};el.addEventListener('loadedmetadata',f);el.addEventListener('error',f);setTimeout(f,15000)});
+  if(isFinite(el.duration)&&el.duration>0){
+    const t=e.tracks[i];if(Math.abs((t.d||0)-el.duration)>1)t.d=el.duration;
+    if(pos>0)el.currentTime=Math.min(pos,Math.max(0,el.duration-1));
+  }
+  apUI();
+  if(play){try{await el.play()}catch(x){}}
+  return true;
+}
+function apSave(force){
+  const e=AP.e;if(!e)return;
+  const now=Date.now();if(!force&&now-AP.saveAt<5000)return;AP.saveAt=now;
+  const cur=AP.el.currentTime||0,dur=AP.el.duration;
+  e.ap={i:AP.i,s:Math.floor(cur)};e.ch=AP.i;e.f=isFinite(dur)&&dur>0?cur/dur:0;
+  const tot=apTotal(e);if(tot>0)e.p=Math.min(100,Math.round(apAbs()/tot*100));
+  if(e.p>=99&&!e.doneAt)e.doneAt=now;
+  e.t=now;saveLib();
+}
+function apStop(){AP.el.pause();AP.e=null;AP.id='';AP.el.removeAttribute('src');$('#ap').hidden=true;apUI()}
+const apSkip=d=>{const el=AP.el;if(!AP.e)return;const dur=el.duration||0;let t=(el.currentTime||0)+d;
+  if(t<0)t=0;
+  if(dur&&t>=dur-.2&&AP.i<AP.e.tracks.length-1){apLoad(AP.i+1,0,!el.paused);return}
+  el.currentTime=dur?Math.min(t,dur):t};
+const apNext=()=>{const e=AP.e;if(!e)return;const c=apChaps(e);if(c){const k=apChapIdx();if(k<c.length-1)AP.el.currentTime=c[k+1].t;return}if(AP.i<e.tracks.length-1)apLoad(AP.i+1,0,!AP.el.paused)};
+const apPrev=()=>{const e=AP.e;if(!e)return;const c=apChaps(e);if(c){const k=apChapIdx();AP.el.currentTime=(AP.el.currentTime-c[k].t>3||k===0)?c[k].t:c[k-1].t;return}if((AP.el.currentTime||0)>3||AP.i===0)AP.el.currentTime=0;else apLoad(AP.i-1,0,!AP.el.paused)};
+function apRate(r){AP.rate=r;ls.set('arate',r);AP.el.playbackRate=r;apUI()}
+function apSleep(m){
+  clearTimeout(AP.sleepT);AP.sleepMode='';AP.sleepEnd=0;
+  if(m==='end')AP.sleepMode='end';
+  else if(m>0){AP.sleepEnd=Date.now()+m*60000;AP.sleepT=setTimeout(()=>{AP.el.pause();AP.sleepEnd=0;apSave(true);apUI()},m*60000)}
+  apUI();
+}
+function apSleepCheck(){
+  // «до конца главы»: у m4b с главами останавливаемся на границе главы
+  if(AP.sleepMode!=='end')return;
+  const c=apChaps(AP.e);if(!c)return;
+  const k=apChapIdx(),end=k<c.length-1?c[k+1].t:AP.el.duration;
+  if(AP.sleepFrom===undefined)AP.sleepFrom=k;
+  if(k!==AP.sleepFrom||AP.el.currentTime>=end-.4){AP.el.pause();AP.sleepMode='';AP.sleepFrom=undefined;apSave(true);apUI()}
+}
+function apMeta(){
+  if(!('mediaSession' in navigator)||!AP.e)return;
+  const e=AP.e,ms=navigator.mediaSession;
+  try{
+    ms.metadata=new MediaMetadata({title:e.title||'',artist:e.author||'',album:'Аудиокнига'});
+    ms.setActionHandler('play',()=>AP.el.play());
+    ms.setActionHandler('pause',()=>AP.el.pause());
+    ms.setActionHandler('seekbackward',()=>apSkip(-15));
+    ms.setActionHandler('seekforward',()=>apSkip(30));
+    ms.setActionHandler('previoustrack',()=>apPrev());
+    ms.setActionHandler('nexttrack',()=>apNext());
+    ms.setActionHandler('seekto',d=>{if(d.seekTime!=null)AP.el.currentTime=d.seekTime});
+    kv.get('c:'+e.id).then(u=>{if(u&&AP.id===e.id)ms.metadata=new MediaMetadata({title:e.title||'',artist:e.author||'',album:'Аудиокнига',artwork:[{src:u,sizes:'300x300'}]})}).catch(()=>{});
+  }catch(x){}
+}
+function apUI(light){
+  const e=AP.e,el=AP.el;
+  const playing=!!e&&!el.paused&&!el.ended;
+  if(!light){
+    $('#apm').hidden=!e||!$('#ap').hidden||!$('#rd').hidden;
+    $('#apPP').innerHTML=playing?PAUSEI:PLAYI;$('#apmP').innerHTML=playing?PAUSEI:PLAYI;
+    if(!e)return;
+    $('#apT').textContent=e.title||'';$('#apA').textContent=e.author||'';$('#apmT').textContent=e.title||'';
+    const c=apChaps(e),k=apChapIdx();
+    $('#apC').textContent=c?(c[k].n||'Глава '+(k+1))+' ('+(k+1)+' из '+c.length+')':(e.tracks.length>1?'Файл '+(AP.i+1)+' из '+e.tracks.length:'');
+    $('#apmS').textContent=$('#apC').textContent||(e.author||'');
+    $('#apSp').textContent=(AP.rate===1?'1':AP.rate)+'×';
+    $('#apSl').textContent=AP.sleepMode==='end'?'Сон: до конца':AP.sleepEnd?'Сон: '+Math.max(1,Math.round((AP.sleepEnd-Date.now())/60000))+' мин':'Таймер сна';
+    if(!$('#apCov').firstChild||$('#apCov').dataset.id!==e.id){$('#apCov').dataset.id=e.id;$('#apCov').innerHTML=coverEl(e,lib.indexOf(e),'apcv');$('#apmC').innerHTML=coverEl(e,lib.indexOf(e),'apmcv');loadCovers()}
+  }
+  if(!e)return;
+  const dur=el.duration,cur=el.currentTime||0;
+  const c=apChaps(e);
+  if(!AP.seeking){
+    const k=apChapIdx();
+    const a=c?c[k].t:0,b=c?(k<c.length-1?c[k+1].t:dur):dur;
+    const span=isFinite(b)?Math.max(1,b-a):0;
+    $('#apSeek').value=span?Math.round((cur-a)/span*1000):0;
+    $('#apCur').textContent=aT(cur-a);$('#apRem').textContent=span?'-'+aT(b-cur):'';
+  }
+}
+function apList(){
+  const e=AP.e;if(!e)return;
+  const c=apChaps(e);let h='';
+  if(c){const k=apChapIdx();h+=c.map((x,j)=>'<button data-apc="'+j+'" aria-pressed="'+(j===k)+'"><span>'+esc(x.n||'Глава '+(j+1))+'</span><small>'+aT(x.t)+'</small></button>').join('')}
+  else h+=e.tracks.map((t,j)=>'<button data-apt="'+j+'" aria-pressed="'+(j===AP.i)+'"><span>'+esc(audTitle(t.n))+'</span><small>'+(t.d?aT(t.d):'')+'</small></button>').join('');
+  const bm=e.abm||[];
+  if(bm.length)h+='<h3>Закладки</h3>'+bm.map((x,j)=>'<div class="apbm"><button data-apb="'+j+'"><span>'+(c?aT(x.s):(e.tracks.length>1?'Файл '+(x.i+1)+', ':'')+aT(x.s))+'</span><small>'+new Date(x.at).toLocaleDateString('ru')+'</small></button><button class="x" data-apx="'+j+'" aria-label="Удалить закладку">×</button></div>').join('');
+  $('#apLst').innerHTML=h;
+}
+const apEv=(t,f)=>AP.el.addEventListener(t,f);
+apEv('timeupdate',()=>{apUI(true);apSave();apSleepCheck()});
+apEv('play',()=>{apUI();apMeta()});
+apEv('pause',()=>{apSave(true);apUI()});
+apEv('ratechange',()=>{});
+apEv('ended',async()=>{
+  const e=AP.e;if(!e)return;
+  if(AP.sleepMode==='end'){AP.sleepMode='';apSave(true);apUI();return}
+  if(AP.i<e.tracks.length-1)await apLoad(AP.i+1,0,true);
+  else{e.p=100;if(!e.doneAt)e.doneAt=Date.now();apSave(true);apUI()}
+});
+$('#apPP').onclick=()=>{if(!AP.e)return;AP.el.paused||AP.el.ended?AP.el.play().catch(()=>{}):AP.el.pause()};
+$('#apmP').onclick=e=>{e.stopPropagation();$('#apPP').onclick()};
+$('#apm').onclick=()=>{if(AP.e){$('#ap').hidden=false;apUI()}};
+$('#apX').onclick=()=>{$('#ap').hidden=true;apUI()};
+$('#apB15').onclick=()=>apSkip(-15);$('#apF30').onclick=()=>apSkip(30);
+$('#apNx').onclick=apNext;$('#apPv').onclick=apPrev;
+$('#apSeek').addEventListener('input',()=>{AP.seeking=true;const e=AP.e;if(!e)return;const c=apChaps(e),k=apChapIdx(),a=c?c[k].t:0,b=c?(k<c.length-1?c[k+1].t:AP.el.duration):AP.el.duration,t=a+(b-a)*$('#apSeek').value/1000;$('#apCur').textContent=aT(t-a);$('#apRem').textContent='-'+aT(b-t)});
+$('#apSeek').addEventListener('change',()=>{const e=AP.e;if(!e)return;const c=apChaps(e),k=apChapIdx(),a=c?c[k].t:0,b=c?(k<c.length-1?c[k+1].t:AP.el.duration):AP.el.duration;AP.el.currentTime=a+(b-a)*$('#apSeek').value/1000;AP.seeking=false});
+$('#apL').onclick=()=>{const l=$('#apLst');l.hidden=!l.hidden;if(!l.hidden)apList()};
+$('#apLst').addEventListener('click',e=>{
+  const c=e.target.closest('[data-apc]'),t=e.target.closest('[data-apt]'),b=e.target.closest('[data-apb]'),x=e.target.closest('[data-apx]');
+  if(c){const k=+c.dataset.apc,ch=apChaps(AP.e);if(ch){AP.el.currentTime=ch[k].t;if(AP.el.paused)AP.el.play().catch(()=>{});$('#apLst').hidden=true}}
+  else if(t){apLoad(+t.dataset.apt,0,true);$('#apLst').hidden=true}
+  else if(b){const m=AP.e.abm[+b.dataset.apb];if(m){if(m.i!==AP.i)apLoad(m.i,m.s,true);else{AP.el.currentTime=m.s}$('#apLst').hidden=true}}
+  else if(x){AP.e.abm.splice(+x.dataset.apx,1);saveLib();apList()}
+});
+$('#apBm').onclick=()=>{const e=AP.e;if(!e)return;(e.abm=e.abm||[]).push({i:AP.i,s:Math.floor(AP.el.currentTime||0),at:Date.now()});saveLib();dlDone('Закладка добавлена',false,aT(AP.el.currentTime||0))};
+function apMenu(btn,items){const m=$('#apmn');m.innerHTML=items.map(x=>'<button data-v="'+x[0]+'" aria-pressed="'+!!x[2]+'">'+x[1]+'</button>').join('');place(m,btn)}
+$('#apSp').onclick=e=>{e.stopPropagation();apMenu($('#apSp'),[0.75,1,1.25,1.5,1.75,2,2.5].map(r=>['r'+r,r+'×',AP.rate===r]))};
+$('#apSl').onclick=e=>{e.stopPropagation();apMenu($('#apSl'),[['s0','Выключить',!AP.sleepEnd&&!AP.sleepMode],['s10','10 минут'],['s15','15 минут'],['s30','30 минут'],['s45','45 минут'],['s60','60 минут'],['send',apChaps(AP.e)?'До конца главы':'До конца файла',AP.sleepMode==='end']])};
+$('#apmn').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;e.stopPropagation();$('#apmn').hidden=true;
+  const v=b.dataset.v;
+  if(v[0]==='r')apRate(+v.slice(1));
+  else if(v==='send')apSleep('end');
+  else apSleep(+v.slice(1));
+});
+$('#af').addEventListener('change',async e=>{const fl=[...e.target.files];e.target.value='';if(fl.length)await addAudio(fl)});
+setInterval(()=>{if(AP.e&&AP.sleepEnd)apUI()},30000);
+addEventListener('pagehide',()=>apSave(true));
 const inF=(b,f)=>f==='all'||(f==='want'&&b.st==='want')||(f==='later'&&b.st==='later')||(f==='done'&&isDone(b))||(b.cs||[]).includes(f);
 const PAL=[null,{h:350,s:60},{h:18,s:68},{h:40,s:72},{h:95,s:42},{h:160,s:50},{h:200,s:62},{h:228,s:55},{h:272,s:46},{h:322,s:50},{h:0,s:0}];
 const phVars=b=>(b.pi>0&&PAL[b.pi])?'--h:'+PAL[b.pi].h+';--s:'+PAL[b.pi].s+'%':'--h:'+hue(b.title);
@@ -1128,7 +1674,7 @@ const reading=()=>!!book&&!$('#rd').hidden;
 function hasDups(){const m=new Set();for(const e of lib){const z=sizeOf(e.id);if(!z)continue;const k=extOf(e.id)+'|'+z;if(m.has(k))return true;m.add(k)}return false}
 async function rekey(e,nid){
   const old=e.id;if(old===nid)return;
-  const bv=await kv.get('b:'+old);if(bv){await kv.set('b:'+nid,bv);await kvDel('b:'+old)}
+  await fsMove(old,nid);
   const cv=await kv.get('c:'+old);if(cv){await kv.set('c:'+nid,cv);await kvDel('c:'+old)}
   RS.goals.forEach(g=>{if(g.book===old)g.book=nid});saveRS();
   if(ls.get('cur','')===old)ls.set('cur',nid);
@@ -1160,7 +1706,7 @@ async function dedupeFiles(){
         if(x.cv===1&&surv.cv!==1){const cv=await kv.get('c:'+x.id);if(cv){await kv.set('c:'+surv.id,cv);surv.cv=1}}
         const xid=x.id;
         lib=lib.filter(y=>y!==x);
-        if(xid!==surv.id){await kvDel('b:'+xid);await kvDel('c:'+xid)}
+        if(xid!==surv.id){await fsDel(xid);await kvDel('c:'+xid)}
         if(xid!==canon)syForget(xid);
       }
       const old=surv.id;
@@ -1206,10 +1752,10 @@ function card(b,i){
 const filterName=()=>({all:'Библиотека',want:'Хочу прочитать',later:'Заброшено',done:'Закончено'}[lf]||(cols.find(c=>c.id===lf)||{}).name||'Библиотека');
 function ringVal(){
   const d=new Date(),g=RS.goals.find(x=>x.type==='day'&&x.days.includes(d.getDay()))||RS.goals.find(x=>x.type==='month');
-  if(!g)return Math.min(1,secs(dk())/3600);
+  if(!g)return Math.min(1,planSecs(dk())/3600);
   const t=g.min*60;
-  if(g.type==='day')return Math.min(1,secs(dk(),g.book)/t);
-  return Math.min(1,secs(dk(),g.book)/(t/new Date(d.getFullYear(),d.getMonth()+1,0).getDate()));
+  if(g.type==='day')return Math.min(1,secsP(dk(),g.book)/t);
+  return Math.min(1,secsP(dk(),g.book)/(t/new Date(d.getFullYear(),d.getMonth()+1,0).getDate()));
 }
 function ringAnim(){
   const el=$('#ringp'),v=ringVal();
@@ -1237,20 +1783,25 @@ function renderLib(){
   $('#rowC').innerHTML=cont.length?cont.map(b=>card(b,ix(b))).join(''):emp('Здесь появятся книги, которые вы читаете');
   $('#rowW').innerHTML=want.length?want.map(b=>tile(b,ix(b))).join(''):emp('В меню книги («…» в библиотеке) выберите «Хочу прочитать»');
   $('#rowL').innerHTML=later.length?later.map(b=>tile(b,ix(b))).join(''):emp('Здесь будут книги, которые вы забросили');
-  const arr=lib.filter(b=>isPri(b)&&inF(b,lf)).sort(CMP[lsort]||CMP.recent);
-  $('#glib').innerHTML='<label class="tl" for="f"><span class="cvr plus">+</span><div class="ts"><span>Добавить книгу</span></div></label>'+arr.map(b=>tile(b,ix(b))).join('');
-  $('#lt').textContent=filterName();
+  const arr=lib.filter(b=>isPri(b)&&sxOf(b)===curSx&&inF(b,lf)).sort(CMP[lsort]||CMP.recent);
+  const au=curSx==='aud';
+  $('#glib').innerHTML='<label class="tl" for="'+(au?'af':'f')+'"><span class="cvr plus">+</span><div class="ts"><span>'+(au?'Добавить аудиокнигу':'Добавить книгу')+'</span></div></label>'+arr.map(b=>tile(b,ix(b))).join('');
+  $('#lt').textContent=lf==='all'?sxGet(curSx).name:filterName();
   $('#hEmpty').hidden=lib.length>0;
   loadCovers();
   if(!reading()&&hasDups())dedupeFiles();
 }
 function setPage(p){
-  page=p;ls.set('pg',p);
-  $('#pgH').hidden=p!=='home';$('#pgL').hidden=p!=='lib';
-  document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.p===p)));
-  for(const s of ['#bm','#srt','#cp'])$(s).hidden=true;
+  if(p==='+'){addSection();return}
+  if(String(p).startsWith('sx:')){const id=p.slice(3);curSx=SX.some(x=>x.id===id)?id:'lib';ls.set('csx',curSx);lf='all';p='lib'}
+  page=p;ls.set('pg',p);addSec=null;
+  $('#pgH').hidden=p!=='home';$('#pgL').hidden=p!=='lib';$('#pgD').hidden=p!=='dl';
+  renderTabs();
+  for(const s of ['#bm','#srt','#cp','#sxm','#apmn'])$(s).hidden=true;
   closeSet();
   if(p==='home'){ringAnim();greet()}
+  if(p==='lib')renderLib();
+  if(p==='dl')renderDL();
 }
 function place(el,btn){
   el.hidden=false;
@@ -1263,22 +1814,52 @@ function openBM(i,btn){
   bmI=i;
   const it=(k,t)=>'<button data-k="'+k+'">'+t+'</button>';
   const inCont=(b.p||0)>0&&!isDone(b)&&b.st!=='later';
-  $('#bm').innerHTML=(inCont?it('hc',b.hc?'Вернуть в «Продолжить»':'Убрать из «Продолжить»')+'<hr>':'')+it('want',b.st==='want'?'Убрать из «Хочу прочитать»':'Хочу прочитать')+it('later',b.st==='later'?'Вернуть из заброшенных':'Забросить')+it('done',b.st==='done'?'Отметить непрочитанной':'Отметить прочитанной')
+  $('#bm').innerHTML=(inCont?it('hc',b.hc?'Вернуть в «Продолжить»':'Убрать из «Продолжить»')+'<hr>':'')+it('want',b.st==='want'?'Убрать из «Хочу прочитать»':'Хочу прочитать')+it('later',b.st==='later'?'Вернуть из заброшенных':'Забросить')+it('done',b.st==='done'?'Отметить непрочитанной':'Отметить прочитанной')+'<hr>'+it('mv','Переместить в раздел…')
     +(cols.length?'<hr>'+cols.map(c=>'<button data-col="'+c.id+'" aria-pressed="'+(b.cs||[]).includes(c.id)+'">'+esc(c.name)+'</button>').join(''):'')
     +'<hr><button data-k="addv">Добавить другой формат</button><button data-k="ren">Изменить название и автора</button><button data-k="cov">Изменить обложку</button>'+(b.cv!==1?'<button data-k="pcol">Цвет заглушки</button>':'')+(b.ph?'':'<button data-k="rmf">Убрать файл с устройства</button>')+'<button data-k="del" class="dng">Удалить из библиотеки</button>';
   $('#srt').hidden=$('#cp').hidden=true;
   place($('#bm'),btn);
 }
 function renderCP(){
-  const n=f=>lib.filter(b=>isPri(b)&&inF(b,f)).length;
+  const n=f=>lib.filter(b=>isPri(b)&&sxOf(b)===curSx&&inF(b,f)).length;
   const r=(id,name,del)=>'<div class="cr"><button data-f="'+id+'" aria-pressed="'+(lf===id)+'">'+esc(name)+'<span>'+n(id)+'</span></button>'+(del?'<button data-xc="'+id+'" aria-label="Удалить коллекцию">×</button>':'')+'</div>';
   $('#cp').innerHTML=r('all','Все книги')+r('want','Хочу прочитать')+r('later','Заброшено')+r('done','Закончено')+(cols.length?'<hr>':'')+cols.map(c=>r(c.id,c.name,true)).join('')+'<hr><button data-newc="1">Новая коллекция</button>';
 }
 function renderSort(){
   $('#srt').innerHTML=[['recent','По недавним'],['title','По названию'],['author','По автору']].map(([k,t])=>'<button data-s="'+k+'" aria-pressed="'+(lsort===k)+'">'+t+'</button>').join('');
 }
+async function removeFile(b){
+  const nm='«'+(b.title||b.id)+'»';
+  if(typeof AP!=='undefined'&&AP.id===b.id)apStop();
+  dlShow('Удаляю файл с устройства',nm,0);
+  try{
+    {const ids=bookFileIds(b);for(let i=0;i<ids.length;i++)await fsDel(ids[i],p=>dlShow('Удаляю файл с устройства',nm,(i+p)/ids.length))}
+    b.ph=1;saveLib();devPush(b,false);
+    if(ls.get('cur','')===b.id)ls.set('cur','');
+    if(key===b.id){book=null;key=''}
+    dlDone('Файл удалён с устройства',false,nm+'. Прогресс и закладки остались.');
+  }catch(err){dlDone('Не удалось удалить файл',true,fsErr(err))}
+  renderLib();
+}
+async function deleteBook(b){
+  const id=b.id,nm='«'+(b.title||id)+'»';
+  if(typeof AP!=='undefined'&&AP.id===id)apStop();
+  dlShow('Удаляю книгу',nm,0);
+  try{
+    lib=lib.filter(x=>x.id!==id);saveLib();
+    {const ids=bookFileIds(b);for(let i=0;i<ids.length;i++)await fsDel(ids[i],p=>dlShow('Удаляю книгу',nm,(i+p)/ids.length))}
+    devPush(b,false);
+    await kvDel('c:'+id);await kvDel('tr:'+id);await kvDel('ocr:'+id);
+    if(ls.get('cur','')===id)ls.set('cur','');
+    if(key===id){book=null;key=''}
+    syForget(id);
+    dlDone('Книга удалена',false,nm);
+  }catch(err){dlDone('Не удалось удалить книгу полностью',true,fsErr(err))}
+  renderLib();
+}
 async function openBook(b){
-  const s=await kv.get('b:'+b.id);
+  if(isAudio(b)){await apOpen(b);return}
+  const s=await fsRead(b.id);
   if(s&&s.buf){await load(s.name,s.buf);return}
   msg(b.ph?'Эта книга есть в синхронизации, но файла нет на этом устройстве. Выберите тот же файл — прогресс подтянется.':'Файл этой книги не сохранился на устройстве. Добавьте его снова через «+».');
   $('#f').click();
@@ -2089,7 +2670,7 @@ function updateEnd(){
   $('#endh').hidden=!e||$('#rd').hidden;
   $('#endh').textContent=e&&e.end!=null?'Прогресс до раздела '+(e.end+1)+' (сбросить)':'Считать прогресс до этого раздела';
 }
-async function load(name,buf,start,silent){
+async function load(name,buf,start,silent,file){
   msg('Открываю…');
   try{
     const b=await parseBook(name,buf);
@@ -2103,6 +2684,7 @@ async function load(name,buf,start,silent){
       e=r?{id:key,name,title:r.title||b.title,author:r.author||b.author,ch:r.ch||0,f:r.f||0,p:r.p||0,t:r.t||Date.now(),st:r.st||'',cs:r.cs||[]}
          :{id:key,name,title:b.title,author:b.author,ch:start?start.ch:0,f:start?start.f:0,p:0,t:Date.now()};
       lib.push(e);
+      if(addSec&&addSec!=='lib')e.sec=addSec;addSec=null;
       {const d=dels();if(d.includes(key))ls.set('dels',d.filter(x=>x!==key))}
       if(pendingAttach){
         const pr=pendingAttach.pri;pendingAttach=null;
@@ -2112,8 +2694,8 @@ async function load(name,buf,start,silent){
         pendingPP={id:key,p:pr.p||0};
       }
     }else if(!e.tcustom&&!e.ph){e.title=b.title;e.author=b.author}
-    e.name=name;delete e.ph;
-    await kv.set('b:'+key,{name,buf});
+    e.name=name;
+    {const have=!e.ph&&await fsHas(key);if(file&&!have){if(await saveBookFile(e,key,file)){delete e.ph;devPush(e,true)}else e.ph=1}else delete e.ph}
     if(e.st==='want'||e.st==='later'){e.st='';vers(e).forEach(x=>{if(x.st==='want'||x.st==='later')x.st=''})}
     saveLib();
     let h='',g='';
@@ -2143,11 +2725,24 @@ async function load(name,buf,start,silent){
     return false;
   }
 }
+async function saveBookFile(e,id,file){
+  const nm=e.title||file.name;
+  dlShow('Сохраняю на устройство','«'+nm+'»',0);
+  try{
+    try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(x){}
+    await fsPut(id,file,(p,d,t)=>dlShow('Сохраняю на устройство','«'+nm+'» — '+fsz(d)+' из '+fsz(t),p));
+    dlDone('Сохранено на устройстве',false,'«'+nm+'» — '+fsz(file.size));
+    return true;
+  }catch(err){
+    dlDone('Файл не сохранился на устройстве',true,fsErr(err)+'. Книга открыта, но после выхода её придётся добавить снова.');
+    return false;
+  }
+}
 async function openFile(f){
   try{
     const buf=await f.arrayBuffer();
-    await load(f.name,buf);
-  }catch(e){msg('Не удалось прочитать файл')}
+    await load(f.name,buf,undefined,false,f);
+  }catch(e){msg('Не удалось прочитать файл: '+fsErr(e))}
 }
 
 /* ---------- Время чтения, помидоро, планы ---------- */
@@ -2166,17 +2761,17 @@ function goalInfo(g){
   if(g.type==='year'){
     target=g.min;
     name='Книг за год: '+target;
-    {const seen=new Set();lib.forEach(x=>{if(x.doneAt&&new Date(x.doneAt).getFullYear()===t.getFullYear())seen.add(x.g||x.id)});done=seen.size}
+    {const seen=new Set();lib.forEach(x=>{if(x.doneAt&&new Date(x.doneAt).getFullYear()===t.getFullYear()&&isPlanBook(x.id))seen.add(x.g||x.id)});done=seen.size}
     note=done>=target?'план выполнен':'';
   }else if(g.type==='day'){
     target=g.min*60;
     name=(g.days.length===7?'Каждый день':[1,2,3,4,5,6,0].filter(w=>g.days.includes(w)).map(w=>WD[w]).join(' '))+', '+fmt(target);
-    done=secs(dk(),g.book);
+    done=secsP(dk(),g.book);
     if(!g.days.includes(t.getDay()))note='сегодня без плана';
   }else{
     target=g.min*60;
     name='В месяц: '+fmt(target);
-    done=monthSecs(g.book);
+    done=monthP(g.book);
     const left=new Date(t.getFullYear(),t.getMonth()+1,0).getDate()-t.getDate()+1,need=Math.max(0,target-done);
     note=need?'осталось '+fmt(need)+', в среднем '+fmt(Math.ceil(need/left))+' в день':'план выполнен';
   }
@@ -2187,13 +2782,13 @@ function renderGoals(){
 }
 function renderPlb(){
   const gs=RS.goals.filter(g=>g.type!=='day'||g.days.includes(new Date().getDay())).slice(0,2);
-  $('#plb').innerHTML='<b>Сегодня: '+fmt(secs(dk()))+'</b>'+(gs.length?gs.map(g=>{const i=goalInfo(g);return '<small>'+esc((i.who?i.who+': ':'')+i.name)+'</small><em class="tr"><i style="width:'+i.p+'%"></i></em>'}).join(''):'<small>Нажмите, чтобы поставить план чтения</small>');
+  $('#plb').innerHTML='<b>Сегодня: '+fmt(planSecs(dk()))+'</b>'+(gs.length?gs.map(g=>{const i=goalInfo(g);return '<small>'+esc((i.who?i.who+': ':'')+i.name)+'</small><em class="tr"><i style="width:'+i.p+'%"></i></em>'}).join(''):'<small>Нажмите, чтобы поставить план чтения</small>');
 }
 function renderPlSum(){
   const now=new Date();let w=0;
-  for(let i=0;i<7;i++){const d=new Date(now);d.setDate(now.getDate()-i);w+=secs(dk(d))}
+  for(let i=0;i<7;i++){const d=new Date(now);d.setDate(now.getDate()-i);w+=planSecs(dk(d))}
   const p=(rt[dk()]||{}).p||0;
-  $('#plsum').innerHTML='Сегодня: <b>'+fmt(secs(dk()))+'</b>'+(p?', помидоров: '+p:'')+'<br><small>За 7 дней: '+fmt(w)+', за месяц: '+fmt(monthSecs())+'</small>';
+  $('#plsum').innerHTML='Сегодня: <b>'+fmt(planSecs(dk()))+'</b>'+(p?', помидоров: '+p:'')+'<br><small>За 7 дней: '+fmt(w)+', за месяц: '+fmt(monthP())+'</small>';
 }
 function openPl(){
   updateTimer(false);
@@ -2211,7 +2806,7 @@ function notify(t){
 }
 function updateTimer(active){
   const c=$('#rt');
-  c.textContent=Math.floor(secs(dk())/60)+' мин';c.title='Прочитано сегодня';
+  {const plan=!book||isPlanBook(key);c.textContent=Math.floor((plan?planSecs(dk()):secs(dk(),key))/60)+' мин';c.title=plan?'Прочитано сегодня (по плану)':'Время в этой книге сегодня (вне плана чтения)'}
   c.classList.toggle('idle',!active);
   if(!$('#pl').hidden&&tickN%5===0){renderPlSum();renderGoals()}
 }
@@ -2220,6 +2815,7 @@ setInterval(()=>{
   const reading=RS.on&&book&&!$('#rd').hidden&&!document.hidden;
   const active=!!reading&&Date.now()-lastAct<RS.idle*1000;
   if(active){const k=dk(),d=rt[k]||(rt[k]={t:0,b:{},p:0});d.t++;d.b[key]=(d.b[key]||0)+1;dirty=true;scheduleRTPush()}
+  if(typeof AP!=='undefined'&&AP.el&&AP.id&&!AP.el.paused&&!AP.el.ended){const k=dk(),d=rt[k]||(rt[k]={t:0,b:{},p:0});d.t++;d.b[AP.id]=(d.b[AP.id]||0)+1;dirty=true;scheduleRTPush()}
   if(tickN%10===0)flush();
   updateTimer(active);
 },1000);
@@ -2515,6 +3111,8 @@ $('#hm').addEventListener('click',()=>setTimeout(resetZoom,60));
 $('#home').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList&&e.target.classList.contains('cc')){e.preventDefault();e.target.click()}});
 $('#home').addEventListener('click',async e=>{
   const t=e.target.closest('#tabs button');if(t){setPage(t.dataset.p);return}
+  const sb=e.target.closest('#secb');if(sb){e.stopPropagation();sxMenu(sb);return}
+  if(e.target.closest('#glib label.tl'))addSec=curSx;
   const m=e.target.closest('[data-m]');if(m){e.stopPropagation();openBM(+m.dataset.m,m);return}
   const v=e.target.closest('[data-v]');if(v){const x=lib[+v.dataset.v];if(x)await openVersion(x);return}
   const o=e.target.closest('[data-o]');if(o){const b=lib[+o.dataset.o];if(b)await openBook(b)}
@@ -2524,6 +3122,8 @@ $('#bm').addEventListener('click',async e=>{
   const k=bt.dataset.k,c=bt.dataset.col;
   if(c){b.cs=(b.cs||[]).includes(c)?b.cs.filter(x=>x!==c):[...(b.cs||[]),c];gsync(b);saveLib();bt.setAttribute('aria-pressed',String(b.cs.includes(c)));renderLib();return}
   if(bt.dataset.pc!==undefined){const v=+bt.dataset.pc;vers(b).forEach(x=>{if(v)x.pi=v;else delete x.pi});saveLib();$('#bm').hidden=true;renderLib();return}
+  if(k==='mv'){e.stopPropagation();$('#bm').innerHTML=SX.map(x=>'<button data-sxm="'+x.id+'" aria-pressed="'+(sxOf(b)===x.id)+'">'+esc(x.name)+(x.plan?'':' <small>(не в плане)</small>')+'</button>').join('');return}
+  if(bt.dataset.sxm){const id=bt.dataset.sxm;vers(b).forEach(x=>{x.sec=id});saveLib();$('#bm').hidden=true;renderLib();if(!$('#pgH').hidden)ringAnim();return}
   if(k==='pcol'){
     e.stopPropagation();
     $('#bm').innerHTML='<div class="swg">'+PAL.map((p,i)=>'<button data-pc="'+i+'" class="sw" aria-pressed="'+((b.pi||0)===i)+'" style="'+(p?'--h:'+p.h+';--s:'+p.s+'%':'')+'">'+(p?'':'Авто')+'</button>').join('')+'</div>';
@@ -2541,26 +3141,22 @@ $('#bm').addEventListener('click',async e=>{
   if(k==='hc'){const v=!b.hc;vers(b).forEach(x=>{if(v)x.hc=1;else delete x.hc});saveLib();renderLib();return}
   const lbl='«'+(b.title||'книгу')+'»'+(vers(b).length>1?' ('+fmtOf(b)+')':'');
   if(k==='rmf'){
-    if(confirm('Убрать файл '+lbl+' с этого устройства? Прогресс и закладки останутся, файл можно добавить снова.')){
-      await kvDel('b:'+b.id);b.ph=1;saveLib();
-      if(ls.get('cur','')===b.id)ls.set('cur','');
-      if(key===b.id){book=null;key=''}
-      renderLib();
-    }
+    if(confirm('Убрать файл '+lbl+' с этого устройства? Прогресс и закладки останутся, файл можно добавить снова.'))await removeFile(b);
   }else if(k==='del'){
-    if(confirm('Удалить '+lbl+' из библиотеки совсем? Книга пропадёт и из облака, на всех устройствах.')){
-      const id=b.id;
-      lib=lib.filter(x=>x.id!==id);saveLib();
-      await kvDel('b:'+id);await kvDel('c:'+id);await kvDel('tr:'+id);await kvDel('ocr:'+id);
-      if(ls.get('cur','')===id)ls.set('cur','');
-      if(key===id){book=null;key=''}
-      syForget(id);renderLib();
-    }
+    if(confirm('Удалить '+lbl+' из библиотеки совсем? Книга пропадёт и из облака, на всех устройствах.'))await deleteBook(b);
   }else if(k){const was=b.st==='done';b.st=b.st===k?'':k;if(k==='done'){if(b.st==='done'&&!was)b.doneAt=Date.now();else if(was&&b.st!=='done')b.doneAt=null}gsync(b);saveLib();renderLib()}
 });
 $('#vf').addEventListener('change',async e=>{
   const f=e.target.files[0];e.target.value='';const pr=attachTarget;attachTarget=null;if(!f||!pr)return;
-  if(ent(f.name+':'+f.size)){msg('Этот файл уже есть в библиотеке.');return}
+  const ex=ent(f.name+':'+f.size);
+  if(ex){
+    if(!ex.ph&&await fsHas(ex.id)){msg('Эта книга уже на устройстве: «'+(ex.title||f.name)+'».');return}
+    await openFile(f);   // запись есть, а файла на устройстве нет: просто возвращаем файл
+    if(ex!==pr&&!(ex.g&&ex.g===pr.g)){
+      if(!pr.g)pr.g=pr.id;ex.g=pr.g;ex.title=pr.title;ex.author=pr.author;ex.tcustom=true;ex.st=pr.st||'';ex.cs=(pr.cs||[]).slice();saveLib();renderLib();
+    }
+    return;
+  }
   pendingAttach={pri:pr};await openFile(f);pendingAttach=null;
 });
 let rzBusy=false;
@@ -2602,8 +3198,8 @@ $('#cp').addEventListener('click',e=>{
 });
 $('#colb').onclick=e=>{e.stopPropagation();const el=$('#cp');if(!el.hidden){el.hidden=true;return}$('#bm').hidden=$('#srt').hidden=true;renderCP();place(el,e.currentTarget)};
 $('#sortb').onclick=e=>{e.stopPropagation();const el=$('#srt');if(!el.hidden){el.hidden=true;return}$('#bm').hidden=$('#cp').hidden=true;renderSort();place(el,e.currentTarget)};
-document.addEventListener('click',e=>{for(const s of ['#bm','#srt','#cp']){const el=$(s);if(!el.hidden&&!el.contains(e.target))el.hidden=true}});
-addEventListener('keydown',e=>{if(e.key==='Escape')for(const s of ['#bm','#srt','#cp'])$(s).hidden=true});
+document.addEventListener('click',e=>{for(const s of ['#bm','#srt','#cp','#sxm','#apmn']){const el=$(s);if(!el.hidden&&!el.contains(e.target))el.hidden=true}});
+addEventListener('keydown',e=>{if(e.key==='Escape')for(const s of ['#bm','#srt','#cp','#sxm','#apmn'])$(s).hidden=true});
 const chip=t=>'<button class="tc" data-t="'+t.id+'" aria-pressed="false" style="background:'+t.bg+';color:'+t.fg+'">'+t.name+'</button>';
 $('#pal').innerHTML='<button class="tc" data-t="auto" aria-pressed="false">Авто</button>'+THEMES.map(chip).join('');
 $('#p1').innerHTML=THEMES.map(chip).join('');
@@ -2643,7 +3239,7 @@ $('#onbSkip').onclick=onbDone;
   const old=await kv.get('last');
   if(old&&old.buf){
     const oid=old.name+':'+old.buf.byteLength,p=ls.get('pos',null);
-    if(!ent(oid)){await load(old.name,old.buf,p&&p.key===oid+':2'?p:null,true);book=null;key='';renderLib()}
+    if(!ent(oid)){await load(old.name,old.buf,p&&p.key===oid+':2'?p:null,true,new File([old.buf],old.name));book=null;key='';renderLib()}
     await kvDel('last');
   }
 })();
