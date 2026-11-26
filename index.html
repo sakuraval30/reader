@@ -47,13 +47,28 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;a
 .aph{display:flex;align-items:center;justify-content:space-between;padding:.6rem .9rem}
 .aph b{font-size:.95rem;color:var(--mute);font-weight:600}
 .apb{flex:1;display:flex;flex-direction:column;align-items:center;gap:1rem;padding:.5rem 1.4rem calc(1.4rem + env(safe-area-inset-bottom,0px));overflow:auto;max-width:34rem;width:100%;margin:0 auto;box-sizing:border-box}
-#apCov{width:min(60vw,16rem);aspect-ratio:2/3;max-height:40vh;flex:none}
+#apCov{width:min(72vw,18rem,42vh);aspect-ratio:1/1;flex:none}
 #apCov .apcv{width:100%;height:100%;border-radius:12px;object-fit:cover;box-shadow:0 14px 40px rgba(0,0,0,.3)}
 #apCov .ph{width:100%;height:100%;border-radius:12px}
 .apt{text-align:center;display:flex;flex-direction:column;gap:.2rem}
 .apt b{font-size:1.15rem}.apt small{color:var(--mute)}
-#apSeek{width:100%;accent-color:var(--acc)}
-.aptm{display:flex;justify-content:space-between;width:100%;font-size:.8rem;color:var(--mute);margin-top:-.6rem}
+#apSeek{width:100%;accent-color:var(--acc);-webkit-appearance:none;appearance:none;display:block;height:2.8rem;margin:0;padding:0;background:transparent;touch-action:none;--v:0%}
+#apSeek::-webkit-slider-runnable-track{height:.45rem;border-radius:.25rem;background:linear-gradient(90deg,var(--acc) var(--v),var(--line) var(--v))}
+#apSeek::-webkit-slider-thumb{-webkit-appearance:none;width:1.8rem;height:1.8rem;border-radius:50%;background:var(--acc);border:3px solid var(--bg);margin-top:-.68rem;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+#apSeek::-moz-range-track{height:.45rem;border-radius:.25rem;background:var(--line)}
+#apSeek::-moz-range-progress{height:.45rem;border-radius:.25rem;background:var(--acc)}
+#apSeek::-moz-range-thumb{width:1.5rem;height:1.5rem;border-radius:50%;background:var(--acc);border:3px solid var(--bg)}
+html:has(#ap:not([hidden])){overflow:hidden;overscroll-behavior:none}
+#ap{touch-action:none;overscroll-behavior:none}
+.apb{touch-action:pan-y;overflow-x:hidden;overscroll-behavior:contain}
+#apLst{touch-action:pan-y;overscroll-behavior:contain}
+.pie{width:1.4rem;height:1.4rem;flex:none;align-self:center}
+.aprow{display:flex;align-items:center}.aprow .x{width:auto!important;color:var(--mute)}
+#apLst .apadd{color:var(--acc);justify-content:center;font-weight:600}
+.cvr.sq{aspect-ratio:1/1}
+.cc .cvs.sq{width:3.6rem;height:3.6rem}
+.dlr .cvs.sq{width:2.6rem;height:2.6rem}
+.aptm{display:flex;justify-content:space-between;width:100%;font-size:.8rem;color:var(--mute);margin-top:-.3rem}
 .apc{display:flex;align-items:center;justify-content:center;gap:.8rem}
 .apc .ib{width:3rem;height:3rem;font-size:.85rem}
 .apc .ib svg{width:1.3rem;height:1.3rem}
@@ -68,8 +83,16 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;a
 .apbm{display:flex;align-items:center}.apbm .x{width:auto!important;color:var(--mute)}
 #apm{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(.8rem + env(safe-area-inset-bottom,0px));z-index:34;width:min(94vw,30rem);box-sizing:border-box;display:flex;align-items:center;gap:.7rem;padding:.5rem .6rem;border-radius:1rem;background:var(--pn,var(--bg));border:1px solid var(--line);box-shadow:0 8px 26px rgba(0,0,0,.25);cursor:pointer}
 #apm[hidden]{display:none}
-html:has(#rd:not([hidden])) #apm{display:none}
-#apmC{width:2.2rem;height:3.2rem;flex:none}
+#apm .rdc,#apm #apmPr{display:none}
+#apmPr{position:absolute;left:0;bottom:0;height:3px;width:0;background:var(--acc)}
+html:has(#rd:not([hidden])) #apm{z-index:8;bottom:calc(.6rem + env(safe-area-inset-bottom,0px));overflow:hidden;background:var(--pn,var(--bg));background:color-mix(in srgb,var(--pn,var(--bg)) 86%,transparent);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+html:has(#rd:not([hidden])) #apm .rdc{display:grid;width:2.4rem;height:2.4rem;font-size:.72rem}
+html:has(#rd:not([hidden])) #apm #apmPr{display:block}
+#apmM svg{width:1.1rem;height:1.1rem}
+html:has(#rd:not([hidden])) #apm.min{width:auto;left:auto;right:.8rem;transform:none;padding:.3rem;gap:.2rem;border-radius:999px}
+html:has(#rd:not([hidden])) #apm.min .apmt,html:has(#rd:not([hidden])) #apm.min #apmC,html:has(#rd:not([hidden])) #apm.min #apmB,html:has(#rd:not([hidden])) #apm.min #apmF{display:none}
+html:has(#rd:not([hidden])) #apm.min #apmM svg{transform:rotate(180deg)}
+#apmC{width:2.8rem;height:2.8rem;flex:none}
 #apmC .apmcv{width:100%;height:100%;object-fit:cover;border-radius:4px}
 #apmC .ph{width:100%;height:100%;border-radius:4px;padding:0}
 #apmC .ph b,#apmC .ph small{display:none}
@@ -520,6 +543,7 @@ div.cc{border:1px solid transparent;cursor:pointer;font:inherit;font-size:.9rem;
     <div id="ocrRow"><button id="ocrBtn" class="bkadd">Текст страниц: выкл</button><small id="ocrSt"></small></div>
     <div id="trRow"><button id="trBtn" class="bkadd">Перевод на русский: выкл</button><small id="trSt"></small></div>
     <button id="bkOpen" class="bkadd">Закладки</button>
+    <button id="audBtn" class="bkadd">Включить аудиокнигу</button>
     <button id="moreT" class="linkbtn moreT" aria-expanded="false">Дополнительные настройки</button>
     <div id="more" hidden>
       <div class="row"><span>Выравнивание</span>
@@ -608,11 +632,11 @@ div.cc{border:1px solid transparent;cursor:pointer;font:inherit;font-size:.9rem;
         <button id="apF30" class="ib" aria-label="Вперёд на 30 секунд">+30</button>
         <button id="apNx" class="ib" aria-label="Следующая глава или файл"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5.5v13a1 1 0 0 0 1.6.8l8.8-6.8a1 1 0 0 0 0-1.6L5.6 4.7A1 1 0 0 0 4 5.5z"/></svg></button>
       </div>
-      <div class="apo"><button id="apSp" class="apchip">1×</button><button id="apSl" class="apchip">Таймер сна</button><button id="apBm" class="apchip">Закладка</button></div>
+      <div class="apo"><button id="apSp" class="apchip">1×</button><button id="apSl" class="apchip">Таймер сна</button><button id="apBm" class="apchip">Закладка</button><button id="apDel" class="apchip">Удалять прослушанные: выкл</button></div>
     </div>
     <div id="apLst" hidden></div>
   </section>
-  <div id="apm" hidden role="button" aria-label="Открыть плеер"><div id="apmC"></div><div class="apmt"><b id="apmT"></b><small id="apmS"></small></div><button id="apmP" class="ib" aria-label="Играть или пауза"></button></div>
+  <div id="apm" hidden role="button" aria-label="Открыть плеер"><div id="apmC"></div><div class="apmt"><b id="apmT"></b><small id="apmS"></small></div><button id="apmB" class="ib rdc" aria-label="Назад на 15 секунд">−15</button><button id="apmP" class="ib" aria-label="Играть или пауза"></button><button id="apmF" class="ib rdc" aria-label="Вперёд на 30 секунд">+30</button><button id="apmM" class="ib rdc" aria-label="Свернуть или развернуть"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><i id="apmPr"></i></div>
   <div id="apmn" class="glass" hidden></div>
 <div id="toast" class="glass" hidden></div>
 <aside id="note" hidden><div id="nb"></div><button id="nc">Закрыть</button></aside>
@@ -1327,7 +1351,7 @@ const secsP=(k,b)=>b?secs(k,b):planSecs(k);
 const monthP=b=>{const p=dk().slice(0,8);const days=new Set([...Object.keys(rt),...Object.keys(rtRemote)].filter(k=>k.startsWith(p)));let s=0;for(const k of days)s+=secsP(k,b);return s};
 /* ---------- «Скачано»: файлы на этом устройстве и на других ---------- */
 const devName=()=>ls.get('dname',null)||(()=>{const u=navigator.userAgent;return /iPad/.test(u)||(/Macintosh/.test(u)&&navigator.maxTouchPoints>1)?'iPad':/iPhone/.test(u)?'iPhone':/Android/.test(u)?'Android':/Windows/.test(u)?'ПК с Windows':/Mac/.test(u)?'Mac':/Linux/.test(u)?'Linux':'Устройство'})();
-const bookFileIds=b=>(isAudio(b)&&b.tracks)?b.tracks.map((_,i)=>b.id+'/'+i):[b.id];
+const bookFileIds=b=>(isAudio(b)&&b.tracks)?b.tracks.map((t,i)=>t.k||(b.id+'/'+i)):[b.id];
 async function localSize(b){let z=0;for(const id of bookFileIds(b)){const m=await kv.get('fm:'+id);if(m)z+=m.size||0;else if(await kvHas('b:'+id))z+=+(sizeOf(id)||0)}return z}
 async function devPush(b,present){
   try{
@@ -1408,6 +1432,7 @@ const apBefore=(e,i)=>{const a=apAvg(e);let s=0;for(let k=0;k<i;k++)s+=e.tracks[
 const apAbs=()=>AP.e?apBefore(AP.e,AP.i)+(AP.el.currentTime||0):0;
 const apChaps=e=>(e&&e.tracks&&e.tracks.length===1&&e.chs&&e.chs.length>1)?e.chs:null;
 function apChapIdx(){const c=apChaps(AP.e);if(!c)return -1;const t=AP.el.currentTime||0;let k=0;for(let j=0;j<c.length;j++)if(t>=c[j].t-.2)k=j;return k}
+const apDur=()=>{const el=AP.el,e=AP.e,t=e&&e.tracks&&e.tracks[AP.i],d=el.duration,k=t&&t.d;if(isFinite(d)&&d>0){if(k>0&&Math.abs(d-k)/k>.02)return k;return d}return k||0};
 const audTitle=n=>n.replace(/\.[a-z0-9]+$/i,'').replace(/_+/g,' ').replace(/^\s*\d{1,3}\s*[-._)]\s*/,'').trim()||n;
 function audioDur(file){return new Promise(res=>{const a=new Audio(),u=URL.createObjectURL(file);let done=false;const fin=v=>{if(done)return;done=true;try{URL.revokeObjectURL(u)}catch(x){}res(v)};a.preload='metadata';a.onloadedmetadata=()=>fin(isFinite(a.duration)?a.duration:0);a.onerror=()=>fin(0);setTimeout(()=>fin(0),12000);a.src=u})}
 function id3Text(enc,d){
@@ -1419,23 +1444,77 @@ function id3Text(enc,d){
     return t.replace(/\0+$/g,'').replace(/^\uFEFF/,'').trim();
   }catch(e){return''}
 }
-async function id3Tags(file){
+async function id3Tags(file,wantCover){
   try{
     const h=new Uint8Array(await file.slice(0,10).arrayBuffer());
     if(String.fromCharCode(h[0],h[1],h[2])!=='ID3')return{};
-    const size=((h[6]&127)<<21)|((h[7]&127)<<14)|((h[8]&127)<<7)|(h[9]&127),ver=h[3];
-    const buf=new Uint8Array(await file.slice(10,10+Math.min(size,600000)).arrayBuffer());
-    let p=0;const out={};
-    while(p+10<buf.length){
-      const id=String.fromCharCode(buf[p],buf[p+1],buf[p+2],buf[p+3]);
-      if(!/^[A-Z0-9]{4}$/.test(id))break;
-      const fs=ver===4?((buf[p+4]&127)<<21)|((buf[p+5]&127)<<14)|((buf[p+6]&127)<<7)|(buf[p+7]&127):((buf[p+4]<<24)|(buf[p+5]<<16)|(buf[p+6]<<8)|buf[p+7]);
-      if(fs<=0||p+10+fs>buf.length)break;
-      if(id==='TIT2'||id==='TPE1'||id==='TALB'){const t=id3Text(buf[p+10],buf.slice(p+11,p+10+fs));if(t)out[id]=t}
-      p+=10+fs;
+    const ver=h[3],fl=h[5];
+    const size=((h[6]&127)<<21)|((h[7]&127)<<14)|((h[8]&127)<<7)|(h[9]&127);
+    let buf=new Uint8Array(await file.slice(10,10+Math.min(size,wantCover?24000000:600000)).arrayBuffer());
+    if(fl&128){const o=[];for(let i=0;i<buf.length;i++){o.push(buf[i]);if(buf[i]===255&&buf[i+1]===0)i++}buf=Uint8Array.from(o)}
+    let p=0;
+    if((fl&64)&&ver>=3){const r=ver===4?((buf[0]&127)<<21)|((buf[1]&127)<<14)|((buf[2]&127)<<7)|(buf[3]&127):((buf[0]<<24)|(buf[1]<<16)|(buf[2]<<8)|buf[3]);p=ver===4?r:r+4}
+    const out={},hl=ver===2?6:10;let pic=null;
+    while(p+hl<buf.length){
+      let id,fs,ff=0;
+      if(ver===2){id=String.fromCharCode(buf[p],buf[p+1],buf[p+2]);fs=(buf[p+3]<<16)|(buf[p+4]<<8)|buf[p+5]}
+      else{id=String.fromCharCode(buf[p],buf[p+1],buf[p+2],buf[p+3]);fs=ver===4?((buf[p+4]&127)<<21)|((buf[p+5]&127)<<14)|((buf[p+6]&127)<<7)|(buf[p+7]&127):((buf[p+4]<<24)|(buf[p+5]<<16)|(buf[p+6]<<8)|buf[p+7]);ff=buf[p+9]}
+      if(!/^[A-Z0-9]{3,4}$/.test(id))break;
+      if(fs<=0||p+hl+fs>buf.length)break;
+      let a=p+hl;const b=p+hl+fs;
+      if(ver===4&&(ff&1))a+=4;
+      const nm=ver===2?({TT2:'TIT2',TP1:'TPE1',TAL:'TALB',PIC:'APIC'}[id]||id):id;
+      if(nm==='TIT2'||nm==='TPE1'||nm==='TALB'){const t=id3Text(buf[a],buf.slice(a+1,b));if(t)out[nm]=t}
+      else if(wantCover&&nm==='APIC'&&b-a>100){
+        const enc=buf[a];let q=a+1;
+        if(ver===2)q+=3;else{while(q<b&&buf[q]!==0)q++;q++}
+        const type=buf[q];q++;
+        if(enc===1||enc===2){while(q+1<b&&!(buf[q]===0&&buf[q+1]===0))q+=2;q+=2}else{while(q<b&&buf[q]!==0)q++;q++}
+        if(q<b&&(!pic||type===3))pic={type,data:buf.slice(q,b)};
+      }
+      p=b;
     }
-    return{title:out.TALB||'',track:out.TIT2||'',author:out.TPE1||''};
+    return{title:out.TALB||'',track:out.TIT2||'',author:out.TPE1||'',cover:pic?new Blob([pic.data],{type:pic.data[0]===0x89?'image/png':'image/jpeg'}):null};
   }catch(e){return{}}
+}
+async function mp4Cover(file){
+  try{
+    let pos=0,moov=null;const total=file.size;
+    while(pos+8<=total){
+      const h=new DataView(await file.slice(pos,pos+16).arrayBuffer());
+      let sz=h.getUint32(0),hdr=8;
+      const type=String.fromCharCode(h.getUint8(4),h.getUint8(5),h.getUint8(6),h.getUint8(7));
+      if(sz===1){sz=Number(h.getBigUint64(8));hdr=16}else if(sz===0)sz=total-pos;
+      if(sz<8)break;
+      if(type==='moov'){moov={pos:pos+hdr,end:pos+sz};break}
+      pos+=sz;
+    }
+    if(!moov||moov.end-moov.pos>60*1024*1024)return null;
+    const buf=new Uint8Array(await file.slice(moov.pos,moov.end).arrayBuffer());
+    const dv=new DataView(buf.buffer,buf.byteOffset,buf.length);
+    const find=(st,en,path)=>{
+      let p=st;
+      while(p+8<=en){
+        let sz=dv.getUint32(p);const t=String.fromCharCode(buf[p+4],buf[p+5],buf[p+6],buf[p+7]);
+        if(sz<8)break;if(p+sz>en)sz=en-p;
+        if(t===path[0]){let cs=p+8;if(t==='meta')cs+=4;if(path.length===1)return{s:cs,e:p+sz};const r=find(cs,p+sz,path.slice(1));if(r)return r}
+        p+=sz;
+      }
+      return null;
+    };
+    const c=find(0,buf.length,['udta','meta','ilst','covr','data']);
+    if(!c||c.e-c.s<108)return null;
+    const d=buf.slice(c.s+8,c.e);
+    return new Blob([d],{type:d[0]===0x89?'image/png':'image/jpeg'});
+  }catch(e){return null}
+}
+async function audCover(file){
+  try{
+    const cv=/\.(m4b|m4a)$/i.test(file.name)?await mp4Cover(file):(await id3Tags(file,true)).cover;
+    if(!cv)return '';
+    const u=URL.createObjectURL(cv);const r=await thumb(u);try{URL.revokeObjectURL(u)}catch(x){}
+    return r||'';
+  }catch(e){return ''}
 }
 // главы m4b/m4a (атом chpl, который пишет большинство программ-склейщиков)
 async function mp4Chapters(file){
@@ -1470,42 +1549,110 @@ async function mp4Chapters(file){
     return null;
   }catch(e){return null}
 }
+let addTo=null;
+const audKey=n=>audTitle(n).toLowerCase().replace(/\d+(?!.*\d)/,'').replace(/(^|[^a-zа-яё])(ch|chapter|part|disc|cd|глава|часть)(?![a-zа-яё])/g,'$1').replace(/[^a-zа-яё0-9]+/g,' ').trim();
+function audMatch(files){
+  const k=audKey(files[0].name);if(k.length<4)return null;
+  return lib.find(b=>isAudio(b)&&b.tracks&&b.tracks.some(t=>audKey(t.n)===k))||null;
+}
 async function addAudio(files){
   files=[...files].filter(f=>/\.(mp3|m4b|m4a|aac|ogg|opus|flac|wav)$/i.test(f.name)||/^audio\//.test(f.type));
   if(!files.length){msg('Это не аудиофайлы');return}
   files.sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
   const n=files.length,total=files.reduce((a,f)=>a+f.size,0);
-  const id=n===1?files[0].name+':'+files[0].size:files[0].name+':'+total+'#'+n;
-  let e=ent(id);
   const sec=addSec||'aud';addSec=null;
-  if(e&&!e.ph&&e.tracks){let all=true;for(let i=0;i<n;i++)if(!await fsHas(id+'/'+i))all=false;if(all){msg('Эта аудиокнига уже на устройстве.');apOpen(e);return}}
-  const tags=await id3Tags(files[0]);
-  const title=(e&&e.tcustom&&e.title)||tags.title||audTitle(files[0].name);
-  const author=(e&&e.tcustom&&e.author)||tags.author||'';
+  let e=null;
+  if(addTo){e=ent(addTo)||null;addTo=null}
+  if(!e)e=audMatch(files);
+  const id0=n===1?files[0].name+':'+files[0].size:files[0].name+':'+total+'#'+n;
+  if(!e)e=ent(id0)||null;
+  const isNew=!e;
+  const tags=isNew||!e.tracks?await id3Tags(files[0]):{};
+  const title=(e&&e.tcustom&&e.title)||(e&&e.tracks&&e.title)||tags.title||audTitle(files[0].name);
+  const author=(e&&e.tcustom&&e.author)||(e&&e.author)||tags.author||'';
+  const bid=e?e.id:id0;
+  const old=(e&&e.tracks)?e.tracks:[];
+  old.forEach((t,i)=>{if(!t.k)t.k=bid+'/'+i});
+  const oldKeys=old.map(t=>t.k);
+  const jobs=[];
+  for(const f of files){
+    const t=old.find(x=>x.n===f.name&&x.s===f.size);
+    if(t){if(!(await fsHas(t.k)))jobs.push({f,t})}
+    else jobs.push({f,t:{n:f.name,s:f.size,d:0,k:(isNew||!old.length)?'':bid+'/'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),nw:1}});
+  }
+  if(!jobs.length){msg('Эти файлы уже в аудиокниге.');if(e&&e.tracks)apOpen(e);return}
+  if(isNew||!old.length){
+    // новая книга: ключи как раньше, по порядку
+    jobs.forEach((j,i)=>{if(j.t.nw)j.t.k=bid+'/'+i});
+  }
   dlShow('Сохраняю аудиокнигу','«'+title+'»',0);
+  const done=[];
   try{
     try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(x){}
-    for(let i=0;i<n;i++)await fsPut(id+'/'+i,files[i],(p,d,t)=>dlShow('Сохраняю аудиокнигу','«'+title+'» — файл '+(i+1)+' из '+n+' ('+fsz(d)+' из '+fsz(t)+')',(i+p)/n));
+    for(let i=0;i<jobs.length;i++){
+      const j=jobs[i];
+      await fsPut(j.t.k,j.f,(p,d,t)=>dlShow('Сохраняю аудиокнигу','«'+title+'» — файл '+(i+1)+' из '+jobs.length+' ('+fsz(d)+' из '+fsz(t)+')',(i+p)/jobs.length));
+      done.push(j);
+    }
   }catch(err){
-    for(let i=0;i<n;i++){try{await fsDel(id+'/'+i)}catch(x){}}
+    for(const j of done){if(j.t.nw){try{await fsDel(j.t.k)}catch(x){}}}
     dlDone('Аудио не сохранилось на устройстве',true,fsErr(err));
     return;
   }
   dlShow('Читаю длительность и главы','«'+title+'»',null);
-  const tracks=[];
-  for(let i=0;i<n;i++)tracks.push({n:files[i].name,s:files[i].size,d:await audioDur(files[i])});
-  const chs=n===1&&/\.(m4b|m4a)$/i.test(files[0].name)?await mp4Chapters(files[0]):null;
-  const isNew=!e;
-  if(!e){e={id,name:files[0].name,title,author,ch:0,f:0,p:0,t:Date.now()};lib.push(e)}
-  e.tracks=tracks;if(chs)e.chs=chs;else delete e.chs;
+  for(const j of jobs){if(!(j.t.d>0))j.t.d=await audioDur(j.f)}
+  const fresh=jobs.filter(j=>j.t.nw);
+  if(!e){e={id:bid,name:files[0].name,title,author,ch:0,f:0,p:0,t:Date.now()};lib.push(e)}
+  if(!e.tracks)e.tracks=[];
+  for(const j of fresh){delete j.t.nw;e.tracks.push(j.t)}
+  e.tracks.sort((a,b)=>a.n.localeCompare(b.n,undefined,{numeric:true}));
+  // индексы файлов сдвинулись: пересчитываем позиции, закладки
+  const nIdx=oi=>{const k=oldKeys[oi];const j=e.tracks.findIndex(t=>t.k===k);return j<0?0:j};
+  if(oldKeys.length){
+    if(e.ap)e.ap={i:nIdx(e.ap.i||0),s:e.ap.s||0};
+    e.ch=nIdx(e.ch||0);
+    if(e.abm)e.abm.forEach(x=>{x.i=nIdx(x.i||0)});
+    if(AP.e===e)AP.i=nIdx(AP.i);
+  }
+  const chs=e.tracks.length===1&&/\.(m4b|m4a)$/i.test(files[0].name)&&isNew?await mp4Chapters(files[0]):null;
+  if(chs)e.chs=chs;else if(e.tracks.length!==1||isNew)delete e.chs;
   if(isNew||!e.sec)e.sec=sec;
-  e.title=e.tcustom?e.title:title;if(!e.author)e.author=author;
-  delete e.ph;
-  if(!e.ap){const i=Math.min(e.ch||0,n-1);e.ap={i,s:tracks[i].d?Math.floor((e.f||0)*tracks[i].d):0}}
+  if(!e.tcustom)e.title=title;
+  if(!e.author)e.author=author;
+  if(e.cv!==1){
+    for(const f of files.slice(0,3)){
+      const u=await audCover(f);
+      if(u){try{await kvPut('c:'+e.id,u);e.cv=1}catch(x){}break}
+    }
+  }
+  {let all=true;for(const t of e.tracks)if(!(await fsHas(t.k)))all=false;if(all)delete e.ph}
+  if(!e.ap){const i=Math.min(e.ch||0,e.tracks.length-1);e.ap={i,s:e.tracks[i].d?Math.floor((e.f||0)*e.tracks[i].d):0}}
   saveLib();devPush(e,true);
-  dlDone('Аудиокнига сохранена',false,'«'+title+'» — '+fsz(total)+(chs?', глав: '+chs.length:''));
+  const added=fresh.length;
+  dlDone(isNew?'Аудиокнига сохранена':'Файлы добавлены',false,'«'+title+'» — '+(isNew?fsz(total)+(chs?', глав: '+chs.length:''):('+'+added+', всего файлов: '+e.tracks.length)));
   renderLib();
-  await apOpen(e,true);
+  if(isNew){await apOpen(e,true)}
+  else{apUI();if(!$('#apLst').hidden)apList()}
+}
+async function apDelTrack(j,silent){
+  const e=AP.e;if(!e||!e.tracks||!e.tracks[j])return;
+  if(e.tracks.length===1){msg('Это последний файл. Целиком книгу можно убрать через меню «…» в библиотеке.');return}
+  const t=e.tracks[j];
+  if(!silent&&!confirm('Удалить файл «'+audTitle(t.n)+'» с устройства? Книга и остальные файлы останутся.'))return;
+  const cur=AP.i===j,was=!AP.el.paused;
+  if(cur)AP.el.pause();
+  try{await fsDel(t.k||(e.id+'/'+j))}catch(x){}
+  const nl=e.tracks.length-1;
+  const mapI=i=>i===j?Math.min(j,nl-1):(i>j?i-1:i);
+  e.tracks.splice(j,1);
+  if(e.ap)e.ap={i:mapI(e.ap.i||0),s:(e.ap.i===j)?0:(e.ap.s||0)};
+  e.ch=mapI(e.ch||0);
+  if(e.abm)e.abm=e.abm.filter(x=>x.i!==j).map(x=>{x.i=mapI(x.i);return x});
+  if(cur){await apLoad(Math.min(j,e.tracks.length-1),0,was)}
+  else if(AP.i>j)AP.i--;
+  saveLib();devPush(e,true);
+  if(!$('#apLst').hidden)apList();
+  apUI();
 }
 async function apOpen(b,fromAdd){
   if(!b.tracks){msg('Файлов этой аудиокниги нет на устройстве. Нажмите «+» в разделе Аудиокниги и выберите её файлы.');$('#af').click();return}
@@ -1520,15 +1667,16 @@ async function apOpen(b,fromAdd){
 }
 async function apLoad(i,pos,play){
   const e=AP.e;if(!e||!e.tracks||!e.tracks[i])return false;
-  const blob=await fsBlob(e.id+'/'+i);
+  let blob=await fsBlob(e.tracks[i].k||(e.id+'/'+i));
   if(!blob){msg('Файла «'+e.tracks[i].n+'» нет на устройстве. Добавьте аудиофайлы этой книги снова: «+» в разделе Аудиокниги.');return false}
+  if(!/^audio\//.test(blob.type||'')){const x=(e.tracks[i].n.match(/\.([a-z0-9]+)$/i)||[])[1]||'';const mt={mp3:'audio/mpeg',m4b:'audio/mp4',m4a:'audio/mp4',aac:'audio/aac',ogg:'audio/ogg',opus:'audio/ogg',flac:'audio/flac',wav:'audio/wav'}[x.toLowerCase()];if(mt)blob=new Blob([blob],{type:mt})}
   if(AP.url)URL.revokeObjectURL(AP.url);
   AP.url=URL.createObjectURL(blob);AP.i=i;
   const el=AP.el;el.src=AP.url;el.playbackRate=AP.rate;try{el.preservesPitch=true}catch(x){}
   await new Promise(res=>{let done=false;const f=()=>{if(done)return;done=true;el.removeEventListener('loadedmetadata',f);el.removeEventListener('error',f);res()};el.addEventListener('loadedmetadata',f);el.addEventListener('error',f);setTimeout(f,15000)});
   if(isFinite(el.duration)&&el.duration>0){
-    const t=e.tracks[i];if(Math.abs((t.d||0)-el.duration)>1)t.d=el.duration;
-    if(pos>0)el.currentTime=Math.min(pos,Math.max(0,el.duration-1));
+    const t=e.tracks[i];if(!(t.d>0))t.d=el.duration;
+    if(pos>0)el.currentTime=Math.min(pos,Math.max(0,apDur()-1));
   }
   apUI();
   if(play){try{await el.play()}catch(x){}}
@@ -1537,14 +1685,15 @@ async function apLoad(i,pos,play){
 function apSave(force){
   const e=AP.e;if(!e)return;
   const now=Date.now();if(!force&&now-AP.saveAt<5000)return;AP.saveAt=now;
-  const cur=AP.el.currentTime||0,dur=AP.el.duration;
-  e.ap={i:AP.i,s:Math.floor(cur)};e.ch=AP.i;e.f=isFinite(dur)&&dur>0?cur/dur:0;
+  const cur=AP.el.currentTime||0,dur=apDur();
+  e.ap={i:AP.i,s:Math.floor(cur)};e.ch=AP.i;e.f=dur>0?Math.min(1,cur/dur):0;
+  {const t=e.tracks&&e.tracks[AP.i];if(t&&dur>0)t.pr=Math.max(t.pr||0,Math.min(1,cur/dur))}
   const tot=apTotal(e);if(tot>0)e.p=Math.min(100,Math.round(apAbs()/tot*100));
   if(e.p>=99&&!e.doneAt)e.doneAt=now;
   e.t=now;saveLib();
 }
 function apStop(){AP.el.pause();AP.e=null;AP.id='';AP.el.removeAttribute('src');$('#ap').hidden=true;apUI()}
-const apSkip=d=>{const el=AP.el;if(!AP.e)return;const dur=el.duration||0;let t=(el.currentTime||0)+d;
+const apSkip=d=>{const el=AP.el;if(!AP.e)return;const dur=apDur();let t=(el.currentTime||0)+d;
   if(t<0)t=0;
   if(dur&&t>=dur-.2&&AP.i<AP.e.tracks.length-1){apLoad(AP.i+1,0,!el.paused);return}
   el.currentTime=dur?Math.min(t,dur):t};
@@ -1561,7 +1710,7 @@ function apSleepCheck(){
   // «до конца главы»: у m4b с главами останавливаемся на границе главы
   if(AP.sleepMode!=='end')return;
   const c=apChaps(AP.e);if(!c)return;
-  const k=apChapIdx(),end=k<c.length-1?c[k+1].t:AP.el.duration;
+  const k=apChapIdx(),end=k<c.length-1?c[k+1].t:apDur();
   if(AP.sleepFrom===undefined)AP.sleepFrom=k;
   if(k!==AP.sleepFrom||AP.el.currentTime>=end-.4){AP.el.pause();AP.sleepMode='';AP.sleepFrom=undefined;apSave(true);apUI()}
 }
@@ -1584,7 +1733,7 @@ function apUI(light){
   const e=AP.e,el=AP.el;
   const playing=!!e&&!el.paused&&!el.ended;
   if(!light){
-    $('#apm').hidden=!e||!$('#ap').hidden||!$('#rd').hidden;
+    $('#apm').hidden=!e||!$('#ap').hidden;AP.min=ls.get('apmin',0)===1;$('#apm').classList.toggle('min',AP.min);$('#audBtn').textContent=e?'Аудиоплеер':'Включить аудиокнигу';$('#apDel').textContent='Удалять прослушанные: '+(ls.get('adel',0)===1?'вкл':'выкл');
     $('#apPP').innerHTML=playing?PAUSEI:PLAYI;$('#apmP').innerHTML=playing?PAUSEI:PLAYI;
     if(!e)return;
     $('#apT').textContent=e.title||'';$('#apA').textContent=e.author||'';$('#apmT').textContent=e.title||'';
@@ -1596,21 +1745,22 @@ function apUI(light){
     if(!$('#apCov').firstChild||$('#apCov').dataset.id!==e.id){$('#apCov').dataset.id=e.id;$('#apCov').innerHTML=coverEl(e,lib.indexOf(e),'apcv');$('#apmC').innerHTML=coverEl(e,lib.indexOf(e),'apmcv');loadCovers()}
   }
   if(!e)return;
-  const dur=el.duration,cur=el.currentTime||0;
+  const dur=apDur(),cur=el.currentTime||0;
   const c=apChaps(e);
   if(!AP.seeking){
     const k=apChapIdx();
     const a=c?c[k].t:0,b=c?(k<c.length-1?c[k+1].t:dur):dur;
     const span=isFinite(b)?Math.max(1,b-a):0;
-    $('#apSeek').value=span?Math.round((cur-a)/span*1000):0;
+    {const v=span?Math.round((cur-a)/span*1000):0;$('#apSeek').value=v;$('#apSeek').style.setProperty('--v',(v/10)+'%');$('#apmPr').style.width=(v/10)+'%'}
     $('#apCur').textContent=aT(cur-a);$('#apRem').textContent=span?'-'+aT(b-cur):'';
   }
 }
+const apPie=p=>p>=.97?'<svg class="pie" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="var(--acc)"/><path d="M7.5 12.5l3 3 6-6.5" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>':'<svg class="pie" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" fill="none" stroke="var(--mute)" stroke-width="1.6"/>'+(p>.01?'<circle cx="12" cy="12" r="4.75" fill="none" stroke="var(--acc)" stroke-width="9.5" stroke-dasharray="'+(p*29.85).toFixed(2)+' 29.85" transform="rotate(-90 12 12)"/>':'')+'</svg>';
 function apList(){
   const e=AP.e;if(!e)return;
-  const c=apChaps(e);let h='';
+  const c=apChaps(e);let h='<button class="apadd" data-apadd="1">+ Добавить файлы</button>';
   if(c){const k=apChapIdx();h+=c.map((x,j)=>'<button data-apc="'+j+'" aria-pressed="'+(j===k)+'"><span>'+esc(x.n||'Глава '+(j+1))+'</span><small>'+aT(x.t)+'</small></button>').join('')}
-  else h+=e.tracks.map((t,j)=>'<button data-apt="'+j+'" aria-pressed="'+(j===AP.i)+'"><span>'+esc(audTitle(t.n))+'</span><small>'+(t.d?aT(t.d):'')+'</small></button>').join('');
+  else h+=e.tracks.map((t,j)=>'<div class="aprow"><button data-apt="'+j+'" aria-pressed="'+(j===AP.i)+'"><span>'+esc(audTitle(t.n))+'</span><small>'+(t.d?aT(t.d):'')+'</small>'+apPie(t.pr||0)+'</button><button class="x" data-apd="'+j+'" aria-label="Удалить файл">×</button></div>').join('');
   const bm=e.abm||[];
   if(bm.length)h+='<h3>Закладки</h3>'+bm.map((x,j)=>'<div class="apbm"><button data-apb="'+j+'"><span>'+(c?aT(x.s):(e.tracks.length>1?'Файл '+(x.i+1)+', ':'')+aT(x.s))+'</span><small>'+new Date(x.at).toLocaleDateString('ru')+'</small></button><button class="x" data-apx="'+j+'" aria-label="Удалить закладку">×</button></div>').join('');
   $('#apLst').innerHTML=h;
@@ -1622,8 +1772,9 @@ apEv('pause',()=>{apSave(true);apUI()});
 apEv('ratechange',()=>{});
 apEv('ended',async()=>{
   const e=AP.e;if(!e)return;
+  {const t=e.tracks[AP.i];if(t)t.pr=1}
   if(AP.sleepMode==='end'){AP.sleepMode='';apSave(true);apUI();return}
-  if(AP.i<e.tracks.length-1)await apLoad(AP.i+1,0,true);
+  if(AP.i<e.tracks.length-1){const prev=AP.i;await apLoad(prev+1,0,true);if(ls.get('adel',0)===1&&AP.e===e)await apDelTrack(prev,true)}
   else{e.p=100;if(!e.doneAt)e.doneAt=Date.now();apSave(true);apUI()}
 });
 $('#apPP').onclick=()=>{if(!AP.e)return;AP.el.paused||AP.el.ended?AP.el.play().catch(()=>{}):AP.el.pause()};
@@ -1632,15 +1783,19 @@ $('#apm').onclick=()=>{if(AP.e){$('#ap').hidden=false;apUI()}};
 $('#apX').onclick=()=>{$('#ap').hidden=true;apUI()};
 $('#apB15').onclick=()=>apSkip(-15);$('#apF30').onclick=()=>apSkip(30);
 $('#apNx').onclick=apNext;$('#apPv').onclick=apPrev;
-$('#apSeek').addEventListener('input',()=>{AP.seeking=true;const e=AP.e;if(!e)return;const c=apChaps(e),k=apChapIdx(),a=c?c[k].t:0,b=c?(k<c.length-1?c[k+1].t:AP.el.duration):AP.el.duration,t=a+(b-a)*$('#apSeek').value/1000;$('#apCur').textContent=aT(t-a);$('#apRem').textContent='-'+aT(b-t)});
-$('#apSeek').addEventListener('change',()=>{const e=AP.e;if(!e)return;const c=apChaps(e),k=apChapIdx(),a=c?c[k].t:0,b=c?(k<c.length-1?c[k+1].t:AP.el.duration):AP.el.duration;AP.el.currentTime=a+(b-a)*$('#apSeek').value/1000;AP.seeking=false});
+const apSpan=()=>{const e=AP.e,c=apChaps(e),k=apChapIdx(),a=c?c[k].t:0,b=c?(k<c.length-1?c[k+1].t:apDur()):apDur();return[a,b]};
+$('#apSeek').addEventListener('input',()=>{if(!AP.e)return;AP.seeking=true;const[a,b]=apSpan(),v=$('#apSeek').value,t=a+(b-a)*v/1000;$('#apCur').textContent=aT(t-a);$('#apRem').textContent='-'+aT(b-t);$('#apSeek').style.setProperty('--v',(v/10)+'%')});
+const apSeekGo=()=>{if(!AP.seeking||!AP.e)return;AP.seeking=false;const[a,b]=apSpan();if(b>a)AP.el.currentTime=a+(b-a)*$('#apSeek').value/1000;apUI(true)};
+for(const ev of['change','pointerup','touchend','pointercancel'])$('#apSeek').addEventListener(ev,apSeekGo);
 $('#apL').onclick=()=>{const l=$('#apLst');l.hidden=!l.hidden;if(!l.hidden)apList()};
 $('#apLst').addEventListener('click',e=>{
-  const c=e.target.closest('[data-apc]'),t=e.target.closest('[data-apt]'),b=e.target.closest('[data-apb]'),x=e.target.closest('[data-apx]');
+  const c=e.target.closest('[data-apc]'),t=e.target.closest('[data-apt]'),b=e.target.closest('[data-apb]'),x=e.target.closest('[data-apx]'),d=e.target.closest('[data-apd]'),ad=e.target.closest('[data-apadd]');
   if(c){const k=+c.dataset.apc,ch=apChaps(AP.e);if(ch){AP.el.currentTime=ch[k].t;if(AP.el.paused)AP.el.play().catch(()=>{});$('#apLst').hidden=true}}
   else if(t){apLoad(+t.dataset.apt,0,true);$('#apLst').hidden=true}
   else if(b){const m=AP.e.abm[+b.dataset.apb];if(m){if(m.i!==AP.i)apLoad(m.i,m.s,true);else{AP.el.currentTime=m.s}$('#apLst').hidden=true}}
   else if(x){AP.e.abm.splice(+x.dataset.apx,1);saveLib();apList()}
+  else if(d){apDelTrack(+d.dataset.apd,false)}
+  else if(ad){addTo=AP.e.id;$('#af').click()}
 });
 $('#apBm').onclick=()=>{const e=AP.e;if(!e)return;(e.abm=e.abm||[]).push({i:AP.i,s:Math.floor(AP.el.currentTime||0),at:Date.now()});saveLib();dlDone('Закладка добавлена',false,aT(AP.el.currentTime||0))};
 function apMenu(btn,items){const m=$('#apmn');m.innerHTML=items.map(x=>'<button data-v="'+x[0]+'" aria-pressed="'+!!x[2]+'">'+x[1]+'</button>').join('');place(m,btn)}
@@ -1651,8 +1806,18 @@ $('#apmn').addEventListener('click',e=>{
   const v=b.dataset.v;
   if(v[0]==='r')apRate(+v.slice(1));
   else if(v==='send')apSleep('end');
+  else if(v[0]==='a'){const b=lib[+v.slice(1)];if(b){$('#set').hidden=true;apOpen(b).then(()=>{$('#ap').hidden=true;apUI();AP.el.play().catch(()=>{})})}}
   else apSleep(+v.slice(1));
 });
+$('#apmB').onclick=e=>{e.stopPropagation();apSkip(-15)};$('#apmF').onclick=e=>{e.stopPropagation();apSkip(30)};
+$('#apmM').onclick=e=>{e.stopPropagation();ls.set('apmin',ls.get('apmin',0)===1?0:1);apUI()};
+$('#apDel').onclick=()=>{ls.set('adel',ls.get('adel',0)===1?0:1);apUI()};
+new MutationObserver(()=>apUI()).observe($('#rd'),{attributes:true,attributeFilter:['hidden']});
+$('#audBtn').onclick=e=>{e.stopPropagation();
+  if(AP.e){$('#set').hidden=true;$('#ap').hidden=false;apUI();return}
+  const A=lib.map((b,i)=>[b,i]).filter(x=>isAudio(x[0])&&x[0].tracks);
+  if(!A.length){msg('Сначала добавьте аудиокнигу в разделе «Аудиокниги».');return}
+  apMenu($('#audBtn'),A.map(x=>['a'+x[1],esc(x[0].title||'Аудиокнига')]))};
 $('#af').addEventListener('change',async e=>{const fl=[...e.target.files];e.target.value='';if(fl.length)await addAudio(fl)});
 setInterval(()=>{if(AP.e&&AP.sleepEnd)apUI()},30000);
 addEventListener('pagehide',()=>apSave(true));
@@ -1740,7 +1905,7 @@ async function openVersion(x){
   if(pr!==x)pendingPP={id:x.id,p:pr.p||0};
   await openBook(x);pendingPP=null;
 }
-const coverEl=(b,i,cls)=>b.cv===1?'<img class="'+cls+'" data-c="'+i+'" alt="">':'<span class="'+cls+' ph'+(b.ph?' gh':'')+'" style="'+phVars(b)+'"><b>'+esc(b.title||'')+'</b><small>'+esc(b.author||'')+'</small></span>';
+const coverEl=(b,i,cls)=>(cls+=isAudio(b)?' sq':'',b.cv===1?'<img class="'+cls+'" data-c="'+i+'" alt="">':'<span class="'+cls+' ph'+(b.ph?' gh':'')+'" style="'+phVars(b)+'"><b>'+esc(b.title||'')+'</b><small>'+esc(b.author||'')+'</small></span>');
 function tile(b,i){
   const p=b.p||0,st=b.ph?'Нет на устройстве'+(p?', '+p+' %':''):(isDone(b)?'Закончено':p>0?p+' %':'<em class="nw">Новая</em>');
   return '<div class="tl"><button class="cb" data-o="'+i+'" aria-label="'+esc(b.title||'').replace(/"/g,'&quot;')+'">'+coverEl(b,i,'cvr')+'</button><div class="ts"><span>'+st+'</span><button class="mb" data-m="'+i+'" aria-label="Меню книги">…</button></div>'+(vers(b).length>1?'<div class="fmr">'+chips(b)+'</div>':'')+'</div>';
@@ -1785,7 +1950,7 @@ function renderLib(){
   $('#rowL').innerHTML=later.length?later.map(b=>tile(b,ix(b))).join(''):emp('Здесь будут книги, которые вы забросили');
   const arr=lib.filter(b=>isPri(b)&&sxOf(b)===curSx&&inF(b,lf)).sort(CMP[lsort]||CMP.recent);
   const au=curSx==='aud';
-  $('#glib').innerHTML='<label class="tl" for="'+(au?'af':'f')+'"><span class="cvr plus">+</span><div class="ts"><span>'+(au?'Добавить аудиокнигу':'Добавить книгу')+'</span></div></label>'+arr.map(b=>tile(b,ix(b))).join('');
+  $('#glib').innerHTML='<label class="tl" for="'+(au?'af':'f')+'"><span class="cvr plus'+(au?' sq':'')+'">+</span><div class="ts"><span>'+(au?'Добавить аудиокнигу':'Добавить книгу')+'</span></div></label>'+arr.map(b=>tile(b,ix(b))).join('');
   $('#lt').textContent=lf==='all'?sxGet(curSx).name:filterName();
   $('#hEmpty').hidden=lib.length>0;
   loadCovers();
