@@ -990,16 +990,31 @@ async function openPdf(buf,name){
     }
     pdfjsLib.GlobalWorkerOptions.workerSrc='pdf.worker.js';
   };
+  const src=(typeof Blob!=='undefined'&&buf instanceof Blob)?buf:null;
+  const params=async full=>{
+    if(!src)return{data:new Uint8Array(buf.slice(0))};
+    if(full||typeof pdfjsLib.PDFDataRangeTransport!=='function')return{data:new Uint8Array(await src.arrayBuffer())};
+    // большой файл не загружаем в память целиком: движок сам просит нужные куски
+    const tr=new pdfjsLib.PDFDataRangeTransport(src.size,new Uint8Array(await src.slice(0,Math.min(src.size,65536)).arrayBuffer()));
+    tr.requestDataRange=(b,e)=>{src.slice(b,e).arrayBuffer().then(ab=>tr.onDataRange(b,new Uint8Array(ab)),()=>{})};
+    return{range:tr,length:src.size,disableAutoFetch:true,disableStream:true,rangeChunkSize:1048576};
+  };
+  const tryOpen=async full=>{
+    const task=pdfjsLib.getDocument(await params(full));
+    if(full||!src)return await task.promise;
+    try{return await Promise.race([task.promise,new Promise((_,rj)=>setTimeout(()=>rj(new Error('timeout')),25000))])}
+    catch(e){try{task.destroy()}catch(x){}throw e}
+  };
   let pdf;
   try{
     // основной путь: движок PDF в отдельном потоке, чтобы страница не подвисала
     if(!window.pdfBlobWorker){window.pdfBlobWorker=URL.createObjectURL(new Blob([$('#pdfw').textContent],{type:'text/javascript'}))}
     pdfjsLib.GlobalWorkerOptions.workerSrc=window.pdfBlobWorker;
-    pdf=await pdfjsLib.getDocument({data:new Uint8Array(buf.slice(0))}).promise;
+    pdf=await tryOpen(false);
   }catch(err){
     // запасной путь: как раньше, в основном потоке
     mainThreadWorker();
-    pdf=await pdfjsLib.getDocument({data:new Uint8Array(buf.slice(0))}).promise;
+    try{pdf=await tryOpen(false)}catch(e2){pdf=await tryOpen(true)}
   }
   let info={};try{info=(await pdf.getMetadata()).info||{}}catch(e){}
   const pc=new Map();let rq=Promise.resolve();
@@ -1020,7 +1035,7 @@ async function openPdf(buf,name){
         const blob=await new Promise(res=>c.toBlob(res,'image/jpeg',.86));
         out={url:URL.createObjectURL(blob),w:c.width,h:c.height};
         pc.set(k,out);
-        while(pc.size>12){const k0=pc.keys().next().value;URL.revokeObjectURL(pc.get(k0).url);pc.delete(k0)}
+        while(pc.size>8){const k0=pc.keys().next().value;URL.revokeObjectURL(pc.get(k0).url);pc.delete(k0)}
       }else out={url:c.toDataURL('image/jpeg',.9),w:c.width,h:c.height};
       c.width=c.height=0;if(pg.cleanup)pg.cleanup();
       return out;
@@ -2024,6 +2039,7 @@ async function deleteBook(b){
 }
 async function openBook(b){
   if(isAudio(b)){await apOpen(b);return}
+  if(/\.pdf$/i.test(b.name||'')){const bl=await fsBlob(b.id);if(bl&&bl.size){await load(b.name,bl);return}}
   const s=await fsRead(b.id);
   if(s&&s.buf){await load(s.name,s.buf);return}
   msg(b.ph?'Эта книга есть в синхронизации, но файла нет на этом устройстве. Выберите тот же файл — прогресс подтянется.':'Файл этой книги не сохранился на устройстве. Добавьте его снова через «+».');
@@ -2838,9 +2854,10 @@ function updateEnd(){
 async function load(name,buf,start,silent,file){
   msg('Открываю…');
   try{
+    if(/\.pdf$/i.test(name))ls.set('opening',name);
     const b=await parseBook(name,buf);
     if(!b.chapters.length)throw new Error('В книге не нашлось текста');
-    book=b;key=name+':'+buf.byteLength;root.classList.toggle('ispdf',!!b.pdf);userMoved=false;
+    book=b;key=name+':'+(buf.byteLength!=null?buf.byteLength:buf.size);root.classList.toggle('ispdf',!!b.pdf);userMoved=false;
     if(!ent(key)){const cs=lib.filter(x=>sameFile(key,x.id)).sort((a,b)=>a.id<b.id?-1:1);if(cs.length)key=cs[0].id}
     let e=ent(key);
     if(!e){
@@ -2882,10 +2899,11 @@ async function load(name,buf,start,silent,file){
       $('#home').hidden=true;$('#rd').hidden=false;
       await show(e.ch,e.f);
     }
+    ls.set('opening',0);
     if(!e.cv&&b.cover)(async()=>{try{const u=await b.cover();const t=u?await thumb(u):'';if(t)await kv.set('c:'+e.id,t);e.cv=t?1:2}catch(err){e.cv=2}saveLib()})();
     return true;
   }catch(e){
-    pendingAttach=null;
+    pendingAttach=null;ls.set('opening',0);
     msg(e.message||'Не удалось открыть файл');
     return false;
   }
@@ -2905,7 +2923,7 @@ async function saveBookFile(e,id,file){
 }
 async function openFile(f){
   try{
-    const buf=await f.arrayBuffer();
+    const buf=/\.pdf$/i.test(f.name)?f:await f.arrayBuffer();
     await load(f.name,buf,undefined,false,f);
   }catch(e){msg('Не удалось прочитать файл: '+fsErr(e))}
 }
@@ -3400,6 +3418,7 @@ const onbDone=()=>{if(!ls.get('onbDone',false))ls.set('onbDone',true);$('#onb').
 if(!ls.get('onbDone',false)){$('#onb').hidden=false;$('#onbBg').hidden=false}
 $('#onbLogin').onclick=e=>{e.stopPropagation();onbDone();openSy()};
 $('#onbSkip').onclick=onbDone;
+{const o=ls.get('opening',0);if(o){ls.set('opening',0);setTimeout(()=>msg('Прошлая попытка открыть «'+o+'» оборвалась: скорее всего, браузеру не хватило памяти. Попробуйте открыть ещё раз; если повторится, напишите мне.'),1500)}}
 (async()=>{
   const old=await kv.get('last');
   if(old&&old.buf){
