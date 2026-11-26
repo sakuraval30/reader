@@ -713,7 +713,8 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
 (()=>{
 const $=s=>document.querySelector(s);
 const ls={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-const db=()=>new Promise((res,rej)=>{const r=indexedDB.open('reader',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+let dbP=null;
+const db=()=>dbP||(dbP=new Promise((res,rej)=>{const r=indexedDB.open('reader',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>{const d=r.result;d.onclose=()=>{dbP=null};d.onversionchange=()=>{try{d.close()}catch(x){}dbP=null};res(d)};r.onerror=()=>{dbP=null;rej(r.error)}}));
 const kv={
   async get(k){try{const d=await db();return await new Promise((res,rej)=>{const q=d.transaction('kv').objectStore('kv').get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}catch(e){return undefined}},
   async set(k,v){try{const d=await db();await new Promise((res,rej)=>{const t=d.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=res;t.onerror=()=>rej(t.error)})}catch(e){}}
@@ -728,6 +729,34 @@ const kvKeys=async()=>{try{const d=await db();return await new Promise((res,rej)
 const fsErr=e=>{const n=(e&&e.name)||'',m=(e&&e.message)||String(e);if(e&&e.quota)return m;if(n==='QuotaExceededError'||/quota/i.test(m))return 'не хватает места в хранилище браузера';if(/memory|blob|allocation/i.test(m))return 'браузеру не хватило памяти ('+m+')';return(n?n+': ':'')+m};
 async function fsParts(id){const m=await kv.get('fm:'+id);if(!m)return null;const parts=[];for(let i=0;i<m.n;i++){const c=await kv.get('fc:'+id+':'+i);if(!c)return null;parts.push(c)}return{m,parts}}
 async function fsBlob(id){const r=await fsParts(id);if(r)return new Blob(r.parts,{type:r.m.type||''});const s=await kv.get('b:'+id);return s&&s.buf?new Blob([s.buf]):null}
+async function fsReader(id){
+  const m=await kv.get('fm:'+id);
+  if(!m||!(m.size>0)||!(m.n>0))return null;
+  const cache=new Map();
+  const getChunk=async(i,fresh)=>{
+    if(!fresh&&cache.has(i))return cache.get(i);
+    const c=await kv.get('fc:'+id+':'+i);
+    if(!c)throw new Error('нет части '+(i+1)+' из '+m.n);
+    cache.set(i,c);while(cache.size>3)cache.delete(cache.keys().next().value);
+    return c;
+  };
+  const readRange=async(b,e)=>{
+    e=Math.min(e,m.size);if(e<=b)return new ArrayBuffer(0);
+    const out=new Uint8Array(e-b);let pos=0;
+    for(let i=Math.floor(b/FS_CH);i*FS_CH<e;i++){
+      const from=Math.max(b,i*FS_CH)-i*FS_CH,to=Math.min(e,(i+1)*FS_CH)-i*FS_CH;
+      let ab=null,err=null;
+      for(let t=0;t<3&&!ab;t++){
+        try{const c=await getChunk(i,t>0);ab=(c instanceof ArrayBuffer)?c.slice(from,to):await c.slice(from,to).arrayBuffer()}
+        catch(x){err=x;cache.delete(i);await new Promise(r=>setTimeout(r,150*(t+1)))}
+      }
+      if(!ab)throw new Error('Не удалось прочитать файл из памяти браузера ('+((err&&err.message)||err)+'). Удалите файл в «Скачано» и добавьте заново.');
+      out.set(new Uint8Array(ab),pos);pos+=ab.byteLength;
+    }
+    return out.buffer;
+  };
+  return{size:m.size,name:m.name,slice:(a,b)=>({arrayBuffer:()=>readRange(a,b)}),arrayBuffer:()=>readRange(0,m.size)};
+}
 async function fsRead(id){const r=await fsParts(id);if(r)return{name:r.m.name,buf:await new Blob(r.parts).arrayBuffer()};const s=await kv.get('b:'+id);return s&&s.buf?s:null}
 async function fsDel(id,onProg){
   const m=await kv.get('fm:'+id);
@@ -991,7 +1020,7 @@ async function openPdf(buf,name){
     }
     pdfjsLib.GlobalWorkerOptions.workerSrc='pdf.worker.js';
   };
-  const src=(typeof Blob!=='undefined'&&buf instanceof Blob)?buf:null;
+  const src=(buf&&typeof buf.slice==='function'&&typeof buf.size==='number'&&!(buf instanceof ArrayBuffer))?buf:null;
   const params=async full=>{
     if(!src)return{data:new Uint8Array(buf.slice(0))};
     if(full||typeof pdfjsLib.PDFDataRangeTransport!=='function')return{data:new Uint8Array(await src.arrayBuffer())};
@@ -1167,7 +1196,7 @@ async function pullProf(){
   }catch(e){}
 }
 const sbcfg=ls.get('sbcfg',null)||Object.assign({},DEFAULT_SB);
-let SB=null,syUser=null,syPushT=0,syPulling=false,syncing=false;
+let SB=null,syUser=null,syPushT=0,syPulling=false,syncing=false,lastRows=new Map();
 function sbInit(){
   if(!ls.get('sbcfg',null)&&DEFAULT_SB.url&&DEFAULT_SB.key){sbcfg.url=DEFAULT_SB.url;sbcfg.key=DEFAULT_SB.key}
   if(!sbcfg||!sbcfg.url||!sbcfg.key||typeof supabase==='undefined')return;
@@ -1191,6 +1220,7 @@ async function syncPull(){
     const {data,error}=await SB.from('book_progress').select('*');
     if(error){syErr=true;syDot();throw error}
     syErr=false;syDot();
+    lastRows=new Map((data||[]).map(r=>[r.book_key,r.t||0]));
     let changed=false,jump=null;
     for(const r of (data||[])){const e0=ent(r.book_key);if(e0&&r.g&&e0.g!==r.g){e0.g=r.g;changed=true}}
     for(const r of (data||[])){
@@ -1208,6 +1238,7 @@ async function syncPull(){
     }
     if(changed){ls.set('lib',lib);renderLib();renderPlb();if(book&&!$('#rd').hidden)updatePos()}
     if(jump)show(jump[0],jump[1]);
+    await syExtra();devReconcile();
   }catch(e){const m=$('#syMsg');if(m)m.textContent='Не удалось получить данные с сервера'}
   syncing=false;
 }
@@ -1215,10 +1246,12 @@ async function syncPush(){
   if(!SB||!syUser)return;
   try{
     await syDelRemote();
+    await syExtra();
+    const tb=TOMB();
     let q=await SB.from('book_progress').select('book_key,t,g'),colG=true;
     if(q.error){colG=false;q=await SB.from('book_progress').select('book_key,t')}
     const rm=new Map(((q&&q.data)||[]).map(r=>[r.book_key,r]));
-    let rows=lib.filter(b=>{const r=rm.get(b.id);return !(r&&(r.t||0)>(b.t||0))}).map(b=>Object.assign({user_id:syUser.id},syRow(b)));
+    let rows=lib.filter(b=>{const r=rm.get(b.id);return !(r&&(r.t||0)>(b.t||0))&&!(tb[b.id]&&tb[b.id]>(b.t||0))}).map(b=>Object.assign({user_id:syUser.id},syRow(b)));
     if(!colG)rows=rows.map(r=>{const c=Object.assign({},r);delete c.g;return c});
     if(rows.length){
       const {error}=await SB.from('book_progress').upsert(rows,{onConflict:'user_id,book_key'});
@@ -1231,6 +1264,54 @@ async function syncPush(){
       }
     }
   }catch(e){syErr=true;syDot()}
+}
+let syXBusy=false,syXAt=0,syXWarned=false;
+function sxLocal(){
+  let at=ls.get('sxAt',0);const custom=SX.some(x=>x.id!=='lib'&&x.id!=='aud');
+  if(!at&&custom){at=Date.now();ls.set('sxAt',at)}
+  const sm={};lib.forEach(b=>{if(b.sec&&b.sec!=='lib')sm[b.id]=[b.sec,b.secAt||b.t||1]});
+  return{sx:at?{at,list:SX.map(x=>({id:x.id,name:x.name,plan:!!x.plan}))}:null,sm,tomb:TOMB()};
+}
+function sxMerge(r,l){
+  const o={};r=r||{};
+  o.sx=(l.sx&&(!r.sx||l.sx.at>r.sx.at))?l.sx:(r.sx||null);
+  o.sm=Object.assign({},r.sm||{});
+  for(const k in l.sm){const a=o.sm[k];if(!a||l.sm[k][1]>a[1])o.sm[k]=l.sm[k]}
+  o.tomb=Object.assign({},r.tomb||{});
+  for(const k in l.tomb)if((l.tomb[k]||0)>(o.tomb[k]||0))o.tomb[k]=l.tomb[k];
+  const old=Date.now()-120*864e5;
+  for(const k in o.tomb){if(o.tomb[k]<old)delete o.tomb[k];else delete o.sm[k]}
+  return o;
+}
+async function syExtra(){
+  if(!SB||!syUser||syXBusy||Date.now()-syXAt<8000)return;
+  syXBusy=true;
+  try{
+    const q=await SB.from('user_profile').select('extra').eq('user_id',syUser.id).maybeSingle();
+    if(q.error){
+      if(!syXWarned){syXWarned=true;const m=$('#syMsg');if(m)m.textContent='Разделы и удаления не синхронизируются: в Supabase нужно один раз выполнить SQL (колонка extra).'}
+      return;
+    }
+    const remote=(q.data&&q.data.extra)||{},merged=sxMerge(remote,sxLocal());
+    let ch=false;
+    if(merged.sx&&merged.sx.at>ls.get('sxAt',0)){
+      SX=normSX(merged.sx.list);ls.set('sx',SX);ls.set('sxAt',merged.sx.at);
+      if(!SX.some(x=>x.id===curSx)){curSx='lib';ls.set('csx',curSx)}
+      renderTabs();ch=true;
+    }
+    for(const b of lib){const v=merged.sm[b.id];if(v&&v[1]>(b.secAt||0)&&SX.some(x=>x.id===v[0])&&b.sec!==v[0]){b.sec=v[0];b.secAt=v[1];ch=true}}
+    for(const id in merged.tomb){
+      const e=ent(id);if(!e)continue;
+      if(reading()&&key===id)continue;
+      if(Math.max(e.t||0,lastRows.get(id)||0)<merged.tomb[id]){await removeLocalEntry(e);ch=true}
+    }
+    if(ch){ls.set('lib',lib);renderLib();renderPlb()}
+    if(JSON.stringify(merged)!==JSON.stringify(remote)){
+      const u=await SB.from('user_profile').upsert({user_id:syUser.id,extra:merged});
+      if(u.error)console.warn('sync extra:',u.error.message);
+    }
+  }catch(e){console.warn('syExtra',e)}
+  finally{syXBusy=false;syXAt=Date.now()}
 }
 function schedulePush(){clearTimeout(syPushT);syPushT=setTimeout(syncPush,2500)}
 document.addEventListener('visibilitychange',()=>{if(document.hidden){clearTimeout(syPushT);syncPush()}else syncPull()});
@@ -1305,14 +1386,17 @@ const isDone=b=>b.st==='done'||(b.p||0)>=99;
 const isAudioId=id=>/\.(mp3|m4b|m4a|aac|ogg|opus|flac|wav)(?::|#|$)/i.test(String(id||''));
 const isAudio=b=>!!(b&&(b.tracks||isAudioId(b.id)));
 let SX=ls.get('sx',null);
-{
+const normSX=arr=>{
   const D=[{id:'lib',name:'Библиотека',plan:true},{id:'aud',name:'Аудиокниги',plan:false}];
-  if(!Array.isArray(SX))SX=[];
-  const old=id=>SX.find(x=>x&&x.id===id);
-  const custom=SX.filter(x=>x&&x.id&&x.id!=='lib'&&x.id!=='aud'&&x.name);
-  SX=[Object.assign({},D[0],old('lib')||{},{plan:true}),Object.assign({},D[1],old('aud')||{},{plan:false}),...custom];
-}
-const saveSX=()=>ls.set('sx',SX);
+  if(!Array.isArray(arr))arr=[];
+  const old=id=>arr.find(x=>x&&x.id===id);
+  const custom=arr.filter(x=>x&&x.id&&x.id!=='lib'&&x.id!=='aud'&&x.name).map(x=>({id:String(x.id),name:String(x.name).slice(0,30),plan:!!x.plan}));
+  return [Object.assign({},D[0],old('lib')||{},{plan:true}),Object.assign({},D[1],old('aud')||{},{plan:false}),...custom];
+};
+SX=normSX(SX);
+const saveSX=()=>{ls.set('sx',SX);ls.set('sxAt',Date.now());schedulePush()};
+const TOMB=()=>ls.get('tomb',{});
+const reviveId=id=>{const d=dels();if(d.includes(id))ls.set('dels',d.filter(x=>x!==id));const t=TOMB();if(t[id]){delete t[id];ls.set('tomb',t)}};
 const sxGet=id=>SX.find(x=>x.id===id)||SX[0];
 const sxOf=b=>(b&&b.sec&&SX.some(x=>x.id===b.sec))?b.sec:(isAudio(b)?'aud':'lib');
 const isPlanBook=id=>{const e=ent(id);return !e||sxGet(sxOf(e)).plan!==false};
@@ -1426,6 +1510,16 @@ async function devSyncAll(mine,dev){
     const mineRows=dev.rows.filter(r=>r.device_id===deviceId);
     for(const m of mine){const r=mineRows.find(x=>x.book_key===m.b.id);if(!r||(+r.size||0)!==m.z||r.device_name!==devName())await devPush(m.b,true)}
     for(const r of mineRows)if(!have.has(r.book_key))await SB.from('device_books').delete().eq('user_id',syUser.id).eq('device_id',deviceId).eq('book_key',r.book_key);
+  }catch(e){}
+}
+let devRecAt=0;
+async function devReconcile(){
+  if(!SB||!syUser||Date.now()-devRecAt<180000)return;
+  devRecAt=Date.now();
+  try{
+    const files=await fsList(),fmap=new Map(files.map(f=>[f.id,f])),mine=[];
+    lib.forEach(b=>{const ids=bookFileIds(b);let z=0,have=0;for(const id of ids){const f=fmap.get(id);if(f){have++;z+=f.size}}if(have)mine.push({b,z})});
+    await devSyncAll(mine,await devFetch());
   }catch(e){}
 }
 $('#pgD').addEventListener('click',async e=>{
@@ -1618,7 +1712,7 @@ async function addAudio(files){
   dlShow('Читаю длительность и главы','«'+title+'»',null);
   for(const j of jobs){if(!(j.t.d>0))j.t.d=await audioDur(j.f)}
   const fresh=jobs.filter(j=>j.t.nw);
-  if(!e){e={id:bid,name:files[0].name,title,author,ch:0,f:0,p:0,t:Date.now()};lib.push(e)}
+  if(!e){e={id:bid,name:files[0].name,title,author,ch:0,f:0,p:0,t:Date.now()};lib.push(e);reviveId(bid)}
   if(!e.tracks)e.tracks=[];
   for(const j of fresh){delete j.t.nw;e.tracks.push(j.t)}
   e.tracks.sort((a,b)=>a.n.localeCompare(b.n,undefined,{numeric:true}));
@@ -1632,7 +1726,7 @@ async function addAudio(files){
   }
   const chs=e.tracks.length===1&&/\.(m4b|m4a)$/i.test(files[0].name)&&isNew?await mp4Chapters(files[0]):null;
   if(chs)e.chs=chs;else if(e.tracks.length!==1||isNew)delete e.chs;
-  if(isNew||!e.sec)e.sec=sec;
+  if(isNew||!e.sec){e.sec=sec;e.secAt=Date.now()}
   if(!e.tcustom)e.title=title;
   if(!e.author)e.author=author;
   if(e.cv!==1){
@@ -2022,6 +2116,16 @@ async function removeFile(b){
   }catch(err){dlDone('Не удалось удалить файл',true,fsErr(err))}
   renderLib();
 }
+async function removeLocalEntry(e){
+  const id=e.id;
+  if(typeof AP!=='undefined'&&AP.id===id)apStop();
+  lib=lib.filter(x=>x!==e);
+  try{for(const fid of bookFileIds(e))await fsDel(fid)}catch(x){}
+  try{await kvDel('c:'+id);await kvDel('tr:'+id);await kvDel('ocr:'+id)}catch(x){}
+  if(ls.get('cur','')===id)ls.set('cur','');
+  if(key===id){book=null;key=''}
+  devPush(e,false);
+}
 async function deleteBook(b){
   const id=b.id,nm='«'+(b.title||id)+'»';
   if(typeof AP!=='undefined'&&AP.id===id)apStop();
@@ -2034,13 +2138,15 @@ async function deleteBook(b){
     if(ls.get('cur','')===id)ls.set('cur','');
     if(key===id){book=null;key=''}
     syForget(id);
+    {const t=TOMB();t[id]=Date.now();ls.set('tomb',t)}
+    syXAt=0;schedulePush();
     dlDone('Книга удалена',false,nm);
   }catch(err){dlDone('Не удалось удалить книгу полностью',true,fsErr(err))}
   renderLib();
 }
 async function openBook(b){
   if(isAudio(b)){await apOpen(b);return}
-  if(/\.pdf$/i.test(b.name||'')){const bl=await fsBlob(b.id);if(bl&&bl.size){await load(b.name,bl);return}}
+  if(/\.pdf$/i.test(b.name||'')){const rd=await fsReader(b.id);if(rd){await load(b.name,rd);return}const bl=await fsBlob(b.id);if(bl&&bl.size){await load(b.name,bl);return}}
   const s=await fsRead(b.id);
   if(s&&s.buf){await load(s.name,s.buf);return}
   msg(b.ph?'Эта книга есть в синхронизации, но файла нет на этом устройстве. Выберите тот же файл — прогресс подтянется.':'Файл этой книги не сохранился на устройстве. Добавьте его снова через «+».');
@@ -2867,8 +2973,8 @@ async function load(name,buf,start,silent,file){
       e=r?{id:key,name,title:r.title||b.title,author:r.author||b.author,ch:r.ch||0,f:r.f||0,p:r.p||0,t:r.t||Date.now(),st:r.st||'',cs:r.cs||[]}
          :{id:key,name,title:b.title,author:b.author,ch:start?start.ch:0,f:start?start.f:0,p:0,t:Date.now()};
       lib.push(e);
-      if(addSec&&addSec!=='lib')e.sec=addSec;addSec=null;
-      {const d=dels();if(d.includes(key))ls.set('dels',d.filter(x=>x!==key))}
+      if(addSec&&addSec!=='lib'){e.sec=addSec;e.secAt=Date.now()}addSec=null;
+      reviveId(key);
       if(pendingAttach){
         const pr=pendingAttach.pri;pendingAttach=null;
         if(!pr.g)pr.g=pr.id;
@@ -3202,7 +3308,7 @@ function pgPump(){
     if(el.dataset.ld||!el._vis)continue;
     el.dataset.ld='1';pgBusy++;
     const bk=pgBook;
-    bk.thumb(+el.dataset.i+1).then(u=>{if(u&&el.isConnected){const im=new Image();im.alt='';im.src=u;el.querySelector('.th').appendChild(im)}}).catch(()=>{}).finally(()=>{pgBusy--;pgPump()});
+    bk.thumb(+el.dataset.i+1).then(u=>{if(!u)throw 0;if(el.isConnected){const im=new Image();im.alt='';im.src=u;el.querySelector('.th').appendChild(im)}}).catch(()=>{delete el.dataset.ld;el._try=(el._try||0)+1;if(el._try<4)setTimeout(()=>{if(el._vis&&el.isConnected){pgQ.push(el);pgPump()}},1200*el._try)}).finally(()=>{pgBusy--;pgPump()});
   }
 }
 function openPgg(){
