@@ -103,6 +103,8 @@ html:has(#rd:not([hidden])) #apm.min #apmM svg{transform:rotate(180deg)}
 #pgD{max-width:44rem;margin:0 auto;padding-bottom:3rem}
 #dlSum{line-height:1.5;margin:.2rem 0 1rem}
 .dlh{font-size:1rem;margin:1.4rem 0 .4rem;color:var(--mute);font-weight:600}
+a.il{color:var(--acc);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+@media(max-width:640px){.dlr{flex-wrap:wrap}.dlt{flex:1 1 calc(100% - 4rem)}.dlt b{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.dla{flex:1 1 100%;flex-direction:row;flex-wrap:wrap}.dla .dlb{flex:1 1 auto;text-align:center}}
 .dlr{display:flex;gap:.8rem;align-items:center;padding:.6rem .1rem;border-bottom:1px solid var(--line)}
 .dlr .cvs{width:2.6rem;height:3.9rem;border-radius:5px;object-fit:cover;flex:none;font-size:.4rem}
 .dlr .ph b,.dlr .ph small{display:none}
@@ -614,7 +616,7 @@ div.cc{border:1px solid transparent;cursor:pointer;font:inherit;font-size:.9rem;
 <input type="file" id="covf" accept="image/*" hidden>
 <input type="file" id="vf" hidden>
 <div id="pgg" class="glass" hidden><div class="pgh"><b id="pggT"></b><span><button id="pggToc" class="linkbtn" hidden>Оглавление</button><button class="pclose" aria-label="Закрыть"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button></span></div><div id="pggS"><div id="pggG"></div></div></div>
-<div id="rn" class="glass" hidden><h3>Название и автор</h3><label>Название<input type="text" id="rnT" autocomplete="off"></label><label>Автор<input type="text" id="rnA" autocomplete="off"></label><div class="rnbtns"><button id="rnCancel">Отмена</button><button id="rnOk">Сохранить</button></div></div>
+<div id="rn" class="glass" hidden><h3>Название, автор, переводчик</h3><label>Название<input type="text" id="rnT" autocomplete="off"></label><label>Автор<input type="text" id="rnA" autocomplete="off"></label><label>Переводчик (пер.)<input type="text" id="rnP" autocomplete="off"></label><div class="rnbtns"><button id="rnCancel">Отмена</button><button id="rnOk">Сохранить</button></div></div>
 <div id="srt" class="glass" hidden></div>
 <div id="cp" class="glass" hidden></div>
 <div id="sxm" class="glass" hidden></div>
@@ -733,12 +735,19 @@ async function fsReader(id){
   const m=await kv.get('fm:'+id);
   if(!m||!(m.size>0)||!(m.n>0))return null;
   const cache=new Map();
-  const getChunk=async(i,fresh)=>{
+  const want=i=>i<m.n-1?FS_CH:m.size-(m.n-1)*FS_CH;
+  const getChunk=(i,fresh)=>{
     if(!fresh&&cache.has(i))return cache.get(i);
-    const c=await kv.get('fc:'+id+':'+i);
-    if(!c)throw new Error('нет части '+(i+1)+' из '+m.n);
-    cache.set(i,c);while(cache.size>3)cache.delete(cache.keys().next().value);
-    return c;
+    const p=(async()=>{
+      const c=await kv.get('fc:'+id+':'+i);
+      if(!c)throw new Error('нет части '+(i+1)+' из '+m.n);
+      const got=c.byteLength!=null?c.byteLength:c.size;
+      if(got!==want(i))throw new Error('часть '+(i+1)+' повреждена: '+got+' из '+want(i)+' байт');
+      return c;
+    })();
+    cache.set(i,p);p.catch(()=>{if(cache.get(i)===p)cache.delete(i)});
+    while(cache.size>3)cache.delete(cache.keys().next().value);
+    return p;
   };
   const readRange=async(b,e)=>{
     e=Math.min(e,m.size);if(e<=b)return new ArrayBuffer(0);
@@ -763,6 +772,12 @@ async function fsDel(id,onProg){
   if(m){for(let i=0;i<m.n;i++){await kvDel('fc:'+id+':'+i);if(onProg)onProg((i+1)/m.n)}await kvDel('fm:'+id)}
   await kvDel('b:'+id);
 }
+const sampleEq=(a,b)=>{
+  const x=new Uint8Array(a),y=new Uint8Array(b);if(x.length!==y.length)return false;
+  const n=x.length,pos=[0,n>>2,n>>1,(n>>2)*3,Math.max(0,n-64)];
+  for(const p of pos){const e=Math.min(n,p+64);for(let k=p;k<e;k++)if(x[k]!==y[k])return false}
+  return true;
+};
 async function fsPut(id,file,onProg){
   const size=file.size,n=Math.max(1,Math.ceil(size/FS_CH));
   try{
@@ -770,16 +785,22 @@ async function fsPut(id,file,onProg){
     if(est&&est.quota&&est.quota-(est.usage||0)<size*1.05){const e=new Error('не хватает места на устройстве: нужно '+fsz(size)+', свободно около '+fsz(Math.max(0,est.quota-(est.usage||0))));e.quota=true;throw e}
   }catch(e){if(e&&e.quota)throw e}
   await fsDel(id);
-  let asBuf=false,i=0;
+  let i=0;
   try{
     while(i<n){
-      const part=file.slice(i*FS_CH,Math.min(size,(i+1)*FS_CH));
-      try{await kvPut('fc:'+id+':'+i,asBuf?await part.arrayBuffer():part)}
-      catch(err){if(!asBuf){asBuf=true;continue}throw err}
+      const ab=await file.slice(i*FS_CH,Math.min(size,(i+1)*FS_CH)).arrayBuffer();
+      const key='fc:'+id+':'+i;
+      let ok=false;
+      for(let t=0;t<2&&!ok;t++){
+        await kvPut(key,ab);
+        const back=await kv.get(key);
+        ok=!!back&&back.byteLength===ab.byteLength&&sampleEq(back,ab);
+      }
+      if(!ok)throw new Error('браузер сохранил часть '+(i+1)+' из '+n+' с ошибкой (проверка не прошла)');
       i++;
       if(onProg)onProg(i/n,Math.min(size,i*FS_CH),size);
     }
-    await kvPut('fm:'+id,{name:file.name||id,size,n,type:file.type||'',ab:asBuf,at:Date.now()});
+    await kvPut('fm:'+id,{name:file.name||id,size,n,type:file.type||'',ab:true,at:Date.now()});
   }catch(err){
     for(let j=0;j<=i&&j<n;j++)await kvDel('fc:'+id+':'+j);
     throw err;
@@ -842,8 +863,10 @@ const fixDash=h=>{
   if(dashFix)for(const [re,r] of RULES)h=h.replace(re,r);
   return h;
 };
-const AUX=/^\s*(?:примечани|комментари|сноск|список\s+литературы|список\s+источников|использованная\s+литература|литература\s*$|библиограф|источники\s*$|notes\s*$|references\s*$|bibliography)/iu;
+const NOTEPATH=/(?:^|[._\-\/])(?:foot|end|rear)?notes?(?:[._\-\d]|$)|comment|коммент|примеч|сноск|annot|bibliograph|references?/i;
+const AUX=/^\s*(?:приложени|указател|глоссар|словарь|appendi|glossary|index\s*$|примечани|комментари|сноск|список\s+литературы|список\s+источников|использованная\s+литература|литература\s*$|библиограф|источники\s*$|notes\s*$|references\s*$|bibliography)/iu;
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const byl=b=>esc(b.author||'')+(b.trn?(b.author?' · ':'')+'пер. '+esc(b.trn):'');
 const MIME={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',gif:'image/gif',webp:'image/webp',svg:'image/svg+xml'};
 const dirOf=p=>p.includes('/')?p.slice(0,p.lastIndexOf('/')+1):'';
 const resolve=(base,href)=>{const p=new URL(href.split('#')[0],'http://x/'+base).pathname.slice(1);try{return decodeURIComponent(p)}catch(e){return p}};
@@ -868,6 +891,24 @@ async function epubChapter(zip,path){
         if(zf){const ext=p.split('.').pop().toLowerCase();url='data:'+(MIME[ext]||'image/jpeg')+';base64,'+await zf.async('base64')}}catch(e){}
     }
     if(url){const im=doc.createElement('img');im.src=url;target.replaceWith(im)}else target.remove();
+  }
+  {
+    const inNotes=NOTEPATH.test(path.split('/').pop());
+    b.querySelectorAll('a[href]').forEach(a=>{
+      const href=a.getAttribute('href')||'';
+      if(/^(https?:|mailto:|tel:|javascript:)/i.test(href))return;
+      const hp=href.split('#')[0];let fid=href.includes('#')?href.slice(href.indexOf('#')+1):'';
+      try{fid=decodeURIComponent(fid)}catch(x){}
+      const fp=hp?resolve(path,hp):path;
+      const tx=(a.textContent||'').replace(/\s+/g,' ').trim();
+      const et=(a.getAttribute('epub:type')||'')+' '+(a.getAttribute('role')||'')+' '+(a.className||'');
+      const marker=/^[\[\(\{<]?\s*(?:\d{1,4}|[*†‡§¹²³⁴⁵⁶⁷⁸⁹⁰]+|[a-zа-яё])\s*[\]\)\}>]?$/i.test(tx)||!!a.closest('sup')||/noteref|footnote|endnote|(^|\s)fn(\s|$)|(^|\s)note/i.test(et);
+      const toNote=!inNotes&&(marker||(hp&&NOTEPATH.test(hp.split('/').pop())));
+      a.removeAttribute('href');
+      a.className=toNote?'fn':'il';
+      a.dataset.fp=fp;a.dataset.fid=fid;
+      a.setAttribute('role','button');a.setAttribute('tabindex','0');
+    });
   }
   b.querySelectorAll('*').forEach(e=>{for(const a of [...e.attributes]){const n=a.name;if(n.startsWith('on')||n==='style'||(n==='href'&&!/^https?:/i.test(a.value)))e.removeAttribute(n)}});
   b.querySelectorAll('a[href]').forEach(a=>{a.target='_blank';a.rel='noopener noreferrer'});
@@ -913,15 +954,71 @@ async function openEpub(buf,name){
       }
     }
   }catch(e){}
-  const chs=paths.map((p,i)=>{const zf=zip.file(p);return{title:'Раздел '+(i+1),group:'',aux:/(?:foot|end)?notes?[._\-\/]|bibliograph|references?[._\-\/]/i.test(p),len:Math.max(1,(zf&&zf._data&&zf._data.uncompressedSize)||1000),load:()=>epubChapter(zip,p)}});
+  const chs=paths.map((p,i)=>{const zf=zip.file(p);return{title:'Раздел '+(i+1),group:'',path:p,aux:/(?:foot|end)?notes?[._\-\/]|bibliograph|references?[._\-\/]|(?:^|[\/_\-.])(?:comment|appendi|glossar)/i.test(p),len:Math.max(1,(zf&&zf._data&&zf._data.uncompressedSize)||1000),load:()=>epubChapter(zip,p)}});
   if(tocMap.size){
     let last='';
     chs.forEach((c,i)=>{const tt=tocMap.get(paths[i]);c.nonum=true;if(tt){c.title=tt;last=tt}else{c.title=last||'Начало';c.cont=!!last}});
   }
+  let translator='';
+  try{
+    const cs=[...opf.getElementsByTagName('dc:contributor')],ms=[...opf.getElementsByTagName('meta')];
+    const isTrl=c=>{const r=(c.getAttribute('opf:role')||c.getAttribute('role')||'').toLowerCase();if(r==='trl')return true;const id=c.getAttribute('id');return !!id&&ms.some(m=>m.getAttribute('refines')==='#'+id&&/role/.test(m.getAttribute('property')||'')&&/trl/i.test(m.textContent))};
+    translator=cs.filter(isTrl).map(c=>c.textContent.trim()).filter(Boolean).join(', ');
+  }catch(e){}
+  // сноски: берём текст заметки из файла, на который указывает ссылка
+  const noteDocs=new Map();
+  const epubNote=async(fp,fid)=>{
+    try{
+      let doc=noteDocs.get(fp);
+      if(!doc){
+        const f=zip.file(fp);if(!f)return '';
+        const raw=(await f.async('string')).replace(/<(title|script|style|textarea)(\s[^>]*)?\/>/gi,'<$1$2></$1>');
+        doc=new DOMParser().parseFromString(raw,'text/html');noteDocs.set(fp,doc);
+        if(noteDocs.size>6)noteDocs.delete(noteDocs.keys().next().value);
+      }
+      if(!fid)return '';
+      let el=doc.getElementById(fid);
+      if(!el){try{el=doc.querySelector('[name="'+CSS.escape(fid)+'"]')}catch(x){}}
+      if(!el)return '';
+      const plain=n=>(n.textContent||'').replace(/\s+/g,' ').trim();
+      let blk=/^(LI|ASIDE|DD|P|DIV|SECTION|TD|BLOCKQUOTE)$/.test(el.tagName)?el:(el.closest('li,aside,dd,p,div,section,td,blockquote')||el);
+      let parts=[blk];
+      if(plain(blk).length<=8&&blk.nextElementSibling)parts.push(blk.nextElementSibling);
+      if(plain(blk).length>3000&&blk.children.length){parts=[];let n=0;for(const c of blk.children){parts.push(c);n+=plain(c).length;if(n>1500)break}}
+      return parts.map(p=>{
+        const c=p.cloneNode(true);
+        c.querySelectorAll('img,script,style').forEach(x=>x.remove());
+        c.querySelectorAll('a').forEach(x=>{
+          const t=(x.textContent||'').trim(),h=x.getAttribute('href')||'';
+          if(h.includes('#')&&(t.length<=6||/^(?:назад|вернуться|back)/i.test(t)))x.remove();else x.replaceWith(...x.childNodes);
+        });
+        c.querySelectorAll('[id]').forEach(x=>x.removeAttribute('id'));
+        return plain(c)?'<div>'+c.innerHTML+'</div>':'';
+      }).join('');
+    }catch(e){return ''}
+  };
+  // приложения, комментарии, оглавление не считаем за текст в проценте прочитанного
+  let auxP=null;
+  const autoAux=()=>auxP||(auxP=(async()=>{
+    let any=false;
+    for(let i=0;i<chs.length;i++){
+      const c=chs[i];if(c.a0||c.aux)continue;
+      const f=zip.file(paths[i]);if(!f)continue;
+      let raw='';try{raw=await f.async('string')}catch(e){continue}
+      if(/epub:type="[^"]*\b(footnotes?|endnotes?|rearnotes|appendix|bibliography|glossary|index|colophon|copyright-page|toc)\b/i.test(raw)||/role="doc-(endnotes?|footnotes?|appendix|bibliography|glossary|index|toc)"/i.test(raw)){c.a0=true;any=true;continue}
+      const tl=raw.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').length;
+      const paras=(raw.match(/<(p|li|dd)\b/gi)||[]).length||1;
+      const links=(raw.match(/<a\b[^>]*\bhref="[^"#>]*#[^"]*"/gi)||[]).length;
+      if(paras>=6&&links/paras>0.6&&tl/paras<500){c.a0=true;any=true}
+    }
+    return any;
+  })());
   return{
     cover,
     title:(t&&t.textContent.trim())||name,
     author:a?a.textContent.trim():'',
+    translator,
+    epubNote,autoAux,
     chapters:chs
   };
 }
@@ -964,7 +1061,8 @@ async function openFb2(bytes,name){
   const d=xml(txt);
   const bins={};
   d.querySelectorAll('binary').forEach(b=>{bins[b.getAttribute('id')]='data:'+(b.getAttribute('content-type')||'image/jpeg')+';base64,'+b.textContent.replace(/\s+/g,'')});
-  const bt=d.querySelector('title-info book-title'),au=d.querySelector('title-info author');
+  const bt=d.querySelector('title-info book-title'),au=d.querySelector('title-info author'),tre=d.querySelector('title-info translator');
+  const translator=tre?['first-name','middle-name','last-name'].map(t=>{const e=tre.querySelector(t);return e?e.textContent.trim():''}).filter(Boolean).join(' '):'';
   const author=au?['first-name','middle-name','last-name'].map(t=>{const e=au.querySelector(t);return e?e.textContent.trim():''}).filter(Boolean).join(' '):'';
   const chapters=[],notes=Object.create(null);NOTES=notes;
   const ttl=e=>{if(!e)return '';const a=e.children.length?[...e.children].map(c=>c.textContent):[e.textContent];return a.map(x=>x.replace(/\s+/g,' ').trim()).filter(Boolean).join('. ')};
@@ -991,7 +1089,7 @@ async function openFb2(bytes,name){
   });
   const ci=d.querySelector('title-info coverpage image');
   const cid=ci?(ci.getAttributeNS(XL,'href')||ci.getAttribute('l:href')||ci.getAttribute('href')||'').replace(/^#/,''):'';
-  return{cover:async()=>bins[cid]||'',title:(bt&&bt.textContent.trim())||name,author,chapters,note:id=>notes[id]?[...notes[id].children].filter(c=>c.localName!=='title').map(c=>fb2n(c,bins)).join(''):''};
+  return{cover:async()=>bins[cid]||'',title:(bt&&bt.textContent.trim())||name,author,translator,chapters,note:id=>notes[id]?[...notes[id].children].filter(c=>c.localName!=='title').map(c=>fb2n(c,bins)).join(''):''};
 }
 
 let PW=null;
@@ -2003,7 +2101,7 @@ const vers=b=>b.g?lib.filter(x=>x.g===b.g):[b];
 const isPri=b=>{if(!b.g)return true;let m=null;for(const x of lib){if(x.g===b.g&&(!m||(x.t||0)>(m.t||0)))m=x}return m===b};
 const fmtOf=x=>{const n=String(x.name||String(x.id||'').replace(/:\d+$/,'')).toLowerCase();if(/\.fb2\.zip$/.test(n))return'FB2';const m=n.match(/\.([a-z0-9]+)$/);return m?m[1].toUpperCase():'ФАЙЛ'};
 const chips=b=>vers(b).length>1?vers(b).map(x=>'<i class="fmc'+(x===b?' on':'')+'" data-v="'+lib.indexOf(x)+'">'+fmtOf(x)+'</i>').join(''):'';
-function gsync(b){vers(b).forEach(x=>{if(x===b)return;x.st=b.st;x.cs=(b.cs||[]).slice();x.doneAt=b.doneAt;if(b.tcustom){x.title=b.title;x.author=b.author;x.tcustom=true}})}
+function gsync(b){vers(b).forEach(x=>{if(x===b)return;x.st=b.st;x.cs=(b.cs||[]).slice();x.doneAt=b.doneAt;if(b.tcustom){x.title=b.title;x.author=b.author;x.trn=b.trn;x.tcustom=true}})}
 function posFromPercent(b,p){
   const target=Math.min(.999,Math.max(0,p/100))*b.total;let ch=0;
   for(let i=0;i<b.chapters.length;i++){if(b.chapters[i].aux)continue;if(b.off[i]<=target)ch=i;else break}
@@ -2015,14 +2113,14 @@ async function openVersion(x){
   if(pr!==x)pendingPP={id:x.id,p:pr.p||0};
   await openBook(x);pendingPP=null;
 }
-const coverEl=(b,i,cls)=>(cls+=isAudio(b)?' sq':'',b.cv===1?'<img class="'+cls+'" data-c="'+i+'" alt="">':'<span class="'+cls+' ph'+(b.ph?' gh':'')+'" style="'+phVars(b)+'"><b>'+esc(b.title||'')+'</b><small>'+esc(b.author||'')+'</small></span>');
+const coverEl=(b,i,cls)=>(cls+=isAudio(b)?' sq':'',b.cv===1?'<img class="'+cls+'" data-c="'+i+'" alt="">':'<span class="'+cls+' ph'+(b.ph?' gh':'')+'" style="'+phVars(b)+'"><b>'+esc(b.title||'')+'</b><small>'+byl(b)+'</small></span>');
 function tile(b,i){
   const p=b.p||0,st=b.ph?'Нет на устройстве'+(p?', '+p+' %':''):(isDone(b)?'Закончено':p>0?p+' %':'<em class="nw">Новая</em>');
   return '<div class="tl"><button class="cb" data-o="'+i+'" aria-label="'+esc(b.title||'').replace(/"/g,'&quot;')+'">'+coverEl(b,i,'cvr')+'</button><div class="ts"><span>'+st+'</span><button class="mb" data-m="'+i+'" aria-label="Меню книги">…</button></div>'+(vers(b).length>1?'<div class="fmr">'+chips(b)+'</div>':'')+'</div>';
 }
 function card(b,i){
   const p=isDone(b)?100:(b.p||0);
-  return '<div class="cc" role="button" tabindex="0" data-o="'+i+'" style="'+phVars(b)+'"><span class="bgc" data-cb="'+i+'"></span>'+coverEl(b,i,'cvs')+'<span class="tx"><b>'+esc(b.title||'')+'</b><small>'+esc(b.author||'')+'</small><small class="pl2"><span>'+(b.ph?'Нет на устройстве, '+p+' %':(isDone(b)?'Закончено':p+' %'))+'</span><span class="fmw">'+chips(b)+'</span></small><em class="tr ctr"><i style="width:'+p+'%"></i></em></span><button class="mb cmb" data-m="'+i+'" aria-label="Меню книги">…</button></div>';
+  return '<div class="cc" role="button" tabindex="0" data-o="'+i+'" style="'+phVars(b)+'"><span class="bgc" data-cb="'+i+'"></span>'+coverEl(b,i,'cvs')+'<span class="tx"><b>'+esc(b.title||'')+'</b><small>'+byl(b)+'</small><small class="pl2"><span>'+(b.ph?'Нет на устройстве, '+p+' %':(isDone(b)?'Закончено':p+' %'))+'</span><span class="fmw">'+chips(b)+'</span></small><em class="tr ctr"><i style="width:'+p+'%"></i></em></span><button class="mb cmb" data-m="'+i+'" aria-label="Меню книги">…</button></div>';
 }
 const filterName=()=>({all:'Библиотека',want:'Хочу прочитать',later:'Заброшено',done:'Закончено'}[lf]||(cols.find(c=>c.id===lf)||{}).name||'Библиотека');
 function ringVal(){
@@ -2146,7 +2244,7 @@ async function deleteBook(b){
 }
 async function openBook(b){
   if(isAudio(b)){await apOpen(b);return}
-  if(/\.pdf$/i.test(b.name||'')){const rd=await fsReader(b.id);if(rd){await load(b.name,rd);return}const bl=await fsBlob(b.id);if(bl&&bl.size){await load(b.name,bl);return}}
+  if(/\.pdf$/i.test(b.name||'')){const rd=await fsReader(b.id);if(rd){const ok=await load(b.name,rd);if(!ok){const why=$('#msg').textContent||'';try{await fsDel(b.id)}catch(x){}b.ph=1;saveLib();devPush(b,false);renderLib();msg('Сохранённая копия файла не открылась ('+why+'). Я её удалил: добавьте файл через «+» ещё раз.')}return}const bl=await fsBlob(b.id);if(bl&&bl.size){await load(b.name,bl);return}}
   const s=await fsRead(b.id);
   if(s&&s.buf){await load(s.name,s.buf);return}
   msg(b.ph?'Эта книга есть в синхронизации, но файла нет на этом устройстве. Выберите тот же файл — прогресс подтянется.':'Файл этой книги не сохранился на устройстве. Добавьте его снова через «+».');
@@ -2170,6 +2268,7 @@ function curFromScroll(){
 }
 function tocLabel(){const c=book.chapters[cur];return c?(c.nonum?c.title:(cur+1)+'. '+c.title):''}
 function sync(){
+  if(Date.now()-navT<1500&&lastMv<navT){updatePos();return}
   const i=curFromScroll();
   if(i!==cur){cur=i;$('#chs').textContent=tocLabel();$('#pv').disabled=i===0;$('#nx').disabled=i===book.chapters.length-1;$('#note').hidden=true}
   updatePos();
@@ -2880,7 +2979,8 @@ async function mk(i){
   if(!book.pdf&&TR.on){try{trApplySec(sec)}catch(err){}setTimeout(trKick,400)}
   return sec;
 }
-let filling=false;
+let filling=false,navT=0,lastMv=0;
+['touchmove','wheel','keydown'].forEach(ev=>addEventListener(ev,()=>{lastMv=Date.now()},{passive:true,capture:true}));
 async function fill(my){
   if(my!==navGen||filling||!book||busy)return;
   filling=true;
@@ -2931,7 +3031,7 @@ async function show(i,f=0){
   const n=book.chapters.length;
   i=Math.max(0,Math.min(n-1,i));
   const my=++navGen;
-  busy=true;cur=i;$('#note').hidden=true;
+  busy=true;cur=i;navT=Date.now();$('#note').hidden=true;
   $('#chs').textContent=tocLabel();
   $('#pv').disabled=i===0;$('#nx').disabled=i===n-1;
   txt.innerHTML='<p>Загрузка…</p>';
@@ -2984,6 +3084,7 @@ async function load(name,buf,start,silent,file){
       }
     }else if(!e.tcustom&&!e.ph){e.title=b.title;e.author=b.author}
     e.name=name;
+    if(!e.tcustom&&b.translator&&e.trn===undefined)e.trn=b.translator;
     {const have=!e.ph&&await fsHas(key);if(file&&!have){if(await saveBookFile(e,key,file)){delete e.ph;devPush(e,true)}else e.ph=1}else delete e.ph}
     if(e.st==='want'||e.st==='later'){e.st='';vers(e).forEach(x=>{if(x.st==='want'||x.st==='later')x.st=''})}
     saveLib();
@@ -2992,7 +3093,7 @@ async function load(name,buf,start,silent,file){
     weigh(b,e);
     try{await trOpen(e)}catch(err){}
     try{await ocrOpen(e)}catch(err){}
-    if(pendingPP&&pendingPP.id===key){const q=posFromPercent(b,pendingPP.p);e.ch=q.ch;e.f=q.f;e.p=pendingPP.p;e.t=Date.now();e.fa=[q.ch,q.f];pendingPP=null;saveLib()}
+    if(pendingPP&&pendingPP.id===key){if(b.autoAux){try{await b.autoAux()}catch(err){}weigh(b,e)}const q=posFromPercent(b,pendingPP.p);e.ch=q.ch;e.f=q.f;e.p=pendingPP.p;e.t=Date.now();e.fa=[q.ch,q.f];pendingPP=null;saveLib()}
     b.chapters.forEach((c,i)=>{
       const cg=c.group||'';
       if(cg!==g){g=cg;if(g)h+='<div class="tocgrp">'+esc(g)+'</div>'}
@@ -3007,6 +3108,7 @@ async function load(name,buf,start,silent,file){
       await show(e.ch,e.f);
     }
     ls.set('opening',0);
+    if(b.autoAux){const bb=b,kk=key;bb.autoAux().then(ch=>{if(ch&&book===bb&&key===kk){const e2=ent(kk);weigh(bb,e2);if(e2&&reading()){e2.p=percent();saveLib()}updatePos()}}).catch(()=>{})}
     if(!e.cv&&b.cover)(async()=>{try{const u=await b.cover();const t=u?await thumb(u):'';if(t)await kv.set('c:'+e.id,t);e.cv=t?1:2}catch(err){e.cv=2}saveLib()})();
     return true;
   }catch(e){
@@ -3299,7 +3401,7 @@ function openToc(){
   document.querySelectorAll('.tocitem').forEach(b=>b.setAttribute('aria-current',String(+b.dataset.i===ci)));
   const cur1=$('.tocitem[aria-current="true"]');
   $('#toc').hidden=false;
-  if(cur1)cur1.scrollIntoView({block:'center'});
+  if(cur1)cur1.scrollIntoView({block:'center',behavior:'instant'});
 }
 let pgQ=[],pgBusy=0,pgIO=null,pgBook=null;
 function pgPump(){
@@ -3423,7 +3525,7 @@ $('#bm').addEventListener('click',async e=>{
   if(k==='cov'){$('#covf').click();return}
   if(k==='addv'){attachTarget=b;$('#vf').click();return}
   if(k==='ren'){
-    $('#rnT').value=b.title||'';$('#rnA').value=b.author||'';
+    $('#rnT').value=b.title||'';$('#rnA').value=b.author||'';$('#rnP').value=b.trn||'';
     $('#rn').dataset.i=String(bmI);$('#rn').hidden=false;
     setTimeout(()=>{$('#rnT').focus();$('#rnT').select()},30);
     return;
@@ -3468,7 +3570,7 @@ let rzBusy=false;
   vv.addEventListener('resize',fix);vv.addEventListener('scroll',fix);
 })();
 const rnClose=()=>{$('#rn').hidden=true};
-const rnSave=()=>{const b=lib[+$('#rn').dataset.i];if(b){const t=$('#rnT').value.trim(),a=$('#rnA').value.trim();if(t)b.title=t;b.author=a;b.tcustom=true;b.t=Date.now();gsync(b);saveLib();renderLib()}rnClose()};
+const rnSave=()=>{const b=lib[+$('#rn').dataset.i];if(b){const t=$('#rnT').value.trim(),a=$('#rnA').value.trim();if(t)b.title=t;b.author=a;b.trn=$('#rnP').value.trim();b.tcustom=true;b.t=Date.now();gsync(b);saveLib();renderLib()}rnClose()};
 $('#rnOk').onclick=rnSave;$('#rnCancel').onclick=rnClose;
 $('#rn').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();rnSave()}else if(e.key==='Escape')rnClose()});
 $('#covf').addEventListener('change',async e=>{
@@ -3504,11 +3606,18 @@ $('#t2').onchange=e=>{au.t2=e.target.value||'19:00';ls.set('auto',au);prefs()};
 $('#ta').addEventListener('click',e=>{const b=e.target.closest('button');if(b){ta=b.dataset.a;ls.set('ta',ta);prefs()}});
 setInterval(prefs,60000);
 prefs();
-txt.addEventListener('click',e=>{
-  const a=e.target.closest('a.fn');
+txt.addEventListener('click',async e=>{
+  const a=e.target.closest('a.fn,a.il');
   if(!a)return;
   e.preventDefault();
-  const h=book&&book.note?book.note(a.dataset.n):'';
+  if(a.classList.contains('il')){
+    const idx=book?book.chapters.findIndex(c=>c.path===a.dataset.fp):-1;
+    if(idx>=0){await show(idx);const id=a.dataset.fid;if(id){const el=txt.querySelector('[id="'+id.replace(/"/g,'\\"')+'"]');if(el)scrollTo(0,Math.max(0,top0(el)-HO()))}}
+    return;
+  }
+  let h='';
+  if(a.dataset.fp&&book&&book.epubNote)h=await book.epubNote(a.dataset.fp,a.dataset.fid||'');
+  else h=book&&book.note?book.note(a.dataset.n):'';
   if(h){$('#nb').innerHTML=fixDash(h);$('#note').hidden=false}
 });
 $('#nc').onclick=()=>{$('#note').hidden=true};
