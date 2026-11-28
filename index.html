@@ -1061,8 +1061,8 @@ async function openFb2(bytes,name){
   const d=xml(txt);
   const bins={};
   d.querySelectorAll('binary').forEach(b=>{bins[b.getAttribute('id')]='data:'+(b.getAttribute('content-type')||'image/jpeg')+';base64,'+b.textContent.replace(/\s+/g,'')});
-  const bt=d.querySelector('title-info book-title'),au=d.querySelector('title-info author'),tre=d.querySelector('title-info translator');
-  const translator=tre?['first-name','middle-name','last-name'].map(t=>{const e=tre.querySelector(t);return e?e.textContent.trim():''}).filter(Boolean).join(' '):'';
+  const bt=d.querySelector('title-info book-title'),au=d.querySelector('title-info author');
+  const translator=[...d.querySelectorAll('title-info translator')].map(tre=>['first-name','middle-name','last-name'].map(t=>{const e=tre.querySelector(t);return e?e.textContent.trim():''}).filter(Boolean).join(' ')).filter(Boolean).join(', ');
   const author=au?['first-name','middle-name','last-name'].map(t=>{const e=au.querySelector(t);return e?e.textContent.trim():''}).filter(Boolean).join(' '):'';
   const chapters=[],notes=Object.create(null);NOTES=notes;
   const ttl=e=>{if(!e)return '';const a=e.children.length?[...e.children].map(c=>c.textContent):[e.textContent];return a.map(x=>x.replace(/\s+/g,' ').trim()).filter(Boolean).join('. ')};
@@ -1078,8 +1078,17 @@ async function openFb2(bytes,name){
     if(pre.some(c=>c.textContent.trim()))chapters.push({title:(label||'Вступление').slice(0,80),group,len:pre.reduce((n,c)=>n+tlen(c),0),load:async()=>[own,...pre].filter(Boolean).map(c=>fb2n(c,bins)).join('')});
     subs.forEach(x=>walk(x,group));
   };
-  d.querySelectorAll('FictionBook > body').forEach(body=>{
-    if(body.getAttribute('name')==='notes'){
+  // тела книги со сносками и комментариями (в том числе названные по-своему): на них ссылаются из основного текста
+  const hrefOf=a=>(a.getAttributeNS(XL,'href')||a.getAttribute('l:href')||a.getAttribute('href')||'').replace(/^#/,'');
+  const targets=new Set([...d.querySelectorAll('a')].map(hrefOf));
+  const isNotesBody=(body,idx)=>{
+    if(/note|comment|коммент|примеч|сноск|footn|endn/i.test(body.getAttribute('name')||''))return true;
+    if(idx===0)return false;
+    const ids=[...body.querySelectorAll('section')].map(x=>x.getAttribute('id')).filter(Boolean);
+    return ids.length>0&&ids.filter(id=>targets.has(id)).length/ids.length>0.5;
+  };
+  [...d.querySelectorAll('FictionBook > body')].forEach((body,bi)=>{
+    if(isNotesBody(body,bi)){
       body.querySelectorAll('section').forEach(x=>{const id=x.getAttribute('id');if(id)notes[id]=x});
       return;
     }
@@ -1367,18 +1376,20 @@ let syXBusy=false,syXAt=0,syXWarned=false;
 function sxLocal(){
   let at=ls.get('sxAt',0);const custom=SX.some(x=>x.id!=='lib'&&x.id!=='aud');
   if(!at&&custom){at=Date.now();ls.set('sxAt',at)}
-  const sm={};lib.forEach(b=>{if(b.sec&&b.sec!=='lib')sm[b.id]=[b.sec,b.secAt||b.t||1]});
-  return{sx:at?{at,list:SX.map(x=>({id:x.id,name:x.name,plan:!!x.plan}))}:null,sm,tomb:TOMB()};
+  const sm={},meta={};lib.forEach(b=>{if(b.sec&&b.sec!=='lib')sm[b.id]=[b.sec,b.secAt||b.t||1];if(b.tcustom)meta[b.id]={t:b.title||'',a:b.author||'',n:b.trn||'',at:b.metaAt||b.t||1}});
+  return{sx:at?{at,list:SX.map(x=>({id:x.id,name:x.name,plan:!!x.plan}))}:null,sm,meta,tomb:TOMB()};
 }
 function sxMerge(r,l){
   const o={};r=r||{};
   o.sx=(l.sx&&(!r.sx||l.sx.at>r.sx.at))?l.sx:(r.sx||null);
   o.sm=Object.assign({},r.sm||{});
   for(const k in l.sm){const a=o.sm[k];if(!a||l.sm[k][1]>a[1])o.sm[k]=l.sm[k]}
+  o.meta=Object.assign({},r.meta||{});
+  for(const k in (l.meta||{})){const a=o.meta[k];if(!a||l.meta[k].at>a.at)o.meta[k]=l.meta[k]}
   o.tomb=Object.assign({},r.tomb||{});
   for(const k in l.tomb)if((l.tomb[k]||0)>(o.tomb[k]||0))o.tomb[k]=l.tomb[k];
   const old=Date.now()-120*864e5;
-  for(const k in o.tomb){if(o.tomb[k]<old)delete o.tomb[k];else delete o.sm[k]}
+  for(const k in o.tomb){if(o.tomb[k]<old)delete o.tomb[k];else{delete o.sm[k];delete o.meta[k]}}
   return o;
 }
 async function syExtra(){
@@ -1398,6 +1409,7 @@ async function syExtra(){
       renderTabs();ch=true;
     }
     for(const b of lib){const v=merged.sm[b.id];if(v&&v[1]>(b.secAt||0)&&SX.some(x=>x.id===v[0])&&b.sec!==v[0]){b.sec=v[0];b.secAt=v[1];ch=true}}
+    for(const b of lib){const m=merged.meta&&merged.meta[b.id];if(m&&m.at>(b.metaAt||0)&&(b.title!==m.t||(b.author||'')!==m.a||(b.trn||'')!==m.n)){if(m.t)b.title=m.t;b.author=m.a;b.trn=m.n;b.tcustom=true;b.metaAt=m.at;ch=true}}
     for(const id in merged.tomb){
       const e=ent(id);if(!e)continue;
       if(reading()&&key===id)continue;
@@ -2101,7 +2113,7 @@ const vers=b=>b.g?lib.filter(x=>x.g===b.g):[b];
 const isPri=b=>{if(!b.g)return true;let m=null;for(const x of lib){if(x.g===b.g&&(!m||(x.t||0)>(m.t||0)))m=x}return m===b};
 const fmtOf=x=>{const n=String(x.name||String(x.id||'').replace(/:\d+$/,'')).toLowerCase();if(/\.fb2\.zip$/.test(n))return'FB2';const m=n.match(/\.([a-z0-9]+)$/);return m?m[1].toUpperCase():'ФАЙЛ'};
 const chips=b=>vers(b).length>1?vers(b).map(x=>'<i class="fmc'+(x===b?' on':'')+'" data-v="'+lib.indexOf(x)+'">'+fmtOf(x)+'</i>').join(''):'';
-function gsync(b){vers(b).forEach(x=>{if(x===b)return;x.st=b.st;x.cs=(b.cs||[]).slice();x.doneAt=b.doneAt;if(b.tcustom){x.title=b.title;x.author=b.author;x.trn=b.trn;x.tcustom=true}})}
+function gsync(b){vers(b).forEach(x=>{if(x===b)return;x.st=b.st;x.cs=(b.cs||[]).slice();x.doneAt=b.doneAt;if(b.tcustom){x.title=b.title;x.author=b.author;x.trn=b.trn;x.metaAt=b.metaAt;x.tcustom=true}})}
 function posFromPercent(b,p){
   const target=Math.min(.999,Math.max(0,p/100))*b.total;let ch=0;
   for(let i=0;i<b.chapters.length;i++){if(b.chapters[i].aux)continue;if(b.off[i]<=target)ch=i;else break}
@@ -2970,6 +2982,11 @@ new MutationObserver(ms=>{
   }
 }).observe($('#text'),{childList:true,subtree:true});
 // ===== конец блока PDF-текста =====
+const imgRO=typeof ResizeObserver==='undefined'?{observe(){},unobserve(){},disconnect(){}}:new ResizeObserver(es=>{
+  let d=0;
+  for(const en of es){const im=en.target,h=en.contentRect.height,p=im._h0===undefined?h:im._h0;im._h0=h;if(h!==p&&!busy&&im.getBoundingClientRect().top<HO()-1)d+=h-p}
+  if(d)scrollBy(0,d);
+});
 async function mk(i){
   let html;
   try{html=await book.chapters[i].load()}catch(e){html='<p>Не удалось показать этот раздел.</p>'}
@@ -2977,6 +2994,7 @@ async function mk(i){
   sec.className='ch';sec.dataset.i=i;
   sec.innerHTML=book.pdf?(html||''):fixDash(html||'<p>В этом разделе нет текста.</p>');
   if(!book.pdf&&TR.on){try{trApplySec(sec)}catch(err){}setTimeout(trKick,400)}
+  if(!book.pdf)sec.querySelectorAll('img').forEach(im=>imgRO.observe(im));
   return sec;
 }
 let filling=false,navT=0,lastMv=0;
@@ -3007,8 +3025,8 @@ async function fill(my){
     }
     for(const el of [...txt.children]){
       const i=+el.dataset.i;
-      if(i>cur+3)el.remove();
-      else if(i<cur-3){const h0=document.documentElement.scrollHeight,y0=scrollY;el.remove();scrollTo(0,y0-(h0-document.documentElement.scrollHeight))}
+      if(i>cur+3){el.querySelectorAll('img').forEach(x=>imgRO.unobserve(x));el.remove()}
+      else if(i<cur-3){el.querySelectorAll('img').forEach(x=>imgRO.unobserve(x));const h0=document.documentElement.scrollHeight,y0=scrollY;el.remove();scrollTo(0,y0-(h0-document.documentElement.scrollHeight))}
     }
   }finally{filling=false}
 }
@@ -3037,7 +3055,9 @@ async function show(i,f=0){
   txt.innerHTML='<p>Загрузка…</p>';
   const sec=await mk(i);
   if(my!==navGen||cur!==i)return;
+  imgRO.disconnect();
   txt.replaceChildren(sec);
+  sec.querySelectorAll('img').forEach(im=>imgRO.observe(im));
   goTo(i,f);
   await new Promise(r=>requestAnimationFrame(r));
   goTo(i,f);
@@ -3570,7 +3590,7 @@ let rzBusy=false;
   vv.addEventListener('resize',fix);vv.addEventListener('scroll',fix);
 })();
 const rnClose=()=>{$('#rn').hidden=true};
-const rnSave=()=>{const b=lib[+$('#rn').dataset.i];if(b){const t=$('#rnT').value.trim(),a=$('#rnA').value.trim();if(t)b.title=t;b.author=a;b.trn=$('#rnP').value.trim();b.tcustom=true;b.t=Date.now();gsync(b);saveLib();renderLib()}rnClose()};
+const rnSave=()=>{const b=lib[+$('#rn').dataset.i];if(b){const t=$('#rnT').value.trim(),a=$('#rnA').value.trim();if(t)b.title=t;b.author=a;b.trn=$('#rnP').value.trim();b.tcustom=true;b.metaAt=Date.now();b.t=Date.now();gsync(b);saveLib();renderLib()}rnClose()};
 $('#rnOk').onclick=rnSave;$('#rnCancel').onclick=rnClose;
 $('#rn').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();rnSave()}else if(e.key==='Escape')rnClose()});
 $('#covf').addEventListener('change',async e=>{
